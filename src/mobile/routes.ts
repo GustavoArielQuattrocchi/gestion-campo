@@ -1,0 +1,15 @@
+export const MOBILE_ROUTES = {
+  root: '/campo',
+  inicio: '/campo/inicio',
+  registro: '/campo/registro',
+  bienvenida: '/campo/bienvenida',
+  finca: '/campo/finca',
+  menu: '/campo/menu',
+  tareaTipo: '/campo/tarea/tipo',
+  tareaManual: '/campo/tarea/manual',
+  tareaMecanica: '/campo/tarea/mecanica',
+  finalizar: '/campo/finalizar',
+  finalizarDetalle: (tareaId: string) => `/campo/finalizar/${tareaId}`,
+  informe: '/campo/informe',
+  exito: '/campo/exito',
+} as const

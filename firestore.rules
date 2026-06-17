@@ -1,0 +1,120 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function operadorDoc() {
+      return get(/databases/$(database)/documents/operadores/$(request.auth.uid));
+    }
+
+    function operadorRegistrado() {
+      return isSignedIn() && operadorDoc().data != null;
+    }
+
+    function nombreOperadorAutenticado() {
+      return operadorRegistrado() ? operadorDoc().data.nombre : '';
+    }
+
+    function validEstado() {
+      return request.resource.data.estado in ['en_progreso', 'finalizada'];
+    }
+
+    function validTipo() {
+      return request.resource.data.tipo in ['manual', 'mecanica'];
+    }
+
+    function validTareaBase() {
+      let d = request.resource.data;
+      return d.fincaId is string
+        && d.fincaId.size() > 0
+        && d.fincaNombre is string
+        && d.fincaNombre.size() > 0
+        && d.tarea is string
+        && d.tarea.size() > 0
+        && d.operador is string
+        && d.operador.size() > 0
+        && d.fechaInicio is timestamp
+        && d.cuadros is list
+        && (d.cuadroIds == null || d.cuadroIds is list)
+        && validEstado()
+        && validTipo();
+    }
+
+    function validManual() {
+      let d = request.resource.data;
+      return d.tipo != 'manual'
+        || (d.cuadrilla is string
+          && d.cuadrilla.size() > 0
+          && d.cantidadPersonas is int
+          && d.cantidadPersonas >= 1);
+    }
+
+    function validMecanica() {
+      let d = request.resource.data;
+      return d.tipo != 'mecanica'
+        || (d.persona is string
+          && d.persona.size() > 0
+          && d.maquinaria is string
+          && d.maquinaria.size() > 0);
+    }
+
+    function operadorCoincideEnAlta() {
+      return request.resource.data.operador == nombreOperadorAutenticado();
+    }
+
+    function esOperadorDeLaTarea() {
+      return operadorRegistrado()
+        && resource.data.operador == nombreOperadorAutenticado();
+    }
+
+    function esSoloFinalizacion() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['estado', 'rendimiento', 'fechaFin']);
+    }
+
+    function validFinalizacion() {
+      return request.resource.data.estado == 'finalizada'
+        && request.resource.data.rendimiento is string
+        && request.resource.data.fechaFin is timestamp;
+    }
+
+    match /operadores/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow create, update: if isSignedIn()
+        && request.auth.uid == uid
+        && request.resource.data.nombre is string
+        && request.resource.data.nombre.size() > 0;
+      allow delete: if false;
+    }
+
+    match /tareas/{tareaId} {
+      allow read: if isSignedIn();
+      allow create: if operadorRegistrado()
+        && operadorCoincideEnAlta()
+        && validTareaBase()
+        && validManual()
+        && validMecanica();
+      allow update: if esOperadorDeLaTarea()
+        && esSoloFinalizacion()
+        && validFinalizacion();
+      allow delete: if false;
+    }
+
+    match /informes_accidente/{informeId} {
+      allow read: if isSignedIn();
+      allow create: if operadorRegistrado()
+        && request.resource.data.operador == nombreOperadorAutenticado()
+        && request.resource.data.fincaId is string
+        && request.resource.data.fincaId.size() > 0
+        && request.resource.data.fincaNombre is string
+        && request.resource.data.fincaNombre.size() > 0
+        && request.resource.data.descripcion is string
+        && request.resource.data.descripcion.size() > 0
+        && request.resource.data.tieneFoto is bool
+        && request.resource.data.creadoEn is timestamp;
+      allow update, delete: if false;
+    }
+  }
+}

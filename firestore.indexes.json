@@ -1,0 +1,66 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "tareas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fincaNombre", "order": "ASCENDING" },
+        { "fieldPath": "fechaInicio", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tareas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tipo", "order": "ASCENDING" },
+        { "fieldPath": "fechaInicio", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tareas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "estado", "order": "ASCENDING" },
+        { "fieldPath": "fechaInicio", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tareas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fincaNombre", "order": "ASCENDING" },
+        { "fieldPath": "tipo", "order": "ASCENDING" },
+        { "fieldPath": "fechaInicio", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tareas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fincaNombre", "order": "ASCENDING" },
+        { "fieldPath": "estado", "order": "ASCENDING" },
+        { "fieldPath": "fechaInicio", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tareas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tipo", "order": "ASCENDING" },
+        { "fieldPath": "estado", "order": "ASCENDING" },
+        { "fieldPath": "fechaInicio", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tareas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fincaNombre", "order": "ASCENDING" },
+        { "fieldPath": "tipo", "order": "ASCENDING" },
+        { "fieldPath": "estado", "order": "ASCENDING" },
+        { "fieldPath": "fechaInicio", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

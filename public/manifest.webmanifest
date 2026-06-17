@@ -1,0 +1,19 @@
+{
+  "name": "Gestión de Campo",
+  "short_name": "Campo",
+  "description": "Registro de tareas agrícolas en campo y dashboard de escritorio",
+  "start_url": "/campo",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f0fdf4",
+  "theme_color": "#16a34a",
+  "lang": "es-AR",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
