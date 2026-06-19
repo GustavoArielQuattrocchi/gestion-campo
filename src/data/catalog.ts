@@ -51,10 +51,8 @@ export const tareasMecanicas: CatalogItem[] = [
 ]
 
 export const cuadrillas: Cuadrilla[] = [
-  { id: 'c1', nombre: 'Cuadrilla A' },
-  { id: 'c2', nombre: 'Cuadrilla B' },
-  { id: 'c3', nombre: 'Cuadrilla C' },
-  { id: 'c4', nombre: 'Cuadrilla D' },
+  { id: 'c1', nombre: 'Cuadrilla Propia' },
+  { id: 'c2', nombre: 'Cuadrilla Externa' },
 ]
 
 export const maquinarias: Maquinaria[] = [
