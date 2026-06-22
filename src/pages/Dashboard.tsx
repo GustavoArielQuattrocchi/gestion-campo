@@ -34,7 +34,9 @@ export default function Dashboard() {
     metricsNote,
     actionError,
     finalizarCuadro,
+    deshacerFinalizacionCuadro,
     finalizarTarea,
+    reabrirTarea,
   } = useDashboardTareas()
 
   return (
@@ -60,12 +62,15 @@ export default function Dashboard() {
         onFincaChange={setFiltroFinca}
         onTipoChange={setFiltroTipo}
         onEstadoChange={setFiltroEstado}
-        tareasFiltradas={tareasEnTabla}
+        tareasTabla={tareasEnTabla}
+        tareasGestion={tareasFiltradas}
         hasMore={hasMore}
         loadingMore={loadingMore}
         onLoadMore={loadMore}
         finalizarCuadro={finalizarCuadro}
+        deshacerFinalizacionCuadro={deshacerFinalizacionCuadro}
         finalizarTarea={finalizarTarea}
+        reabrirTarea={reabrirTarea}
       />
 
       <DashboardSidebarToggle

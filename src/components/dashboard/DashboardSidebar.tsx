@@ -28,12 +28,15 @@ interface Props {
   onFincaChange: (value: string) => void
   onTipoChange: (value: string) => void
   onEstadoChange: (value: string) => void
-  tareasFiltradas: Tarea[]
+  tareasTabla: Tarea[]
+  tareasGestion: Tarea[]
   hasMore: boolean
   loadingMore: boolean
   onLoadMore: () => void
   finalizarCuadro: (tareaId: string, cuadroId: string) => Promise<void>
+  deshacerFinalizacionCuadro: (tareaId: string, cuadroId: string) => Promise<void>
   finalizarTarea: (tareaId: string) => Promise<void>
+  reabrirTarea: (tareaId: string) => Promise<void>
 }
 
 export default function DashboardSidebar({
@@ -55,12 +58,15 @@ export default function DashboardSidebar({
   onFincaChange,
   onTipoChange,
   onEstadoChange,
-  tareasFiltradas,
+  tareasTabla,
+  tareasGestion,
   hasMore,
   loadingMore,
   onLoadMore,
   finalizarCuadro,
+  deshacerFinalizacionCuadro,
   finalizarTarea,
+  reabrirTarea,
 }: Props) {
   return (
     <aside className={`dashboard-sidebar ${open ? '' : 'is-collapsed'}`} aria-hidden={!open}>
@@ -118,9 +124,11 @@ export default function DashboardSidebar({
         <DashboardEnProgresoPanel
           open={panelsOpen.en_progreso}
           onToggle={() => onTogglePanel('en_progreso')}
-          tareas={tareasFiltradas}
+          tareas={tareasGestion}
           onFinalizarCuadro={finalizarCuadro}
+          onDeshacerFinalizacionCuadro={deshacerFinalizacionCuadro}
           onFinalizarTarea={finalizarTarea}
+          onReabrirTarea={reabrirTarea}
         />
 
         <DashboardFiltersPanel
@@ -138,7 +146,7 @@ export default function DashboardSidebar({
         <DashboardTasksPanel
           open={panelsOpen.tareas}
           onToggle={() => onTogglePanel('tareas')}
-          tareas={tareasFiltradas}
+          tareas={tareasTabla}
           hasMore={hasMore}
           loadingMore={loadingMore}
           onLoadMore={onLoadMore}

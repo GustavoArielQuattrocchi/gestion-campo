@@ -118,24 +118,24 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
       if (!feature) return {}
       const props = feature.properties as CuadroFeatureProps
       const estado = estadoPorCuadro.get(props.name)
-      const enProgreso = (estado?.enProgreso.length ?? 0) > 0
-      const finalizada = (estado?.finalizadas.length ?? 0) > 0
+      const tieneEnProgreso = (estado?.enProgreso.length ?? 0) > 0
+      const tieneCerrada = (estado?.finalizadas.length ?? 0) > 0
 
       let base: PathOptions
-      if (enProgreso) {
+      if (tieneCerrada && !tieneEnProgreso) {
         base = {
           fill: true,
-          fillColor: CUADRO_FILL,
-          fillOpacity: 0.7,
-          color: '#ea580c',
-          weight: 3,
+          fillColor: '#d1d5db',
+          fillOpacity: 0.55,
+          color: '#4b5563',
+          weight: 2.5,
           opacity: 1,
         }
-      } else if (finalizada) {
+      } else if (tieneEnProgreso) {
         base = {
           fill: true,
           fillColor: CUADRO_FILL,
-          fillOpacity: 0.6,
+          fillOpacity: 0.5,
           color: '#16a34a',
           weight: 2.5,
           opacity: 1,
@@ -201,12 +201,11 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
 
   // Forzamos re-render del GeoJSON cuando cambia el set de features o el estado.
   const geoKey = useMemo(() => {
-    const enProg = Array.from(estadoPorCuadro.entries())
-      .filter(([, v]) => v.enProgreso.length > 0)
-      .map(([k]) => k)
+    const marcados = Array.from(estadoPorCuadro.entries())
+      .map(([k, v]) => `${k}:${v.enProgreso.length > 0 ? 'p' : ''}${v.finalizadas.length > 0 ? 'c' : ''}`)
       .sort()
       .join(',')
-    return `${filtroFinca}|${features.length}|${enProg}`
+    return `${filtroFinca}|${features.length}|${marcados}`
   }, [filtroFinca, features, estadoPorCuadro])
 
   const detallesSeleccion = useMemo(() => {
@@ -259,12 +258,12 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
         <div className="map-legend">
           <div className="map-legend-title">Estado de cuadros</div>
           <div className="map-legend-item">
-            <span className="legend-swatch" style={{ borderColor: '#ea580c', borderWidth: 3 }} />
-            <span>Tarea en progreso</span>
+            <span className="legend-swatch" style={{ borderColor: '#16a34a' }} />
+            <span>Tarea en progreso (sin cerrar)</span>
           </div>
           <div className="map-legend-item">
-            <span className="legend-swatch" style={{ borderColor: '#16a34a' }} />
-            <span>Tarea finalizada</span>
+            <span className="legend-swatch" style={{ borderColor: '#4b5563' }} />
+            <span>Tarea cerrada en dashboard</span>
           </div>
           <div className="map-legend-item">
             <span className="legend-swatch" style={{ borderColor: '#9ca3af' }} />

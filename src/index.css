@@ -1226,13 +1226,21 @@ select, input {
 }
 
 .en-progreso-cuadros--done li {
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 6px;
   color: #166534;
 }
 
+.en-progreso-cuadro-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .btn-finalizar-cuadro,
-.btn-cerrar-tarea {
+.btn-deshacer-cuadro,
+.btn-cerrar-tarea,
+.btn-reabrir-tarea {
   border: none;
   border-radius: 6px;
   padding: 6px 10px;
@@ -1250,9 +1258,18 @@ select, input {
 }
 
 .btn-finalizar-cuadro:disabled,
-.btn-cerrar-tarea:disabled {
+.btn-deshacer-cuadro:disabled,
+.btn-cerrar-tarea:disabled,
+.btn-reabrir-tarea:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.btn-deshacer-cuadro {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  flex-shrink: 0;
 }
 
 .btn-cerrar-tarea {
@@ -1260,6 +1277,37 @@ select, input {
   background: #16a34a;
   color: white;
   margin-top: 4px;
+}
+
+.en-progreso-cerradas {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.en-progreso-cerradas h5 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--gray-600);
+}
+
+.en-progreso-item--cerrada {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-reabrir-tarea {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
 }
 
 .rendimiento-history {

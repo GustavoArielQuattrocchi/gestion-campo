@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { arrayUnion, collection, doc, onSnapshot, Timestamp, updateDoc } from 'firebase/firestore'
+import { arrayUnion, arrayRemove, collection, deleteField, doc, onSnapshot, Timestamp, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Tarea } from '../types'
 import { getFincaNombres } from '../data/catalog'
@@ -135,6 +135,19 @@ export function useDashboardTareas() {
     }
   }, [])
 
+  const deshacerFinalizacionCuadro = useCallback(async (tareaId: string, cuadroId: string) => {
+    setActionError(null)
+    try {
+      await updateDoc(doc(db, 'tareas', tareaId), {
+        cuadroIdsFinalizados: arrayRemove(cuadroId),
+      })
+    } catch (err) {
+      console.error('[Dashboard] Error al desmarcar cuadro:', err)
+      setActionError('No se pudo desmarcar el cuadro. Revisá la conexión y las reglas de Firestore.')
+      throw err
+    }
+  }, [])
+
   const finalizarTarea = useCallback(async (tareaId: string) => {
     const tarea = allTareas.find(t => t.id === tareaId)
     if (!tarea || !allCuadrosTareaFinalizados(tarea)) return
@@ -148,6 +161,23 @@ export function useDashboardTareas() {
     } catch (err) {
       console.error('[Dashboard] Error al cerrar tarea:', err)
       setActionError('No se pudo cerrar la tarea. Revisá la conexión y las reglas de Firestore.')
+      throw err
+    }
+  }, [allTareas])
+
+  const reabrirTarea = useCallback(async (tareaId: string) => {
+    const tarea = allTareas.find(t => t.id === tareaId)
+    if (!tarea || tarea.estado !== 'finalizada') return
+
+    setActionError(null)
+    try {
+      await updateDoc(doc(db, 'tareas', tareaId), {
+        estado: 'en_progreso',
+        fechaFin: deleteField(),
+      })
+    } catch (err) {
+      console.error('[Dashboard] Error al reabrir tarea:', err)
+      setActionError('No se pudo reabrir la tarea. Revisá la conexión y las reglas de Firestore.')
       throw err
     }
   }, [allTareas])
@@ -180,6 +210,8 @@ export function useDashboardTareas() {
     metricsNote,
     actionError,
     finalizarCuadro,
+    deshacerFinalizacionCuadro,
     finalizarTarea,
+    reabrirTarea,
   }
 }

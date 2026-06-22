@@ -100,7 +100,10 @@ service cloud.firestore {
         || (keys.hasOnly(['estado', 'fechaFin'])
           && resource.data.estado == 'en_progreso'
           && request.resource.data.estado == 'finalizada'
-          && request.resource.data.fechaFin is timestamp);
+          && request.resource.data.fechaFin is timestamp)
+        || (keys.hasOnly(['estado', 'fechaFin'])
+          && resource.data.estado == 'finalizada'
+          && request.resource.data.estado == 'en_progreso');
     }
 
     match /operadores/{uid} {

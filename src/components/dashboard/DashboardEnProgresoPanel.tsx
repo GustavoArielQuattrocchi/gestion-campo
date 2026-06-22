@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Clock, CheckCircle2 } from 'lucide-react'
+import { Clock, CheckCircle2, RotateCcw } from 'lucide-react'
 import type { Tarea } from '../../types'
 import { getNombreCuadro } from '../../data/fincaData'
 import {
@@ -16,7 +16,9 @@ interface Props {
   onToggle: () => void
   tareas: Tarea[]
   onFinalizarCuadro: (tareaId: string, cuadroId: string) => Promise<void>
+  onDeshacerFinalizacionCuadro: (tareaId: string, cuadroId: string) => Promise<void>
   onFinalizarTarea: (tareaId: string) => Promise<void>
+  onReabrirTarea: (tareaId: string) => Promise<void>
 }
 
 export default function DashboardEnProgresoPanel({
@@ -24,9 +26,12 @@ export default function DashboardEnProgresoPanel({
   onToggle,
   tareas,
   onFinalizarCuadro,
+  onDeshacerFinalizacionCuadro,
   onFinalizarTarea,
+  onReabrirTarea,
 }: Props) {
   const enProgreso = tareas.filter(t => t.estado === 'en_progreso')
+  const cerradas = tareas.filter(t => t.estado === 'finalizada')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [busyKey, setBusyKey] = useState<string | null>(null)
 
@@ -83,7 +88,7 @@ export default function DashboardEnProgresoPanel({
                         <h5>Cuadros pendientes</h5>
                         <ul>
                           {progress.cuadrosPendientes.map(cuadroId => {
-                            const key = `${tarea.id}:${cuadroId}`
+                            const key = `${tarea.id}:fin:${cuadroId}`
                             return (
                               <li key={cuadroId}>
                                 <span>{getNombreCuadro(tarea.fincaId, cuadroId)}</span>
@@ -108,12 +113,29 @@ export default function DashboardEnProgresoPanel({
                       <div className="en-progreso-cuadros en-progreso-cuadros--done">
                         <h5>Cuadros finalizados</h5>
                         <ul>
-                          {progress.cuadrosFinalizados.map(cuadroId => (
-                            <li key={cuadroId}>
-                              <CheckCircle2 size={14} />
-                              {getNombreCuadro(tarea.fincaId, cuadroId)}
-                            </li>
-                          ))}
+                          {progress.cuadrosFinalizados.map(cuadroId => {
+                            const key = `${tarea.id}:undo:${cuadroId}`
+                            return (
+                              <li key={cuadroId}>
+                                <span className="en-progreso-cuadro-label">
+                                  <CheckCircle2 size={14} />
+                                  {getNombreCuadro(tarea.fincaId, cuadroId)}
+                                </span>
+                                <button
+                                  type="button"
+                                  className="btn-deshacer-cuadro"
+                                  disabled={busyKey !== null}
+                                  onClick={() =>
+                                    runAction(key, () =>
+                                      onDeshacerFinalizacionCuadro(tarea.id, cuadroId),
+                                    )
+                                  }
+                                >
+                                  {busyKey === key ? 'Guardando…' : 'Deshacer'}
+                                </button>
+                              </li>
+                            )
+                          })}
                         </ul>
                       </div>
                     )}
@@ -140,7 +162,7 @@ export default function DashboardEnProgresoPanel({
                       disabled={!puedeCerrar || busyKey !== null}
                       title={
                         puedeCerrar
-                          ? 'Marcar la tarea como finalizada'
+                          ? 'Marcar la tarea como finalizada en el dashboard'
                           : 'Finalizá todos los cuadros antes de cerrar la tarea'
                       }
                       onClick={() =>
@@ -155,6 +177,36 @@ export default function DashboardEnProgresoPanel({
             )
           })}
         </ul>
+      )}
+
+      {cerradas.length > 0 && (
+        <div className="en-progreso-cerradas">
+          <h5>Tareas cerradas</h5>
+          <ul className="en-progreso-list">
+            {cerradas.map(tarea => {
+              const key = `reopen:${tarea.id}`
+              return (
+                <li key={tarea.id} className="en-progreso-item en-progreso-item--cerrada">
+                  <div>
+                    <strong>{tarea.tarea}</strong>
+                    <span className="en-progreso-meta">
+                      {tarea.fincaNombre} · {formatTareaMapLabel(tarea)}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-reabrir-tarea"
+                    disabled={busyKey !== null}
+                    onClick={() => runAction(key, () => onReabrirTarea(tarea.id))}
+                  >
+                    <RotateCcw size={14} />
+                    {busyKey === key ? 'Reabriendo…' : 'Reabrir tarea'}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
       )}
     </DashboardPanel>
   )
