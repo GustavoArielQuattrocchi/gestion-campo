@@ -19,6 +19,7 @@ import {
   onSnapshot,
   onSnapshotsInSync,
   Timestamp,
+  arrayUnion,
 } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import type { Tarea } from '../types'
@@ -91,7 +92,7 @@ interface MobileAppContextValue {
     cuadros: string[]
     cuadroIds: string[]
   }) => Promise<boolean>
-  handleEndTask: (tareaId: string, rendimiento: string) => Promise<void>
+  handleRegisterRendimiento: (tareaId: string, rendimiento: string) => Promise<void>
   handleAccidentSuccess: (detail?: string) => void
   getTareaActiva: (tareaId: string) => Tarea | undefined
 }
@@ -309,15 +310,23 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     }
   }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync])
 
-  const handleEndTask = useCallback(async (tareaId: string, rendimiento: string) => {
+  const handleRegisterRendimiento = useCallback(async (tareaId: string, rendimiento: string) => {
     const tarea = tareasActivas.find(t => t.id === tareaId)
     if (!tarea) return
 
+    const texto = rendimiento.trim()
+    if (!texto) return
+
+    const entry = {
+      fecha: Timestamp.now(),
+      texto,
+      operador: operadorNombre,
+    }
+
     try {
       await updateDoc(doc(db, 'tareas', tareaId), {
-        estado: 'finalizada',
-        rendimiento,
-        fechaFin: Timestamp.now(),
+        rendimientosDiarios: arrayUnion(entry),
+        rendimiento: texto,
       })
       setFirestoreError(null)
       if (!navigator.onLine) {
@@ -325,15 +334,15 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         showToast(OFFLINE_WRITE_TOAST, 'info')
       }
       setSuccessMsg({
-        message: 'Tarea finalizada',
-        detail: `${tarea.tarea} — Rendimiento: ${rendimiento}`,
+        message: 'Rendimiento registrado',
+        detail: `${tarea.tarea} — ${texto}`,
       })
-      navigate(`${MOBILE_ROUTES.exito}?motivo=fin`)
+      navigate(`${MOBILE_ROUTES.exito}?motivo=rendimiento`)
     } catch (err) {
-      console.error('Error al finalizar tarea:', err)
-      setFirestoreError('Error al finalizar la tarea. Revisá la conexión y las reglas de Firestore.')
+      console.error('Error al registrar rendimiento:', err)
+      setFirestoreError('Error al guardar el rendimiento. Revisá la conexión y las reglas de Firestore.')
     }
-  }, [navigate, tareasActivas, showToast, markPendingSync])
+  }, [navigate, tareasActivas, operadorNombre, showToast, markPendingSync])
 
   const handleAccidentSuccess = useCallback((detail?: string) => {
     setSuccessMsg({
@@ -369,7 +378,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       handleSelectFinca,
       handleStartManualTask,
       handleStartMechanicalTask,
-      handleEndTask,
+      handleRegisterRendimiento,
       handleAccidentSuccess,
       getTareaActiva,
     }),
@@ -393,7 +402,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       handleSelectFinca,
       handleStartManualTask,
       handleStartMechanicalTask,
-      handleEndTask,
+      handleRegisterRendimiento,
       handleAccidentSuccess,
       getTareaActiva,
     ],

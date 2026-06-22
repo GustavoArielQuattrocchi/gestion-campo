@@ -38,6 +38,8 @@ service cloud.firestore {
         && d.fechaInicio is timestamp
         && d.cuadros is list
         && (d.cuadroIds == null || d.cuadroIds is list)
+        && (d.cuadroIdsFinalizados == null || d.cuadroIdsFinalizados is list)
+        && (d.rendimientosDiarios == null || d.rendimientosDiarios is list)
         && validEstado()
         && validTipo();
     }
@@ -69,15 +71,36 @@ service cloud.firestore {
         && resource.data.operador == nombreOperadorAutenticado();
     }
 
-    function esSoloFinalizacion() {
+    function esSoloRegistroRendimiento() {
       return request.resource.data.diff(resource.data).affectedKeys()
-        .hasOnly(['estado', 'rendimiento', 'fechaFin']);
+        .hasOnly(['rendimientosDiarios', 'rendimiento'])
+        && resource.data.estado == 'en_progreso'
+        && request.resource.data.estado == 'en_progreso';
     }
 
-    function validFinalizacion() {
-      return request.resource.data.estado == 'finalizada'
+    function validRegistroRendimiento() {
+      return request.resource.data.rendimientosDiarios is list
+        && request.resource.data.rendimientosDiarios.size() > 0
         && request.resource.data.rendimiento is string
-        && request.resource.data.fechaFin is timestamp;
+        && request.resource.data.rendimiento.size() > 0;
+    }
+
+    function esActualizacionDashboard() {
+      let keys = request.resource.data.diff(resource.data).affectedKeys();
+      return keys.hasOnly(['cuadroIdsFinalizados'])
+        || keys.hasOnly(['estado', 'fechaFin']);
+    }
+
+    function validActualizacionDashboard() {
+      let keys = request.resource.data.diff(resource.data).affectedKeys();
+      return (keys.hasOnly(['cuadroIdsFinalizados'])
+          && resource.data.estado == 'en_progreso'
+          && request.resource.data.estado == 'en_progreso'
+          && request.resource.data.cuadroIdsFinalizados is list)
+        || (keys.hasOnly(['estado', 'fechaFin'])
+          && resource.data.estado == 'en_progreso'
+          && request.resource.data.estado == 'finalizada'
+          && request.resource.data.fechaFin is timestamp);
     }
 
     match /operadores/{uid} {
@@ -96,9 +119,12 @@ service cloud.firestore {
         && validTareaBase()
         && validManual()
         && validMecanica();
-      allow update: if esOperadorDeLaTarea()
-        && esSoloFinalizacion()
-        && validFinalizacion();
+      allow update: if isSignedIn() && (
+        (esOperadorDeLaTarea()
+          && esSoloRegistroRendimiento()
+          && validRegistroRendimiento())
+        || (esActualizacionDashboard() && validActualizacionDashboard())
+      );
       allow delete: if false;
     }
 

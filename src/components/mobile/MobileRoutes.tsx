@@ -46,7 +46,7 @@ function FincaRoute() {
 function FinalizarDetalleRoute() {
   const { tareaId } = useParams<{ tareaId: string }>()
   const navigate = useNavigate()
-  const { getTareaActiva, handleEndTask } = useMobileAppContext()
+  const { getTareaActiva, handleRegisterRendimiento } = useMobileAppContext()
 
   if (!tareaId) {
     return <Navigate to={MOBILE_ROUTES.finalizar} replace />
@@ -60,7 +60,7 @@ function FinalizarDetalleRoute() {
   return (
     <EndTaskForm
       tarea={tarea}
-      onSubmit={rendimiento => handleEndTask(tareaId, rendimiento)}
+      onSubmit={rendimiento => handleRegisterRendimiento(tareaId, rendimiento)}
       onBack={() => navigate(MOBILE_ROUTES.finalizar)}
     />
   )

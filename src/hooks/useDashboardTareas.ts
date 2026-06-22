@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { collection, onSnapshot } from 'firebase/firestore'
+import { arrayUnion, collection, doc, onSnapshot, Timestamp, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Tarea } from '../types'
 import { getFincaNombres } from '../data/catalog'
@@ -10,6 +10,7 @@ import { parseTareasFromSnapshot } from '../utils/parseTarea'
 import { TAREAS_PAGE_SIZE } from '../utils/dashboardState'
 import { parseFirestoreError } from '../utils/firestoreError'
 import { applyDashboardFilters, sortByFechaInicio } from '../utils/dashboardFilters'
+import { allCuadrosTareaFinalizados } from '../utils/tareaProgress'
 import {
   buildFilterSearchParams,
   buildInvalidDocsWarning,
@@ -20,7 +21,7 @@ import {
   readFilterParam,
 } from '../utils/dashboardState'
 
-export type DashboardPanelKey = 'resumen' | 'filtros' | 'tareas'
+export type DashboardPanelKey = 'resumen' | 'en_progreso' | 'filtros' | 'tareas'
 
 export function useDashboardTareas() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -45,11 +46,13 @@ export function useDashboardTareas() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [panelsOpen, setPanelsOpen] = useState<Record<DashboardPanelKey, boolean>>({
     resumen: true,
+    en_progreso: true,
     filtros: true,
     tareas: false,
   })
   const [selectedMetric, setSelectedMetric] = useState<MetricKey | null>(null)
   const [parseWarning, setParseWarning] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   useEffect(() => {
     const params = buildFilterSearchParams(filtroFinca, filtroTipo, filtroEstado)
@@ -119,6 +122,36 @@ export function useDashboardTareas() {
     setPanelsOpen(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
+  const finalizarCuadro = useCallback(async (tareaId: string, cuadroId: string) => {
+    setActionError(null)
+    try {
+      await updateDoc(doc(db, 'tareas', tareaId), {
+        cuadroIdsFinalizados: arrayUnion(cuadroId),
+      })
+    } catch (err) {
+      console.error('[Dashboard] Error al finalizar cuadro:', err)
+      setActionError('No se pudo finalizar el cuadro. Revisá la conexión y las reglas de Firestore.')
+      throw err
+    }
+  }, [])
+
+  const finalizarTarea = useCallback(async (tareaId: string) => {
+    const tarea = allTareas.find(t => t.id === tareaId)
+    if (!tarea || !allCuadrosTareaFinalizados(tarea)) return
+
+    setActionError(null)
+    try {
+      await updateDoc(doc(db, 'tareas', tareaId), {
+        estado: 'finalizada',
+        fechaFin: Timestamp.now(),
+      })
+    } catch (err) {
+      console.error('[Dashboard] Error al cerrar tarea:', err)
+      setActionError('No se pudo cerrar la tarea. Revisá la conexión y las reglas de Firestore.')
+      throw err
+    }
+  }, [allTareas])
+
   return {
     loading,
     loadingMore,
@@ -145,5 +178,8 @@ export function useDashboardTareas() {
     setSelectedMetric,
     metricDetail,
     metricsNote,
+    actionError,
+    finalizarCuadro,
+    finalizarTarea,
   }
 }

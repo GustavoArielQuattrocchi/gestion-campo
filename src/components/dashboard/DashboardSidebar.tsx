@@ -7,6 +7,7 @@ import DashboardSidebarHeader from './DashboardSidebarHeader'
 import DashboardStatsPanel from './DashboardStatsPanel'
 import DashboardFiltersPanel from './DashboardFiltersPanel'
 import DashboardTasksPanel from './DashboardTasksPanel'
+import DashboardEnProgresoPanel from './DashboardEnProgresoPanel'
 
 interface Props {
   open: boolean
@@ -14,6 +15,7 @@ interface Props {
   error: string | null
   indexCreateUrl: string | null
   parseWarning: string | null
+  actionError: string | null
   panelsOpen: Record<DashboardPanelKey, boolean>
   onTogglePanel: (key: DashboardPanelKey) => void
   stats: DashboardStats
@@ -30,6 +32,8 @@ interface Props {
   hasMore: boolean
   loadingMore: boolean
   onLoadMore: () => void
+  finalizarCuadro: (tareaId: string, cuadroId: string) => Promise<void>
+  finalizarTarea: (tareaId: string) => Promise<void>
 }
 
 export default function DashboardSidebar({
@@ -38,6 +42,7 @@ export default function DashboardSidebar({
   error,
   indexCreateUrl,
   parseWarning,
+  actionError,
   panelsOpen,
   onTogglePanel,
   stats,
@@ -54,6 +59,8 @@ export default function DashboardSidebar({
   hasMore,
   loadingMore,
   onLoadMore,
+  finalizarCuadro,
+  finalizarTarea,
 }: Props) {
   return (
     <aside className={`dashboard-sidebar ${open ? '' : 'is-collapsed'}`} aria-hidden={!open}>
@@ -86,6 +93,13 @@ export default function DashboardSidebar({
           </div>
         )}
 
+        {!error && actionError && (
+          <div className="dashboard-sidebar-error" role="alert">
+            <strong>Error al actualizar tarea</strong>
+            <p style={{ margin: '6px 0 0' }}>{actionError}</p>
+          </div>
+        )}
+
         {loading && !error && (
           <div className="dashboard-sidebar-loading">
             <Clock size={32} style={{ marginBottom: 8, opacity: 0.5 }} />
@@ -99,6 +113,14 @@ export default function DashboardSidebar({
           stats={stats}
           metricsNote={metricsNote}
           onSelectMetric={onSelectMetric}
+        />
+
+        <DashboardEnProgresoPanel
+          open={panelsOpen.en_progreso}
+          onToggle={() => onTogglePanel('en_progreso')}
+          tareas={tareasFiltradas}
+          onFinalizarCuadro={finalizarCuadro}
+          onFinalizarTarea={finalizarTarea}
         />
 
         <DashboardFiltersPanel

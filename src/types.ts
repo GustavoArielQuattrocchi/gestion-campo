@@ -40,6 +40,13 @@ export interface CuadroSelection {
 
 export const emptyCuadroSelection = (): CuadroSelection => ({ cuadros: [], cuadroIds: [] })
 
+/** Registro diario de rendimiento desde la app campo (la tarea sigue en progreso). */
+export interface RendimientoDiario {
+  fecha: Timestamp
+  texto: string
+  operador: string
+}
+
 interface TareaBase {
   id: string
   fincaId: string
@@ -48,11 +55,16 @@ interface TareaBase {
   cuadros: string[]
   /** IDs de cuadro del catálogo (ej. FOA-5). Opcional en documentos legacy. */
   cuadroIds?: string[]
+  /** Cuadros marcados como finalizados desde el dashboard. */
+  cuadroIdsFinalizados?: string[]
   estado: TareaEstado
   operador: string
   fechaInicio: Timestamp
   fechaFin?: Timestamp
+  /** Último rendimiento registrado (texto libre). */
   rendimiento?: string
+  /** Historial de cierres diarios desde campo. */
+  rendimientosDiarios?: RendimientoDiario[]
 }
 
 export interface TareaManual extends TareaBase {

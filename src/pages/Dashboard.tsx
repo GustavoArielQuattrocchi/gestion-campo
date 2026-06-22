@@ -32,6 +32,9 @@ export default function Dashboard() {
     loadingMore,
     loadMore,
     metricsNote,
+    actionError,
+    finalizarCuadro,
+    finalizarTarea,
   } = useDashboardTareas()
 
   return (
@@ -44,6 +47,7 @@ export default function Dashboard() {
         error={error}
         indexCreateUrl={indexCreateUrl}
         parseWarning={parseWarning}
+        actionError={actionError}
         panelsOpen={panelsOpen}
         onTogglePanel={togglePanel}
         stats={stats}
@@ -60,6 +64,8 @@ export default function Dashboard() {
         hasMore={hasMore}
         loadingMore={loadingMore}
         onLoadMore={loadMore}
+        finalizarCuadro={finalizarCuadro}
+        finalizarTarea={finalizarTarea}
       />
 
       <DashboardSidebarToggle

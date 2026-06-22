@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, CheckCircle } from 'lucide-react'
+import { ChevronLeft, Save } from 'lucide-react'
 import type { Tarea } from '../../types'
 
 interface Props {
@@ -28,8 +28,8 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
         <button className="nav-back" onClick={onBack} disabled={saving}>
           <ChevronLeft size={18} /> Volver
         </button>
-        <h1>Finalizar Tarea</h1>
-        <p>Registrar rendimiento</p>
+        <h1>Cierre del día</h1>
+        <p>Registrar rendimiento diario</p>
       </div>
 
       <div className="card">
@@ -84,8 +84,19 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
         </div>
       </div>
 
+      {tarea.rendimientosDiarios && tarea.rendimientosDiarios.length > 0 && (
+        <div className="card">
+          <div className="card-title">Registros anteriores</div>
+          <ul className="rendimiento-history">
+            {[...tarea.rendimientosDiarios].reverse().slice(0, 3).map((r, i) => (
+              <li key={i}>{r.texto}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="card">
-        <div className="card-title">Rendimiento realizado</div>
+        <div className="card-title">Rendimiento del día</div>
         <div className="form-group" style={{ marginBottom: 0 }}>
           <input
             type="text"
@@ -99,13 +110,13 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
       </div>
 
       <button
-        className="btn btn-danger"
+        className="btn btn-primary"
         onClick={handleSubmit}
         disabled={!rendimiento.trim() || saving}
         style={{ opacity: rendimiento.trim() && !saving ? 1 : 0.5, marginBottom: 24 }}
       >
-        <CheckCircle size={18} />
-        {saving ? 'Guardando...' : 'Finalizar Tarea'}
+        <Save size={18} />
+        {saving ? 'Guardando...' : 'Registrar rendimiento'}
       </button>
     </div>
   )

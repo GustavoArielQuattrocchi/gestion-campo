@@ -23,7 +23,9 @@ export function getManuales(tareas: Tarea[]): Extract<Tarea, { tipo: 'manual' }>
 }
 
 export function getConRendimiento(tareas: Tarea[]): Tarea[] {
-  return getFinalizadas(tareas).filter(t => Boolean(t.rendimiento?.trim()))
+  return tareas.filter(
+    t => Boolean(t.rendimiento?.trim()) || (t.rendimientosDiarios?.length ?? 0) > 0,
+  )
 }
 
 export function countDiasConActividad(tareas: Tarea[]): number {

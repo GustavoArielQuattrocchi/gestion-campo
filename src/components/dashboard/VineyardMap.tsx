@@ -17,6 +17,8 @@ import {
   type CuadroFeatureProps,
 } from '../../data/mapaData'
 import { formatTareaMapLabel } from '../../utils/vineyardMapLabels'
+import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
+import TaskProgressBar from './TaskProgressBar'
 
 interface Props {
   tareas: Tarea[]
@@ -297,10 +299,20 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
               {detallesSeleccion.estado.enProgreso.length > 0 && (
                 <div className="map-detail-section">
                   <h4>En progreso ({detallesSeleccion.estado.enProgreso.length})</h4>
-                  <ul>
-                    {detallesSeleccion.estado.enProgreso.map((t) => (
-                      <li key={t.id}>{formatTareaMapLabel(t)}</li>
-                    ))}
+                  <ul className="map-detail-task-list">
+                    {detallesSeleccion.estado.enProgreso.map((t) => {
+                      const progress = computeTareaProgress(t)
+                      return (
+                        <li key={t.id} className="map-detail-task-item">
+                          <span>{formatTareaMapLabel(t)}</span>
+                          <TaskProgressBar
+                            compact
+                            value={progress.porcentaje}
+                            label={formatProgressLabel(progress)}
+                          />
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               )}

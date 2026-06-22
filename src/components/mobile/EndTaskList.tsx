@@ -15,7 +15,7 @@ export default function EndTaskList({ tareas, onSelectTarea, onBack, fincaNombre
         <button className="nav-back" onClick={onBack}>
           <ChevronLeft size={18} /> Volver
         </button>
-        <h1>Fin de Tarea</h1>
+        <h1>Cierre del día</h1>
         <p>{fincaNombre} — Tareas en progreso</p>
       </div>
 

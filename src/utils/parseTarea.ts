@@ -68,6 +68,24 @@ export function parseTarea(id: string, raw: Record<string, unknown>): ParseTarea
     ? raw.cuadroIds.filter((c): c is string => typeof c === 'string' && c.trim().length > 0)
     : []
 
+  const cuadroIdsFinalizados = Array.isArray(raw.cuadroIdsFinalizados)
+    ? raw.cuadroIdsFinalizados.filter((c): c is string => typeof c === 'string' && c.trim().length > 0)
+    : []
+
+  const rendimientosDiarios = Array.isArray(raw.rendimientosDiarios)
+    ? raw.rendimientosDiarios
+        .map(entry => {
+          if (!entry || typeof entry !== 'object') return null
+          const e = entry as Record<string, unknown>
+          const fecha = parseTimestamp(e.fecha)
+          const texto = typeof e.texto === 'string' ? e.texto.trim() : ''
+          const op = typeof e.operador === 'string' ? e.operador.trim() : ''
+          if (!fecha || !texto) return null
+          return { fecha, texto, operador: op || operador }
+        })
+        .filter((r): r is NonNullable<typeof r> => r !== null)
+    : []
+
   const base = {
     id,
     fincaId,
@@ -75,11 +93,13 @@ export function parseTarea(id: string, raw: Record<string, unknown>): ParseTarea
     tarea: tareaNombre,
     cuadros,
     ...(cuadroIds.length > 0 ? { cuadroIds } : {}),
+    ...(cuadroIdsFinalizados.length > 0 ? { cuadroIdsFinalizados } : {}),
     estado,
     operador,
     fechaInicio,
     ...(fechaFin ? { fechaFin } : {}),
     rendimiento: typeof raw.rendimiento === 'string' ? raw.rendimiento : undefined,
+    ...(rendimientosDiarios.length > 0 ? { rendimientosDiarios } : {}),
   }
 
   if (tipo === 'manual') {

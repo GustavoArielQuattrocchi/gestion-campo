@@ -9,6 +9,7 @@ import {
   getFinalizadas,
   getManuales,
 } from './dashboardMetrics'
+import { computeTareaProgress, formatProgressLabel } from './tareaProgress'
 
 export type MetricKey =
   | 'total'
@@ -98,6 +99,7 @@ export function getMetricDetail(metric: MetricKey, tareas: Tarea[]): MetricDetai
           { key: 'tarea', label: 'Tarea' },
           { key: 'responsable', label: 'Responsable' },
           { key: 'finca', label: 'Finca' },
+          { key: 'avance', label: 'Avance' },
           { key: 'fechaInicio', label: 'Inicio' },
           { key: 'tipo', label: 'Tipo' },
         ],
@@ -105,6 +107,7 @@ export function getMetricDetail(metric: MetricKey, tareas: Tarea[]): MetricDetai
           tarea: t.tarea,
           responsable: responsable(t),
           finca: t.fincaNombre,
+          avance: formatProgressLabel(computeTareaProgress(t)),
           fechaInicio: formatTimestamp(t.fechaInicio),
           tipo: tipoLabel(t),
         })),
@@ -160,8 +163,8 @@ export function getMetricDetail(metric: MetricKey, tareas: Tarea[]): MetricDetai
         rows: list.map(filaFinalizada),
         summary:
           list.length === 0
-            ? 'Ninguna tarea finalizada tiene rendimiento registrado.'
-            : `${list.length} tarea(s) finalizada(s) con rendimiento registrado`,
+            ? 'Ninguna tarea tiene rendimiento registrado.'
+            : `${list.length} tarea(s) con rendimiento registrado`,
       }
     }
 

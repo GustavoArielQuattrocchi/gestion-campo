@@ -35,8 +35,8 @@ export default function TaskMenu({ fincaNombre, onSelectInicio, onSelectFin, onS
             <Square size={24} />
           </div>
           <div className="option-card-content">
-            <h3>Fin de Tarea</h3>
-            <p>Finalizar tarea y registrar rendimiento</p>
+            <h3>Cierre del día</h3>
+            <p>Registrar rendimiento diario de la tarea</p>
           </div>
         </div>
 
