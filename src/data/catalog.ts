@@ -1,11 +1,13 @@
 /**
  * Punto único de importación para datos estáticos de la app (fincas, tareas, cuadrillas, maquinaria).
  */
-import type { CatalogItem, Cuadrilla, Maquinaria } from '../types'
+import type { CatalogItem, Cuadrilla } from '../types'
 import { fincas, getCuadrosPorFinca } from './fincaData'
+import { getMaquinariasPorFinca } from './maquinarias'
 
 export type { CuadroDetalle } from './fincaData'
-export { fincas, getCuadrosPorFinca }
+export type { MaquinariaCatalogo } from './maquinarias'
+export { fincas, getCuadrosPorFinca, getMaquinariasPorFinca }
 
 export const tareasManuales: CatalogItem[] = [
   { id: '1', nombre: 'Aplicar hormiguicida', descripcion: 'Aplicar hormiguicida a la parcela' },
@@ -53,14 +55,6 @@ export const tareasMecanicas: CatalogItem[] = [
 export const cuadrillas: Cuadrilla[] = [
   { id: 'c1', nombre: 'Cuadrilla Propia' },
   { id: 'c2', nombre: 'Cuadrilla Externa' },
-]
-
-export const maquinarias: Maquinaria[] = [
-  { id: 'm1', nombre: 'Tractor John Deere' },
-  { id: 'm2', nombre: 'Pulverizadora' },
-  { id: 'm3', nombre: 'Cosechadora' },
-  { id: 'm4', nombre: 'Rastra' },
-  { id: 'm5', nombre: 'Desmalezadora mecánica' },
 ]
 
 /** Nombres de fincas para selects y filtros. */

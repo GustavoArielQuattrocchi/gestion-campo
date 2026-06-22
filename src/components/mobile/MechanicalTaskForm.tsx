@@ -1,51 +1,61 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { ChevronLeft, Save, CheckCircle } from 'lucide-react'
-import { maquinarias, tareasMecanicas } from '../../data/catalog'
+import { getMaquinariasPorFinca, tareasMecanicas } from '../../data/catalog'
 import { emptyCuadroSelection, type CuadroSelection } from '../../types'
 import CuadroSelector from './CuadroSelector'
 
 interface Props {
+  fincaId: string
   fincaNombre: string
   onSubmit: (data: {
     tarea: string
     persona: string
     maquinaria: string
+    maquinariaModelo?: string
+    maquinariaId?: string
     cuadros: string[]
     cuadroIds: string[]
   }) => Promise<boolean>
   onBack: () => void
 }
 
-export default function MechanicalTaskForm({ fincaNombre, onSubmit, onBack }: Props) {
+export default function MechanicalTaskForm({ fincaId, fincaNombre, onSubmit, onBack }: Props) {
   const [tarea, setTarea] = useState('')
   const [persona, setPersona] = useState('')
-  const [maquinaria, setMaquinaria] = useState('')
+  const [maquinariaId, setMaquinariaId] = useState('')
   const [cuadroSelection, setCuadroSelection] = useState<CuadroSelection>(emptyCuadroSelection)
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<{ message: string; detail: string } | null>(null)
 
+  const maquinariasFinca = useMemo(() => getMaquinariasPorFinca(fincaId), [fincaId])
+
   const resetForm = useCallback(() => {
     setTarea('')
     setPersona('')
-    setMaquinaria('')
+    setMaquinariaId('')
     setCuadroSelection(emptyCuadroSelection())
   }, [])
 
-  const isValid = tarea && persona && maquinaria && cuadroSelection.cuadroIds.length > 0
+  const isValid = tarea && persona && maquinariaId && cuadroSelection.cuadroIds.length > 0
 
   const handleSubmit = async () => {
     if (!isValid || saving) return
+    const tractor = maquinariasFinca.find(m => m.id === maquinariaId)
+    if (!tractor) return
+
     setSaving(true)
     try {
       const ok = await onSubmit({
         tarea,
         persona,
-        maquinaria,
+        maquinaria: tractor.nombre,
+        maquinariaModelo: tractor.modelo,
+        maquinariaId: tractor.id,
         cuadros: cuadroSelection.cuadros,
         cuadroIds: cuadroSelection.cuadroIds,
       })
       if (ok) {
-        const detail = `${tarea} — ${persona} con ${maquinaria}`
+        const detail = `${tarea} — ${persona} con ${tractor.nombre} (${tractor.modelo})`
         setToast({ message: 'Tarea cargada correctamente', detail })
         resetForm()
         setTimeout(() => setToast(null), 3500)
@@ -111,12 +121,19 @@ export default function MechanicalTaskForm({ fincaNombre, onSubmit, onBack }: Pr
           <label className="form-label">Maquinaria utilizada</label>
           <select
             className="form-select"
-            value={maquinaria}
-            onChange={e => setMaquinaria(e.target.value)}
+            value={maquinariaId}
+            onChange={e => setMaquinariaId(e.target.value)}
+            disabled={maquinariasFinca.length === 0}
           >
-            <option value="">Seleccionar maquinaria...</option>
-            {maquinarias.map(m => (
-              <option key={m.id} value={m.nombre}>{m.nombre}</option>
+            <option value="">
+              {maquinariasFinca.length === 0
+                ? 'Sin tractores cargados para esta finca'
+                : 'Seleccionar maquinaria...'}
+            </option>
+            {maquinariasFinca.map(m => (
+              <option key={m.id} value={m.id}>
+                {m.nombre} — {m.modelo}
+              </option>
             ))}
           </select>
         </div>

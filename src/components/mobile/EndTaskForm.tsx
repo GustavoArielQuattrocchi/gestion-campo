@@ -65,7 +65,11 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
               </div>
               <div className="task-summary-row">
                 <span className="label">Maquinaria</span>
-                <span className="value">{tarea.maquinaria}</span>
+                <span className="value">
+                  {tarea.maquinariaModelo
+                    ? `${tarea.maquinaria} (${tarea.maquinariaModelo})`
+                    : tarea.maquinaria}
+                </span>
               </div>
             </>
           )}

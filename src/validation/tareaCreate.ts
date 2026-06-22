@@ -15,6 +15,8 @@ export interface MechanicalTaskCreateInput extends CuadroFields {
   tarea: string
   persona: string
   maquinaria: string
+  maquinariaModelo?: string
+  maquinariaId?: string
 }
 
 export type ValidationResult<T> =
@@ -71,6 +73,8 @@ export function validateMechanicalTaskCreate(
   const tarea = input.tarea?.trim() ?? ''
   const persona = input.persona?.trim() ?? ''
   const maquinaria = input.maquinaria?.trim() ?? ''
+  const maquinariaModelo = input.maquinariaModelo?.trim() ?? ''
+  const maquinariaId = input.maquinariaId?.trim() ?? ''
 
   if (!tarea) return { success: false, reason: 'Seleccioná una tarea' }
   if (!persona) return { success: false, reason: 'Ingresá la persona responsable' }
@@ -81,6 +85,14 @@ export function validateMechanicalTaskCreate(
 
   return {
     success: true,
-    data: { tarea, persona, maquinaria, cuadros: input.cuadros, cuadroIds: input.cuadroIds },
+    data: {
+      tarea,
+      persona,
+      maquinaria,
+      ...(maquinariaModelo ? { maquinariaModelo } : {}),
+      ...(maquinariaId ? { maquinariaId } : {}),
+      cuadros: input.cuadros,
+      cuadroIds: input.cuadroIds,
+    },
   }
 }

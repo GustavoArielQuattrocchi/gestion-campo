@@ -65,6 +65,9 @@ export interface TareaMecanica extends TareaBase {
   tipo: 'mecanica'
   persona: string
   maquinaria: string
+  /** Modelo del tractor (ej. NEW HOLLAND TT-65-D). Opcional en documentos legacy. */
+  maquinariaModelo?: string
+  maquinariaId?: string
 }
 
 export type Tarea = TareaManual | TareaMecanica

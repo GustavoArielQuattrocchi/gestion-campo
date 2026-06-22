@@ -99,7 +99,26 @@ export function parseTarea(id: string, raw: Record<string, unknown>): ParseTarea
   if (!persona) return { success: false, reason: 'falta persona (mecánica)' }
   if (!maquinaria) return { success: false, reason: 'falta maquinaria (mecánica)' }
 
-  return { success: true, tarea: { ...base, tipo: 'mecanica', persona, maquinaria } }
+  const maquinariaModelo =
+    typeof raw.maquinariaModelo === 'string' && raw.maquinariaModelo.trim()
+      ? raw.maquinariaModelo.trim()
+      : undefined
+  const maquinariaId =
+    typeof raw.maquinariaId === 'string' && raw.maquinariaId.trim()
+      ? raw.maquinariaId.trim()
+      : undefined
+
+  return {
+    success: true,
+    tarea: {
+      ...base,
+      tipo: 'mecanica',
+      persona,
+      maquinaria,
+      ...(maquinariaModelo ? { maquinariaModelo } : {}),
+      ...(maquinariaId ? { maquinariaId } : {}),
+    },
+  }
 }
 
 function logInvalidInDev(invalid: ParseInvalidEntry[]) {

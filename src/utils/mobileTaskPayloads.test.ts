@@ -41,14 +41,18 @@ describe('buildMechanicalTaskFirestorePayload', () => {
       {
         tarea: 'Desmalezado',
         persona: 'Pedro',
-        maquinaria: 'Tractor',
+        maquinaria: 'MT27',
+        maquinariaModelo: 'NEW HOLLAND TT-65-D',
+        maquinariaId: 'FOA-2',
         cuadros: ['Cuartel 5'],
         cuadroIds: ['FOA-5'],
       },
       { fincaId: 'FOA', fincaNombre: 'Finca Ocho A', operadorNombre: 'Juan', fechaInicio: mockTs },
     )
     assert.equal(payload.tipo, 'mecanica')
-    assert.equal(payload.maquinaria, 'Tractor')
+    assert.equal(payload.maquinaria, 'MT27')
+    assert.equal(payload.maquinariaModelo, 'NEW HOLLAND TT-65-D')
+    assert.equal(payload.maquinariaId, 'FOA-2')
     assert.equal(payload.persona, 'Pedro')
   })
 })

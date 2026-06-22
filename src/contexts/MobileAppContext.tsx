@@ -86,6 +86,8 @@ interface MobileAppContextValue {
     tarea: string
     persona: string
     maquinaria: string
+    maquinariaModelo?: string
+    maquinariaId?: string
     cuadros: string[]
     cuadroIds: string[]
   }) => Promise<boolean>
@@ -274,6 +276,8 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     tarea: string
     persona: string
     maquinaria: string
+    maquinariaModelo?: string
+    maquinariaId?: string
     cuadros: string[]
     cuadroIds: string[]
   }): Promise<boolean> => {

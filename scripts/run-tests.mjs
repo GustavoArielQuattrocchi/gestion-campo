@@ -12,6 +12,7 @@ const testFiles = [
   'src/utils/dashboardState.test.ts',
   'src/utils/firestoreError.test.ts',
   'src/utils/mobileTaskPayloads.test.ts',
+  'src/utils/vineyardMapLabels.test.ts',
   'src/validation/tareaCreate.test.ts',
   'src/validation/accidentReport.test.ts',
 ]

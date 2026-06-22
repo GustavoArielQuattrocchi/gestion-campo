@@ -39,7 +39,9 @@ export default function EndTaskList({ tareas, onSelectTarea, onBack, fincaNombre
               <p>
                 {tarea.tipo === 'manual'
                   ? `${tarea.cuadrilla} · ${tarea.cantidadPersonas} personas`
-                  : `${tarea.persona} · ${tarea.maquinaria}`
+                  : tarea.maquinariaModelo
+                    ? `${tarea.maquinaria} (${tarea.maquinariaModelo})`
+                    : `${tarea.persona} · ${tarea.maquinaria}`
                 }
                 {' · '}
                 {(tarea.cuadros ?? []).join(', ') || '—'}

@@ -16,6 +16,7 @@ import {
   type CuadroFeature,
   type CuadroFeatureProps,
 } from '../../data/mapaData'
+import { formatTareaMapLabel } from '../../utils/vineyardMapLabels'
 
 interface Props {
   tareas: Tarea[]
@@ -298,9 +299,7 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
                   <h4>En progreso ({detallesSeleccion.estado.enProgreso.length})</h4>
                   <ul>
                     {detallesSeleccion.estado.enProgreso.map((t) => (
-                      <li key={t.id}>
-                        {t.tarea} · {t.tipo === 'manual' ? t.cuadrilla : t.persona}
-                      </li>
+                      <li key={t.id}>{formatTareaMapLabel(t)}</li>
                     ))}
                   </ul>
                 </div>
@@ -310,7 +309,7 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
                   <h4>Finalizadas ({detallesSeleccion.estado.finalizadas.length})</h4>
                   <ul>
                     {detallesSeleccion.estado.finalizadas.slice(0, 5).map((t) => (
-                      <li key={t.id}>{t.tarea}</li>
+                      <li key={t.id}>{formatTareaMapLabel(t)}</li>
                     ))}
                   </ul>
                 </div>

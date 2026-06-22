@@ -112,6 +112,7 @@ function InformeRoute() {
 export default function MobileRoutes() {
   const navigate = useNavigate()
   const {
+    fincaId,
     fincaNombre,
     tareasActivas,
     handleOperatorSubmit,
@@ -167,6 +168,7 @@ export default function MobileRoutes() {
           path="tarea/mecanica"
           element={
             <MechanicalTaskForm
+              fincaId={fincaId}
               fincaNombre={fincaNombre}
               onSubmit={handleStartMechanicalTask}
               onBack={() => navigate(MOBILE_ROUTES.tareaTipo)}
