@@ -28,8 +28,12 @@ interface Props {
 }
 
 interface CuadroEstado {
-  enProgreso: Tarea[]
-  finalizadas: Tarea[]
+  tareasEnProgreso: Tarea[]
+  tareasCerradas: Tarea[]
+  /** Cuadro con tarea activa aún no marcada como finalizada. */
+  pendiente: boolean
+  /** Cuadro finalizado en dashboard o tarea cerrada. */
+  cuadroFinalizado: boolean
 }
 
 const DEFAULT_CENTER: [number, number] = [-33.505, -69.21]
@@ -77,11 +81,26 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
 
       for (const cuadroId of cuadroIds) {
         if (!map.has(cuadroId)) {
-          map.set(cuadroId, { enProgreso: [], finalizadas: [] })
+          map.set(cuadroId, {
+            tareasEnProgreso: [],
+            tareasCerradas: [],
+            pendiente: false,
+            cuadroFinalizado: false,
+          })
         }
         const entry = map.get(cuadroId)!
-        if (tarea.estado === 'en_progreso') entry.enProgreso.push(tarea)
-        else entry.finalizadas.push(tarea)
+        if (tarea.estado === 'en_progreso') {
+          entry.tareasEnProgreso.push(tarea)
+          const finalizados = new Set(tarea.cuadroIdsFinalizados ?? [])
+          if (finalizados.has(cuadroId)) {
+            entry.cuadroFinalizado = true
+          } else {
+            entry.pendiente = true
+          }
+        } else {
+          entry.tareasCerradas.push(tarea)
+          entry.cuadroFinalizado = true
+        }
       }
     }
     return map
@@ -118,25 +137,23 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
       if (!feature) return {}
       const props = feature.properties as CuadroFeatureProps
       const estado = estadoPorCuadro.get(props.name)
-      const tieneEnProgreso = (estado?.enProgreso.length ?? 0) > 0
-      const tieneCerrada = (estado?.finalizadas.length ?? 0) > 0
 
       let base: PathOptions
-      if (tieneCerrada && !tieneEnProgreso) {
-        base = {
-          fill: true,
-          fillColor: '#d1d5db',
-          fillOpacity: 0.55,
-          color: '#4b5563',
-          weight: 2.5,
-          opacity: 1,
-        }
-      } else if (tieneEnProgreso) {
+      if (estado?.pendiente) {
         base = {
           fill: true,
           fillColor: CUADRO_FILL,
           fillOpacity: 0.5,
           color: '#16a34a',
+          weight: 2.5,
+          opacity: 1,
+        }
+      } else if (estado?.cuadroFinalizado) {
+        base = {
+          fill: true,
+          fillColor: '#d1d5db',
+          fillOpacity: 0.55,
+          color: '#4b5563',
           weight: 2.5,
           opacity: 1,
         }
@@ -202,7 +219,7 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
   // Forzamos re-render del GeoJSON cuando cambia el set de features o el estado.
   const geoKey = useMemo(() => {
     const marcados = Array.from(estadoPorCuadro.entries())
-      .map(([k, v]) => `${k}:${v.enProgreso.length > 0 ? 'p' : ''}${v.finalizadas.length > 0 ? 'c' : ''}`)
+      .map(([k, v]) => `${k}:${v.pendiente ? 'p' : ''}${v.cuadroFinalizado ? 'f' : ''}`)
       .sort()
       .join(',')
     return `${filtroFinca}|${features.length}|${marcados}`
@@ -259,11 +276,11 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
           <div className="map-legend-title">Estado de cuadros</div>
           <div className="map-legend-item">
             <span className="legend-swatch" style={{ borderColor: '#16a34a' }} />
-            <span>Tarea en progreso (sin cerrar)</span>
+            <span>Cuadro en progreso</span>
           </div>
           <div className="map-legend-item">
             <span className="legend-swatch" style={{ borderColor: '#4b5563' }} />
-            <span>Tarea cerrada en dashboard</span>
+            <span>Cuadro finalizado</span>
           </div>
           <div className="map-legend-item">
             <span className="legend-swatch" style={{ borderColor: '#9ca3af' }} />
@@ -295,11 +312,11 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
 
           {detallesSeleccion.estado && (
             <div className="map-detail-tasks">
-              {detallesSeleccion.estado.enProgreso.length > 0 && (
+              {detallesSeleccion.estado.tareasEnProgreso.length > 0 && (
                 <div className="map-detail-section">
-                  <h4>En progreso ({detallesSeleccion.estado.enProgreso.length})</h4>
+                  <h4>En progreso ({detallesSeleccion.estado.tareasEnProgreso.length})</h4>
                   <ul className="map-detail-task-list">
-                    {detallesSeleccion.estado.enProgreso.map((t) => {
+                    {detallesSeleccion.estado.tareasEnProgreso.map((t) => {
                       const progress = computeTareaProgress(t)
                       return (
                         <li key={t.id} className="map-detail-task-item">
@@ -315,11 +332,11 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
                   </ul>
                 </div>
               )}
-              {detallesSeleccion.estado.finalizadas.length > 0 && (
+              {detallesSeleccion.estado.tareasCerradas.length > 0 && (
                 <div className="map-detail-section">
-                  <h4>Finalizadas ({detallesSeleccion.estado.finalizadas.length})</h4>
+                  <h4>Finalizadas ({detallesSeleccion.estado.tareasCerradas.length})</h4>
                   <ul>
-                    {detallesSeleccion.estado.finalizadas.slice(0, 5).map((t) => (
+                    {detallesSeleccion.estado.tareasCerradas.slice(0, 5).map((t) => (
                       <li key={t.id}>{formatTareaMapLabel(t)}</li>
                     ))}
                   </ul>

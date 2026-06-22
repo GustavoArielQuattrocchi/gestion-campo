@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Clock, CheckCircle2, RotateCcw } from 'lucide-react'
 import type { Tarea } from '../../types'
 import { getNombreCuadro } from '../../data/fincaData'
@@ -21,6 +21,16 @@ interface Props {
   onReabrirTarea: (tareaId: string) => Promise<void>
 }
 
+function matchesFiltros(
+  tarea: Tarea,
+  filtroFinca: string,
+  filtroTarea: string,
+): boolean {
+  if (filtroFinca !== 'todas' && tarea.fincaNombre !== filtroFinca) return false
+  if (filtroTarea !== 'todas' && tarea.tarea !== filtroTarea) return false
+  return true
+}
+
 export default function DashboardEnProgresoPanel({
   open,
   onToggle,
@@ -30,10 +40,48 @@ export default function DashboardEnProgresoPanel({
   onFinalizarTarea,
   onReabrirTarea,
 }: Props) {
-  const enProgreso = tareas.filter(t => t.estado === 'en_progreso')
-  const cerradas = tareas.filter(t => t.estado === 'finalizada')
+  const enProgresoAll = useMemo(
+    () => tareas.filter(t => t.estado === 'en_progreso'),
+    [tareas],
+  )
+  const cerradasAll = useMemo(
+    () => tareas.filter(t => t.estado === 'finalizada'),
+    [tareas],
+  )
+
+  const [filtroFinca, setFiltroFinca] = useState('todas')
+  const [filtroTarea, setFiltroTarea] = useState('todas')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [busyKey, setBusyKey] = useState<string | null>(null)
+
+  const fincasOpciones = useMemo(
+    () => [...new Set(enProgresoAll.map(t => t.fincaNombre))].sort(),
+    [enProgresoAll],
+  )
+
+  const tareasOpciones = useMemo(() => {
+    const base =
+      filtroFinca === 'todas'
+        ? enProgresoAll
+        : enProgresoAll.filter(t => t.fincaNombre === filtroFinca)
+    return [...new Set(base.map(t => t.tarea))].sort()
+  }, [enProgresoAll, filtroFinca])
+
+  useEffect(() => {
+    if (filtroTarea !== 'todas' && !tareasOpciones.includes(filtroTarea)) {
+      setFiltroTarea('todas')
+    }
+  }, [filtroTarea, tareasOpciones])
+
+  const enProgreso = useMemo(
+    () => enProgresoAll.filter(t => matchesFiltros(t, filtroFinca, filtroTarea)),
+    [enProgresoAll, filtroFinca, filtroTarea],
+  )
+
+  const cerradas = useMemo(
+    () => cerradasAll.filter(t => matchesFiltros(t, filtroFinca, filtroTarea)),
+    [cerradasAll, filtroFinca, filtroTarea],
+  )
 
   const runAction = async (key: string, action: () => Promise<void>) => {
     if (busyKey) return
@@ -47,13 +95,50 @@ export default function DashboardEnProgresoPanel({
 
   return (
     <DashboardPanel
-      title={`Trabajos en progreso (${enProgreso.length})`}
+      title={`Trabajos en progreso (${enProgresoAll.length})`}
       icon={<Clock size={16} />}
       open={open}
       onToggle={onToggle}
     >
-      {enProgreso.length === 0 ? (
+      {enProgresoAll.length > 0 && (
+        <div className="en-progreso-filters">
+          <label className="en-progreso-filter">
+            <span>Finca</span>
+            <select
+              className="form-select"
+              value={filtroFinca}
+              onChange={e => setFiltroFinca(e.target.value)}
+            >
+              <option value="todas">Todas las fincas</option>
+              {fincasOpciones.map(finca => (
+                <option key={finca} value={finca}>
+                  {finca}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="en-progreso-filter">
+            <span>Tarea</span>
+            <select
+              className="form-select"
+              value={filtroTarea}
+              onChange={e => setFiltroTarea(e.target.value)}
+            >
+              <option value="todas">Todas las tareas</option>
+              {tareasOpciones.map(nombre => (
+                <option key={nombre} value={nombre}>
+                  {nombre}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      )}
+
+      {enProgresoAll.length === 0 ? (
         <p className="dashboard-panel-empty">No hay tareas en progreso con los filtros actuales.</p>
+      ) : enProgreso.length === 0 ? (
+        <p className="dashboard-panel-empty">Ninguna tarea coincide con finca y tarea seleccionadas.</p>
       ) : (
         <ul className="en-progreso-list">
           {enProgreso.map(tarea => {
@@ -181,7 +266,7 @@ export default function DashboardEnProgresoPanel({
 
       {cerradas.length > 0 && (
         <div className="en-progreso-cerradas">
-          <h5>Tareas cerradas</h5>
+          <h5>Tareas cerradas ({cerradas.length})</h5>
           <ul className="en-progreso-list">
             {cerradas.map(tarea => {
               const key = `reopen:${tarea.id}`

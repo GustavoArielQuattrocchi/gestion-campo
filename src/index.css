@@ -1163,6 +1163,26 @@ select, input {
   gap: 12px;
 }
 
+.en-progreso-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.en-progreso-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--gray-600);
+}
+
+.en-progreso-filter .form-select {
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
 .en-progreso-item {
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-sm);
