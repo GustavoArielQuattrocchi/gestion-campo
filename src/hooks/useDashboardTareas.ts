@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { arrayUnion, arrayRemove, collection, deleteField, doc, onSnapshot, Timestamp, updateDoc } from 'firebase/firestore'
+import type { UpdateData } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Tarea } from '../types'
 import { getFincaNombres } from '../data/catalog'
@@ -31,7 +32,6 @@ export function useDashboardTareas() {
   const [allTareas, setAllTareas] = useState<Tarea[]>([])
   const [visibleCount, setVisibleCount] = useState(TAREAS_PAGE_SIZE)
   const [loading, setLoading] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [indexCreateUrl, setIndexCreateUrl] = useState<string | null>(null)
   const [filtroFinca, setFiltroFinca] = useState(() =>
@@ -100,7 +100,10 @@ export function useDashboardTareas() {
     [tareasFiltradas, visibleCount],
   )
 
-  const hasMore = hasMoreTareas(tareasFiltradas.length, visibleCount)
+  const hasMore = useMemo(
+    () => hasMoreTareas(tareasFiltradas.length, visibleCount),
+    [tareasFiltradas.length, visibleCount],
+  )
 
   const stats = useMemo(() => computeDashboardStats(tareasFiltradas), [tareasFiltradas])
 
@@ -110,81 +113,67 @@ export function useDashboardTareas() {
   }, [selectedMetric, tareasFiltradas])
 
   const loadMore = useCallback(() => {
-    if (!hasMore || loadingMore) return
-    setLoadingMore(true)
+    if (!hasMore) return
     setVisibleCount(count => nextVisibleCount(count, tareasFiltradas.length))
-    setLoadingMore(false)
-  }, [hasMore, loadingMore, tareasFiltradas.length])
+  }, [hasMore, tareasFiltradas.length])
 
   const metricsNote = buildMetricsNote(tareasEnTabla.length, tareasFiltradas.length, hasMore)
 
-  const togglePanel = (key: DashboardPanelKey) => {
+  const togglePanel = useCallback((key: DashboardPanelKey) => {
     setPanelsOpen(prev => ({ ...prev, [key]: !prev[key] }))
-  }
+  }, [])
 
-  const finalizarCuadro = useCallback(async (tareaId: string, cuadroId: string) => {
+  const runTareaUpdate = useCallback(async (
+    tareaId: string,
+    data: UpdateData<Record<string, unknown>>,
+    errorMsg: string,
+  ) => {
     setActionError(null)
     try {
-      await updateDoc(doc(db, 'tareas', tareaId), {
-        cuadroIdsFinalizados: arrayUnion(cuadroId),
-      })
+      await updateDoc(doc(db, 'tareas', tareaId), data)
     } catch (err) {
-      console.error('[Dashboard] Error al finalizar cuadro:', err)
-      setActionError('No se pudo finalizar el cuadro. Revisá la conexión y las reglas de Firestore.')
+      console.error('[Dashboard]', errorMsg, err)
+      setActionError(errorMsg)
       throw err
     }
   }, [])
 
-  const deshacerFinalizacionCuadro = useCallback(async (tareaId: string, cuadroId: string) => {
-    setActionError(null)
-    try {
-      await updateDoc(doc(db, 'tareas', tareaId), {
-        cuadroIdsFinalizados: arrayRemove(cuadroId),
-      })
-    } catch (err) {
-      console.error('[Dashboard] Error al desmarcar cuadro:', err)
-      setActionError('No se pudo desmarcar el cuadro. Revisá la conexión y las reglas de Firestore.')
-      throw err
-    }
-  }, [])
+  const finalizarCuadro = useCallback(
+    (tareaId: string, cuadroId: string) =>
+      runTareaUpdate(tareaId, { cuadroIdsFinalizados: arrayUnion(cuadroId) },
+        'No se pudo finalizar el cuadro. Revisá la conexión y las reglas de Firestore.'),
+    [runTareaUpdate],
+  )
+
+  const deshacerFinalizacionCuadro = useCallback(
+    (tareaId: string, cuadroId: string) =>
+      runTareaUpdate(tareaId, { cuadroIdsFinalizados: arrayRemove(cuadroId) },
+        'No se pudo desmarcar el cuadro. Revisá la conexión y las reglas de Firestore.'),
+    [runTareaUpdate],
+  )
 
   const finalizarTarea = useCallback(async (tareaId: string) => {
     const tarea = allTareas.find(t => t.id === tareaId)
-    if (!tarea || !allCuadrosTareaFinalizados(tarea)) return
-
-    setActionError(null)
-    try {
-      await updateDoc(doc(db, 'tareas', tareaId), {
-        estado: 'finalizada',
-        fechaFin: Timestamp.now(),
-      })
-    } catch (err) {
-      console.error('[Dashboard] Error al cerrar tarea:', err)
-      setActionError('No se pudo cerrar la tarea. Revisá la conexión y las reglas de Firestore.')
-      throw err
+    if (!tarea) return
+    if (!allCuadrosTareaFinalizados(tarea)) {
+      setActionError('No se puede cerrar: faltan cuadros por finalizar.')
+      return
     }
-  }, [allTareas])
+    await runTareaUpdate(tareaId,
+      { estado: 'finalizada', fechaFin: Timestamp.now() },
+      'No se pudo cerrar la tarea. Revisá la conexión y las reglas de Firestore.')
+  }, [allTareas, runTareaUpdate])
 
   const reabrirTarea = useCallback(async (tareaId: string) => {
     const tarea = allTareas.find(t => t.id === tareaId)
     if (!tarea || tarea.estado !== 'finalizada') return
-
-    setActionError(null)
-    try {
-      await updateDoc(doc(db, 'tareas', tareaId), {
-        estado: 'en_progreso',
-        fechaFin: deleteField(),
-      })
-    } catch (err) {
-      console.error('[Dashboard] Error al reabrir tarea:', err)
-      setActionError('No se pudo reabrir la tarea. Revisá la conexión y las reglas de Firestore.')
-      throw err
-    }
-  }, [allTareas])
+    await runTareaUpdate(tareaId,
+      { estado: 'en_progreso', fechaFin: deleteField() },
+      'No se pudo reabrir la tarea. Revisá la conexión y las reglas de Firestore.')
+  }, [allTareas, runTareaUpdate])
 
   return {
     loading,
-    loadingMore,
     hasMore,
     loadMore,
     error,

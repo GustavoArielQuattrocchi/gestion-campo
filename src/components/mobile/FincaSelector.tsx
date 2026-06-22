@@ -19,7 +19,8 @@ export default function FincaSelector({ onSelect, onBack }: Props) {
 
       <div className="option-cards">
         {fincas.map((finca) => (
-          <div
+          <button
+            type="button"
             key={finca.id}
             className="option-card"
             onClick={() => onSelect(finca.id, finca.nombre)}
@@ -31,7 +32,7 @@ export default function FincaSelector({ onSelect, onBack }: Props) {
               <h3>{finca.nombre}</h3>
               <p>Toque para seleccionar</p>
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </div>

@@ -88,8 +88,8 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
         <div className="card">
           <div className="card-title">Registros anteriores</div>
           <ul className="rendimiento-history">
-            {[...tarea.rendimientosDiarios].reverse().slice(0, 3).map((r, i) => (
-              <li key={i}>{r.texto}</li>
+            {[...tarea.rendimientosDiarios].reverse().slice(0, 3).map((r) => (
+              <li key={`${r.fecha.seconds}-${r.operador}`}>{r.texto}</li>
             ))}
           </ul>
         </div>

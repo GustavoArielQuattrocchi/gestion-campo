@@ -5,8 +5,6 @@ import type { CatalogItem, Cuadrilla } from '../types'
 import { fincas, getCuadrosPorFinca } from './fincaData'
 import { getMaquinariasPorFinca } from './maquinarias'
 
-export type { CuadroDetalle } from './fincaData'
-export type { MaquinariaCatalogo } from './maquinarias'
 export { fincas, getCuadrosPorFinca, getMaquinariasPorFinca }
 
 export const tareasManuales: CatalogItem[] = [

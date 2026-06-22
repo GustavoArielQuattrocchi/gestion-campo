@@ -100,7 +100,7 @@ export default function DashboardEnProgresoPanel({
       open={open}
       onToggle={onToggle}
     >
-      {enProgresoAll.length > 0 && (
+      {(enProgresoAll.length > 0 || cerradasAll.length > 0) && (
         <div className="en-progreso-filters">
           <label className="en-progreso-filter">
             <span>Finca</span>
@@ -136,7 +136,7 @@ export default function DashboardEnProgresoPanel({
       )}
 
       {enProgresoAll.length === 0 ? (
-        <p className="dashboard-panel-empty">No hay tareas en progreso con los filtros actuales.</p>
+        <p className="dashboard-panel-empty">No hay tareas en progreso.</p>
       ) : enProgreso.length === 0 ? (
         <p className="dashboard-panel-empty">Ninguna tarea coincide con finca y tarea seleccionadas.</p>
       ) : (
@@ -232,8 +232,8 @@ export default function DashboardEnProgresoPanel({
                           {[...tarea.rendimientosDiarios]
                             .reverse()
                             .slice(0, 5)
-                            .map((r, i) => (
-                              <li key={i}>
+                            .map((r) => (
+                              <li key={`${r.fecha.seconds}-${r.operador}`}>
                                 <strong>{r.operador}</strong> — {r.texto}
                               </li>
                             ))}

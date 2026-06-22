@@ -29,7 +29,6 @@ export default function Dashboard() {
     setSelectedMetric,
     metricDetail,
     hasMore,
-    loadingMore,
     loadMore,
     metricsNote,
     actionError,
@@ -65,7 +64,6 @@ export default function Dashboard() {
         tareasTabla={tareasEnTabla}
         tareasGestion={tareasFiltradas}
         hasMore={hasMore}
-        loadingMore={loadingMore}
         onLoadMore={loadMore}
         finalizarCuadro={finalizarCuadro}
         deshacerFinalizacionCuadro={deshacerFinalizacionCuadro}

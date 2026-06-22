@@ -320,11 +320,7 @@ export const BASE_DATOS_FINCAS: Record<string, CuadroCatalogo[]> = {
     { id: "FC3-5", nombre: "Cuartel 5", variedad: "Malbec", vinedo: "C19456", hectareas: 9.22 },
     { id: "FC3-6", nombre: "Cuartel 6", variedad: "Malbec", vinedo: "C19456", hectareas: 8.66 }
   ]
-};
-
-
-
-
+}
 
 
 

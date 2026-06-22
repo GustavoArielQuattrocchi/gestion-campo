@@ -8,7 +8,6 @@ interface Props {
   onToggle: () => void
   tareas: Tarea[]
   hasMore: boolean
-  loadingMore: boolean
   onLoadMore: () => void
 }
 
@@ -17,7 +16,6 @@ export default function DashboardTasksPanel({
   onToggle,
   tareas,
   hasMore,
-  loadingMore,
   onLoadMore,
 }: Props) {
   return (
@@ -88,10 +86,9 @@ export default function DashboardTasksPanel({
           type="button"
           className="btn btn-secondary"
           onClick={onLoadMore}
-          disabled={loadingMore}
           style={{ width: '100%', marginTop: 12 }}
         >
-          {loadingMore ? 'Cargando...' : 'Cargar más tareas'}
+          Cargar más tareas
         </button>
       )}
     </DashboardPanel>

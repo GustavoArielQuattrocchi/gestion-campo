@@ -26,7 +26,8 @@ export default function EndTaskList({ tareas, onSelectTarea, onBack, fincaNombre
         </div>
       ) : (
         tareas.map(tarea => (
-          <div
+          <button
+            type="button"
             key={tarea.id}
             className="task-list-item"
             onClick={() => onSelectTarea(tarea)}
@@ -48,7 +49,7 @@ export default function EndTaskList({ tareas, onSelectTarea, onBack, fincaNombre
               </p>
             </div>
             <ChevronRight size={20} color="#9ca3af" />
-          </div>
+          </button>
         ))
       )}
     </div>

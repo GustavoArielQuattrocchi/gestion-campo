@@ -20,7 +20,7 @@ export default function TaskMenu({ fincaNombre, onSelectInicio, onSelectFin, onS
       </div>
 
       <div className="option-cards">
-        <div className="option-card" onClick={onSelectInicio}>
+        <button type="button" className="option-card" onClick={onSelectInicio}>
           <div className="option-card-icon green">
             <Play size={24} />
           </div>
@@ -28,9 +28,9 @@ export default function TaskMenu({ fincaNombre, onSelectInicio, onSelectFin, onS
             <h3>Inicio de Tarea</h3>
             <p>Registrar una nueva tarea en campo</p>
           </div>
-        </div>
+        </button>
 
-        <div className="option-card" onClick={onSelectFin}>
+        <button type="button" className="option-card" onClick={onSelectFin}>
           <div className="option-card-icon orange">
             <Square size={24} />
           </div>
@@ -38,9 +38,9 @@ export default function TaskMenu({ fincaNombre, onSelectInicio, onSelectFin, onS
             <h3>Cierre del día</h3>
             <p>Registrar rendimiento diario de la tarea</p>
           </div>
-        </div>
+        </button>
 
-        <div className="option-card" onClick={onSelectAccidente}>
+        <button type="button" className="option-card" onClick={onSelectAccidente}>
           <div className="option-card-icon red">
             <AlertTriangle size={24} />
           </div>
@@ -48,7 +48,7 @@ export default function TaskMenu({ fincaNombre, onSelectInicio, onSelectFin, onS
             <h3>Informe de Accidente</h3>
             <p>Reportar accidente o condición riesgosa</p>
           </div>
-        </div>
+        </button>
       </div>
     </div>
   )

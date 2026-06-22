@@ -4,7 +4,7 @@ export interface MaquinariaCatalogo {
   modelo: string
 }
 
-export const BASE_DATOS_MAQUINARIAS: Record<string, MaquinariaCatalogo[]> = {
+const MAQUINARIAS: Record<string, MaquinariaCatalogo[]> = {
   FOA: [
     { id: 'FOA-1', nombre: 'MT04', modelo: 'DEUTZ KHD' },
     { id: 'FOA-2', nombre: 'MT27', modelo: 'NEW HOLLAND TT-65-D' },
@@ -55,5 +55,5 @@ export const BASE_DATOS_MAQUINARIAS: Record<string, MaquinariaCatalogo[]> = {
 }
 
 export function getMaquinariasPorFinca(fincaId: string): MaquinariaCatalogo[] {
-  return BASE_DATOS_MAQUINARIAS[fincaId] ?? []
+  return MAQUINARIAS[fincaId] ?? []
 }

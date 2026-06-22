@@ -31,7 +31,6 @@ interface Props {
   tareasTabla: Tarea[]
   tareasGestion: Tarea[]
   hasMore: boolean
-  loadingMore: boolean
   onLoadMore: () => void
   finalizarCuadro: (tareaId: string, cuadroId: string) => Promise<void>
   deshacerFinalizacionCuadro: (tareaId: string, cuadroId: string) => Promise<void>
@@ -61,7 +60,6 @@ export default function DashboardSidebar({
   tareasTabla,
   tareasGestion,
   hasMore,
-  loadingMore,
   onLoadMore,
   finalizarCuadro,
   deshacerFinalizacionCuadro,
@@ -113,44 +111,47 @@ export default function DashboardSidebar({
           </div>
         )}
 
-        <DashboardStatsPanel
-          open={panelsOpen.resumen}
-          onToggle={() => onTogglePanel('resumen')}
-          stats={stats}
-          metricsNote={metricsNote}
-          onSelectMetric={onSelectMetric}
-        />
+        {!loading && !error && (
+          <>
+            <DashboardStatsPanel
+              open={panelsOpen.resumen}
+              onToggle={() => onTogglePanel('resumen')}
+              stats={stats}
+              metricsNote={metricsNote}
+              onSelectMetric={onSelectMetric}
+            />
 
-        <DashboardEnProgresoPanel
-          open={panelsOpen.en_progreso}
-          onToggle={() => onTogglePanel('en_progreso')}
-          tareas={tareasGestion}
-          onFinalizarCuadro={finalizarCuadro}
-          onDeshacerFinalizacionCuadro={deshacerFinalizacionCuadro}
-          onFinalizarTarea={finalizarTarea}
-          onReabrirTarea={reabrirTarea}
-        />
+            <DashboardEnProgresoPanel
+              open={panelsOpen.en_progreso}
+              onToggle={() => onTogglePanel('en_progreso')}
+              tareas={tareasGestion}
+              onFinalizarCuadro={finalizarCuadro}
+              onDeshacerFinalizacionCuadro={deshacerFinalizacionCuadro}
+              onFinalizarTarea={finalizarTarea}
+              onReabrirTarea={reabrirTarea}
+            />
 
-        <DashboardFiltersPanel
-          open={panelsOpen.filtros}
-          onToggle={() => onTogglePanel('filtros')}
-          filtroFinca={filtroFinca}
-          filtroTipo={filtroTipo}
-          filtroEstado={filtroEstado}
-          fincasFiltro={fincasFiltro}
-          onFincaChange={onFincaChange}
-          onTipoChange={onTipoChange}
-          onEstadoChange={onEstadoChange}
-        />
+            <DashboardFiltersPanel
+              open={panelsOpen.filtros}
+              onToggle={() => onTogglePanel('filtros')}
+              filtroFinca={filtroFinca}
+              filtroTipo={filtroTipo}
+              filtroEstado={filtroEstado}
+              fincasFiltro={fincasFiltro}
+              onFincaChange={onFincaChange}
+              onTipoChange={onTipoChange}
+              onEstadoChange={onEstadoChange}
+            />
 
-        <DashboardTasksPanel
-          open={panelsOpen.tareas}
-          onToggle={() => onTogglePanel('tareas')}
-          tareas={tareasTabla}
-          hasMore={hasMore}
-          loadingMore={loadingMore}
-          onLoadMore={onLoadMore}
-        />
+            <DashboardTasksPanel
+              open={panelsOpen.tareas}
+              onToggle={() => onTogglePanel('tareas')}
+              tareas={tareasTabla}
+              hasMore={hasMore}
+              onLoadMore={onLoadMore}
+            />
+          </>
+        )}
       </div>
     </aside>
   )

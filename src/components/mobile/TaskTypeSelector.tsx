@@ -18,7 +18,7 @@ export default function TaskTypeSelector({ onSelectManual, onSelectMecanica, onB
       </div>
 
       <div className="option-cards">
-        <div className="option-card" onClick={onSelectManual}>
+        <button type="button" className="option-card" onClick={onSelectManual}>
           <div className="option-card-icon green">
             <Users size={24} />
           </div>
@@ -26,9 +26,9 @@ export default function TaskTypeSelector({ onSelectManual, onSelectMecanica, onB
             <h3>Manual</h3>
             <p>Tarea realizada por cuadrilla de personal</p>
           </div>
-        </div>
+        </button>
 
-        <div className="option-card" onClick={onSelectMecanica}>
+        <button type="button" className="option-card" onClick={onSelectMecanica}>
           <div className="option-card-icon blue">
             <Cog size={24} />
           </div>
@@ -36,7 +36,7 @@ export default function TaskTypeSelector({ onSelectManual, onSelectMecanica, onB
             <h3>Mecánica</h3>
             <p>Tarea realizada con maquinaria agrícola</p>
           </div>
-        </div>
+        </button>
       </div>
     </div>
   )

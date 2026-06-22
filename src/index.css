@@ -33,6 +33,8 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+  --primary: #16a34a;
 }
 
 * {
@@ -83,13 +85,6 @@ select, input {
   max-width: 480px;
   margin: 0 auto;
   padding: 0 16px;
-  min-height: 100dvh;
-}
-
-.container-desktop {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
   min-height: 100dvh;
 }
 
@@ -297,29 +292,10 @@ select, input {
   border-color: var(--gray-300);
 }
 
-.btn-danger {
-  background: linear-gradient(135deg, var(--orange-500), #ea580c);
-  color: white;
-  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
-}
-
-.btn-danger:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
-}
-
 .btn-lg {
   padding: 18px 24px;
   font-size: 17px;
   border-radius: var(--radius-lg);
-}
-
-.btn-icon {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border-radius: 50%;
-  flex-shrink: 0;
 }
 
 /* Option cards (inicio/fin, manual/mecanica) */
@@ -327,6 +303,12 @@ select, input {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+button.option-card {
+  width: 100%;
+  text-align: left;
+  font: inherit;
 }
 
 .option-card {
@@ -496,6 +478,13 @@ select, input {
 }
 
 /* Active tasks list (for fin de tarea) */
+button.task-list-item {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  background: none;
+}
+
 .task-list-item {
   display: flex;
   align-items: center;
@@ -531,32 +520,6 @@ select, input {
 }
 
 /* Desktop Dashboard */
-.dashboard-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 32px;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.dashboard-header h1 {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--gray-900);
-}
-
-.dashboard-header .subtitle {
-  font-size: 14px;
-  color: var(--gray-500);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  margin-bottom: 32px;
-}
 
 .stat-card {
   background: white;
@@ -591,27 +554,6 @@ select, input {
 }
 
 /* Desktop table */
-.table-container {
-  background: white;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--gray-100);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-}
-
-.table-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px;
-  border-bottom: 1px solid var(--gray-100);
-}
-
-.table-header h2 {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--gray-800);
-}
 
 .data-table {
   width: 100%;
@@ -641,45 +583,16 @@ select, input {
   background: var(--gray-50);
 }
 
-/* Desktop nav */
-.desktop-nav {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  border-bottom: 2px solid var(--gray-100);
-  padding-bottom: 0;
-}
-
-.desktop-nav button {
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--gray-500);
-  background: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  transition: all 0.2s;
-}
-
-.desktop-nav button.active {
-  color: var(--green-600);
-  border-bottom-color: var(--green-600);
-  font-weight: 600;
-}
-
-.desktop-nav button:hover:not(.active) {
-  color: var(--gray-700);
-}
-
 /* Filters bar */
-.filters-bar {
+.filters-bar--sidebar {
   display: flex;
+  flex-direction: column;
   gap: 12px;
-  margin-bottom: 20px;
   flex-wrap: wrap;
 }
 
-.filters-bar select {
+.filters-bar--sidebar select {
+  width: 100%;
   padding: 8px 32px 8px 12px;
   border: 1.5px solid var(--gray-200);
   border-radius: var(--radius-sm);
@@ -711,30 +624,6 @@ select, input {
 
 .empty-state p {
   font-size: 15px;
-}
-
-/* Layout switch */
-.layout-switch {
-  display: flex;
-  background: var(--gray-100);
-  border-radius: var(--radius-sm);
-  padding: 3px;
-}
-
-.layout-switch button {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  background: none;
-  color: var(--gray-500);
-  transition: all 0.2s;
-}
-
-.layout-switch button.active {
-  background: white;
-  color: var(--gray-800);
-  box-shadow: var(--shadow-sm);
 }
 
 /* Animations */
@@ -883,9 +772,6 @@ select, input {
   opacity: 0.85;
 }
 
-.success-toast.hiding {
-  animation: toastSlideOut 0.3s ease-in both;
-}
 
 @keyframes toastSlideIn {
   from { opacity: 0; transform: translateY(-100%); }
@@ -898,31 +784,6 @@ select, input {
 }
 
 /* Map */
-.map-section {
-  background: white;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--gray-200);
-  margin-bottom: 24px;
-  overflow: hidden;
-}
-
-.map-section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--gray-200);
-}
-
-.map-section-header h2 {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .map-container {
   display: grid;
   grid-template-columns: 1fr;
@@ -1128,6 +989,11 @@ select, input {
 .task-progress-pct {
   font-weight: 700;
   color: var(--primary);
+}
+
+.task-progress-label {
+  font-size: 12px;
+  color: var(--gray-500);
 }
 
 .task-progress-track {
@@ -1712,15 +1578,6 @@ select, input {
   }
 }
 
-.filters-bar--sidebar {
-  flex-direction: column;
-  margin-bottom: 0;
-}
-
-.filters-bar--sidebar select {
-  width: 100%;
-}
-
 .dashboard-table-wrap {
   overflow-x: auto;
   max-height: 280px;
@@ -1739,10 +1596,6 @@ select, input {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .container-desktop {
-    padding: 16px;
-  }
-
   .dashboard-sidebar {
     width: 100%;
     max-width: 100%;
@@ -1751,14 +1604,6 @@ select, input {
   .dashboard-layout.sidebar-open .dashboard-sidebar-toggle {
     left: auto;
     right: 16px;
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .table-container {
-    overflow-x: auto;
   }
 
   .data-table {
@@ -1879,17 +1724,6 @@ select, input {
 .btn-whatsapp:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
-}
-
-.btn-sms {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-}
-
-.btn-sms:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
 @keyframes spin {

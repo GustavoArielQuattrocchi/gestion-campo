@@ -16,8 +16,6 @@ export type CuadroFeature = Feature<Polygon, CuadroFeatureProps>
 
 const collection = mapaVinedos as unknown as FeatureCollection<Polygon, CuadroFeatureProps>
 
-export const mapaCollection: FeatureCollection<Polygon, CuadroFeatureProps> = collection
-
 export interface FincaBounds {
   minLat: number
   maxLat: number

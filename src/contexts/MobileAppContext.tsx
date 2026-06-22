@@ -101,7 +101,7 @@ const MobileAppContext = createContext<MobileAppContextValue | null>(null)
 
 export function MobileAppProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
-  const sessionInit = initialSessionState()
+  const [sessionInit] = useState(initialSessionState)
   const [operadorNombre, setOperadorNombre] = useState(sessionInit.operadorNombre)
   const [fincaId, setFincaId] = useState(sessionInit.fincaId)
   const [fincaNombre, setFincaNombre] = useState(sessionInit.fincaNombre)
@@ -111,8 +111,11 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
   const [parseWarning, setParseWarning] = useState<string | null>(null)
   const [toast, setToast] = useState<MobileToastState | null>(null)
   const isOnline = useOnlineStatus()
+  const isOnlineRef = useRef(isOnline)
+  isOnlineRef.current = isOnline
   const [pendingSync, setPendingSync] = useState(false)
   const shouldAnnounceSync = useRef(false)
+  const submittingRef = useRef(false)
 
   const markPendingSync = useCallback(() => {
     setPendingSync(true)
@@ -155,6 +158,8 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       return
     }
 
+    setTareasActivas([])
+
     const q = query(
       collection(db, 'tareas'),
       where('fincaId', '==', fincaId),
@@ -174,13 +179,13 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         if (snapshot.metadata.hasPendingWrites) {
           shouldAnnounceSync.current = true
         }
-        if (!snapshot.metadata.fromCache || isOnline) {
+        if (!snapshot.metadata.fromCache || isOnlineRef.current) {
           setFirestoreError(null)
         }
       },
       err => {
         console.error('[MobileApp] Error en tareas activas:', err)
-        if (!isOnline) {
+        if (!isOnlineRef.current) {
           setFirestoreError('Sin conexión. Mostrando datos guardados en el dispositivo.')
           return
         }
@@ -193,7 +198,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     )
 
     return unsubscribe
-  }, [fincaId, isOnline])
+  }, [fincaId])
 
   const goToInicio = useCallback(() => {
     clearMobileSession()
@@ -245,6 +250,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     cuadros: string[]
     cuadroIds: string[]
   }): Promise<boolean> => {
+    if (submittingRef.current) return false
     const validated = validateManualTaskCreate(data)
     if (!validated.success) {
       showToast(validated.reason, 'error')
@@ -258,6 +264,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       fechaInicio: Timestamp.now(),
     })
 
+    submittingRef.current = true
     try {
       await addDoc(collection(db, 'tareas'), payload)
       setFirestoreError(null)
@@ -270,6 +277,8 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       console.error('Error al crear tarea manual:', err)
       setFirestoreError('Error al guardar la tarea manual. Revisá la conexión y las reglas de Firestore.')
       return false
+    } finally {
+      submittingRef.current = false
     }
   }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync])
 
@@ -282,6 +291,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     cuadros: string[]
     cuadroIds: string[]
   }): Promise<boolean> => {
+    if (submittingRef.current) return false
     const validated = validateMechanicalTaskCreate(data)
     if (!validated.success) {
       showToast(validated.reason, 'error')
@@ -295,6 +305,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       fechaInicio: Timestamp.now(),
     })
 
+    submittingRef.current = true
     try {
       await addDoc(collection(db, 'tareas'), payload)
       setFirestoreError(null)
@@ -307,10 +318,13 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       console.error('Error al crear tarea mecánica:', err)
       setFirestoreError('Error al guardar la tarea mecánica. Revisá la conexión y las reglas de Firestore.')
       return false
+    } finally {
+      submittingRef.current = false
     }
   }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync])
 
   const handleRegisterRendimiento = useCallback(async (tareaId: string, rendimiento: string) => {
+    if (submittingRef.current) return
     const tarea = tareasActivas.find(t => t.id === tareaId)
     if (!tarea) return
 
@@ -323,6 +337,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       operador: operadorNombre,
     }
 
+    submittingRef.current = true
     try {
       await updateDoc(doc(db, 'tareas', tareaId), {
         rendimientosDiarios: arrayUnion(entry),
@@ -341,6 +356,8 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.error('Error al registrar rendimiento:', err)
       setFirestoreError('Error al guardar el rendimiento. Revisá la conexión y las reglas de Firestore.')
+    } finally {
+      submittingRef.current = false
     }
   }, [navigate, tareasActivas, operadorNombre, showToast, markPendingSync])
 
