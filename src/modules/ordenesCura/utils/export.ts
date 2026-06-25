@@ -343,11 +343,6 @@ export function downloadOrdenPdf(orden: OrdenExport, items: ItemExport[]): void 
   buildOrdenPdf(orden, items).save(`${safeName(orden.oc)}.pdf`)
 }
 
-/** @deprecated Usar downloadOrdenPdf */
-export function exportOrdenPdf(orden: OrdenExport, items: ItemExport[]): void {
-  downloadOrdenPdf(orden, items)
-}
-
 function csvCell(value: string): string {
   const needsQuotes = /[",\r\n]/.test(value)
   const escaped = value.replace(/"/g, '""')

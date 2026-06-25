@@ -1,8 +1,4 @@
-/**
- * Cálculo del "factor" de máquina y de la dosis maquinada.
- * (Inferido: factor = volumen de tanque / volumen de aplicación; el script.js
- * original no estaba disponible.)
- */
+/** Cálculo del factor de máquina y de la dosis maquinada (L tanque / L por ha). */
 
 /** Devuelve el factor (L tanque / L por ha) o null si no es calculable. */
 export function computeFactor(

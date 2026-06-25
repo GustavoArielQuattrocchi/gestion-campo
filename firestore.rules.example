@@ -1,7 +1,0 @@
-// Copiá el contenido de firestore.rules al panel de Firebase Console
-// o ejecutá: npm run deploy:firestore
-//
-// Requisitos:
-// - Authentication → Inicio de sesión anónimo habilitado
-// - Colección operadores/{uid} creada al registrar nombre en /campo/registro
-// - Índices compuestos en firestore.indexes.json
