@@ -197,5 +197,26 @@ service cloud.firestore {
         && validParteDeLaboresBase();
       allow update, delete: if false;
     }
+
+    match /ordenesCura/{ordenId} {
+      allow read: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      allow create: if isSignedIn()
+        && request.resource.data.owner_id == request.auth.uid;
+      allow update, delete: if isSignedIn()
+        && resource.data.owner_id == request.auth.uid;
+
+      match /items/{itemId} {
+        allow read: if isSignedIn()
+          && get(/databases/$(database)/documents/ordenesCura/$(ordenId)).data.owner_id == request.auth.uid;
+        // getAfter permite crear items en el mismo batch que la orden padre.
+        allow create, update, delete: if isSignedIn()
+          && getAfter(/databases/$(database)/documents/ordenesCura/$(ordenId)).data.owner_id == request.auth.uid;
+      }
+    }
+
+    match /catalogoProductos/{productoId} {
+      allow read, create, delete: if isSignedIn();
+      allow update: if isSignedIn();
+    }
   }
 }

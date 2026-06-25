@@ -16,6 +16,7 @@ const testFiles = [
   'src/utils/tareaProgress.test.ts',
   'src/utils/buildParteDeLaboresPayload.test.ts',
   'src/utils/parteLabores.test.ts',
+  'src/modules/ordenesCura/utils/ocNumber.test.ts',
   'src/validation/tareaCreate.test.ts',
   'src/validation/accidentReport.test.ts',
 ]

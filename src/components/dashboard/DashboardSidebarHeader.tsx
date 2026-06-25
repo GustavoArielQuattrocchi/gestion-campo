@@ -1,4 +1,4 @@
-import { Sprout, Smartphone } from 'lucide-react'
+import { Sprout, Smartphone, FileText } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function DashboardSidebarHeader() {
@@ -20,6 +20,16 @@ export default function DashboardSidebarHeader() {
           >
             <Smartphone size={14} />
             App Campo
+          </button>
+        </Link>
+        <Link to="/ordenes-de-cura" style={{ textDecoration: 'none', flex: 1 }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            style={{ width: '100%', padding: '8px 12px', fontSize: 13 }}
+          >
+            <FileText size={14} />
+            Órdenes de Cura
           </button>
         </Link>
       </div>
