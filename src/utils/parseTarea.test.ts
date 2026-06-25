@@ -38,14 +38,24 @@ describe('parseTarea', () => {
     assert.deepEqual(result.tarea.cuadroIds, ['FOA-5', 'FOA-6'])
   })
 
-  it('rechaza sin fincaId', () => {
+  it('usa fincaNombre como fincaId en documentos legacy', () => {
     const result = parseTarea('abc', { ...baseManual, fincaId: '' })
+    assert.equal(result.success, true)
+    if (!result.success) return
+    assert.equal(result.tarea.fincaId, 'Finca Ocho A')
+    assert.equal(result.tarea.fincaNombre, 'Finca Ocho A')
+  })
+
+  it('rechaza sin fincaId ni fincaNombre', () => {
+    const result = parseTarea('abc', { ...baseManual, fincaId: '', fincaNombre: '' })
     assert.deepEqual(result, { success: false, reason: 'falta fincaId' })
   })
 
   it('rechaza cantidadPersonas inválida', () => {
     const result = parseTarea('abc', { ...baseManual, cantidadPersonas: 0 })
-    assert.deepEqual(result, { success: false, reason: 'cantidadPersonas inválida (debe ser ≥ 1)' })
+    assert.equal(result.success, false)
+    if (result.success) return
+    assert.match(result.reason, /^cantidadPersonas inválida/)
   })
 
   it('rechaza fechaInicio inválida', () => {

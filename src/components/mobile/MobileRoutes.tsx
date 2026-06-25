@@ -1,9 +1,10 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useMemo } from 'react'
 import { Clock } from 'lucide-react'
 import { Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMobileAppContext } from '../../contexts/MobileAppContext'
 import { MOBILE_ROUTES } from '../../mobile/routes'
 import { loadMobileSession } from '../../utils/mobileSession'
+import { filterTareasPendientesParteLabores, tieneParteLaboresHoy } from '../../utils/parteLabores'
 import StartScreen from './StartScreen'
 import OperatorNameScreen from './OperatorNameScreen'
 import WelcomeScreen from './WelcomeScreen'
@@ -53,7 +54,7 @@ function FinalizarDetalleRoute() {
   }
 
   const tarea = getTareaActiva(tareaId)
-  if (!tarea) {
+  if (!tarea || tieneParteLaboresHoy(tarea)) {
     return <Navigate to={MOBILE_ROUTES.finalizar} replace />
   }
 
@@ -120,6 +121,16 @@ export default function MobileRoutes() {
     handleStartMechanicalTask,
   } = useMobileAppContext()
 
+  const tareasPendientesCierre = useMemo(
+    () => filterTareasPendientesParteLabores(tareasActivas),
+    [tareasActivas],
+  )
+
+  const mensajeSinTareasCierre =
+    tareasActivas.length > 0 && tareasPendientesCierre.length === 0
+      ? 'Ya cerraste el parte de labores de todas las tareas en progreso hoy.'
+      : 'No hay tareas en progreso'
+
   return (
     <Routes>
       <Route index element={<CampoIndexRedirect />} />
@@ -179,8 +190,9 @@ export default function MobileRoutes() {
           path="finalizar"
           element={
             <EndTaskList
-              tareas={tareasActivas}
+              tareas={tareasPendientesCierre}
               fincaNombre={fincaNombre}
+              emptyMessage={mensajeSinTareasCierre}
               onSelectTarea={tarea => navigate(MOBILE_ROUTES.finalizarDetalle(tarea.id))}
               onBack={() => navigate(MOBILE_ROUTES.menu)}
             />

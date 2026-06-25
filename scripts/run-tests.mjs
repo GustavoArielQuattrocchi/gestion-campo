@@ -14,6 +14,8 @@ const testFiles = [
   'src/utils/mobileTaskPayloads.test.ts',
   'src/utils/vineyardMapLabels.test.ts',
   'src/utils/tareaProgress.test.ts',
+  'src/utils/buildParteDeLaboresPayload.test.ts',
+  'src/utils/parteLabores.test.ts',
   'src/validation/tareaCreate.test.ts',
   'src/validation/accidentReport.test.ts',
 ]

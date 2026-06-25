@@ -22,7 +22,7 @@ import {
   readFilterParam,
 } from '../utils/dashboardState'
 
-export type DashboardPanelKey = 'resumen' | 'en_progreso' | 'filtros' | 'tareas'
+export type DashboardPanelKey = 'resumen' | 'en_progreso' | 'partes_labores' | 'filtros' | 'tareas'
 
 export function useDashboardTareas() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -47,6 +47,7 @@ export function useDashboardTareas() {
   const [panelsOpen, setPanelsOpen] = useState<Record<DashboardPanelKey, boolean>>({
     resumen: true,
     en_progreso: true,
+    partes_labores: true,
     filtros: true,
     tareas: false,
   })

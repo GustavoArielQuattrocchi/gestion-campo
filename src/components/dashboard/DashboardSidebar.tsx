@@ -1,5 +1,5 @@
 import { Clock } from 'lucide-react'
-import type { Tarea } from '../../types'
+import type { Tarea, ParteDeLabores } from '../../types'
 import type { DashboardStats } from '../../utils/dashboardMetrics'
 import type { MetricKey } from '../../utils/getMetricDetail'
 import type { DashboardPanelKey } from '../../hooks/useDashboardTareas'
@@ -8,6 +8,7 @@ import DashboardStatsPanel from './DashboardStatsPanel'
 import DashboardFiltersPanel from './DashboardFiltersPanel'
 import DashboardTasksPanel from './DashboardTasksPanel'
 import DashboardEnProgresoPanel from './DashboardEnProgresoPanel'
+import DashboardPartesLaboresPanel from './DashboardPartesLaboresPanel'
 
 interface Props {
   open: boolean
@@ -36,6 +37,11 @@ interface Props {
   deshacerFinalizacionCuadro: (tareaId: string, cuadroId: string) => Promise<void>
   finalizarTarea: (tareaId: string) => Promise<void>
   reabrirTarea: (tareaId: string) => Promise<void>
+  partesLabores: ParteDeLabores[]
+  partesLaboresLoading: boolean
+  partesLaboresError: string | null
+  partesLaboresParseWarning: string | null
+  partesLaboresFincas: string[]
 }
 
 export default function DashboardSidebar({
@@ -65,6 +71,11 @@ export default function DashboardSidebar({
   deshacerFinalizacionCuadro,
   finalizarTarea,
   reabrirTarea,
+  partesLabores,
+  partesLaboresLoading,
+  partesLaboresError,
+  partesLaboresParseWarning,
+  partesLaboresFincas,
 }: Props) {
   return (
     <aside className={`dashboard-sidebar ${open ? '' : 'is-collapsed'}`} aria-hidden={!open}>
@@ -129,6 +140,16 @@ export default function DashboardSidebar({
               onDeshacerFinalizacionCuadro={deshacerFinalizacionCuadro}
               onFinalizarTarea={finalizarTarea}
               onReabrirTarea={reabrirTarea}
+            />
+
+            <DashboardPartesLaboresPanel
+              open={panelsOpen.partes_labores}
+              onToggle={() => onTogglePanel('partes_labores')}
+              partes={partesLabores}
+              loading={partesLaboresLoading}
+              error={partesLaboresError}
+              parseWarning={partesLaboresParseWarning}
+              fincasDisponibles={partesLaboresFincas}
             />
 
             <DashboardFiltersPanel

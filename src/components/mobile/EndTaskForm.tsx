@@ -29,7 +29,7 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
           <ChevronLeft size={18} /> Volver
         </button>
         <h1>Cierre del día</h1>
-        <p>Registrar rendimiento diario</p>
+        <p>Cerrar parte de labores con el rendimiento del día</p>
       </div>
 
       <div className="card">
@@ -116,7 +116,7 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
         style={{ opacity: rendimiento.trim() && !saving ? 1 : 0.5, marginBottom: 24 }}
       >
         <Save size={18} />
-        {saving ? 'Guardando...' : 'Registrar rendimiento'}
+        {saving ? 'Guardando...' : 'Cerrar parte de labores'}
       </button>
     </div>
   )

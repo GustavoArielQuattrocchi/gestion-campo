@@ -4,6 +4,7 @@ import DashboardSidebar from '../components/dashboard/DashboardSidebar'
 import DashboardSidebarToggle from '../components/dashboard/DashboardSidebarToggle'
 import { METRIC_ACCENTS } from '../components/dashboard/dashboardConstants'
 import { useDashboardTareas } from '../hooks/useDashboardTareas'
+import { usePartesLabores } from '../hooks/usePartesLabores'
 
 export default function Dashboard() {
   const {
@@ -38,6 +39,14 @@ export default function Dashboard() {
     reabrirTarea,
   } = useDashboardTareas()
 
+  const {
+    partes: partesLabores,
+    loading: partesLaboresLoading,
+    error: partesLaboresError,
+    parseWarning: partesLaboresParseWarning,
+    fincasDisponibles: partesLaboresFincas,
+  } = usePartesLabores()
+
   return (
     <div className={`dashboard-layout fade-in ${sidebarOpen ? 'sidebar-open' : ''}`}>
       <DashboardMapLayer tareas={tareasFiltradas} filtroFinca={filtroFinca} />
@@ -69,6 +78,11 @@ export default function Dashboard() {
         deshacerFinalizacionCuadro={deshacerFinalizacionCuadro}
         finalizarTarea={finalizarTarea}
         reabrirTarea={reabrirTarea}
+        partesLabores={partesLabores}
+        partesLaboresLoading={partesLaboresLoading}
+        partesLaboresError={partesLaboresError}
+        partesLaboresParseWarning={partesLaboresParseWarning}
+        partesLaboresFincas={partesLaboresFincas}
       />
 
       <DashboardSidebarToggle

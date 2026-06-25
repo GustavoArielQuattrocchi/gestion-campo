@@ -37,9 +37,9 @@ service cloud.firestore {
         && d.operador.size() > 0
         && d.fechaInicio is timestamp
         && d.cuadros is list
-        && (d.cuadroIds == null || d.cuadroIds is list)
-        && (d.cuadroIdsFinalizados == null || d.cuadroIdsFinalizados is list)
-        && (d.rendimientosDiarios == null || d.rendimientosDiarios is list)
+        && (d.get('cuadroIds', null) == null || d.cuadroIds is list)
+        && (d.get('cuadroIdsFinalizados', null) == null || d.cuadroIdsFinalizados is list)
+        && (d.get('rendimientosDiarios', null) == null || d.rendimientosDiarios is list)
         && validEstado()
         && validTipo();
     }
@@ -145,6 +145,56 @@ service cloud.firestore {
         && request.resource.data.descripcion.size() > 0
         && request.resource.data.tieneFoto is bool
         && request.resource.data.creadoEn is timestamp;
+      allow update, delete: if false;
+    }
+
+    function validParteDeLaboresBase() {
+      let d = request.resource.data;
+      return d.tareaId is string
+        && d.tareaId.size() > 0
+        && d.fincaId is string
+        && d.fincaId.size() > 0
+        && d.fincaNombre is string
+        && d.fincaNombre.size() > 0
+        && d.tarea is string
+        && d.tarea.size() > 0
+        && d.tipo in ['manual', 'mecanica']
+        && d.operador is string
+        && d.operador.size() > 0
+        && d.rendimiento is string
+        && d.rendimiento.size() > 0
+        && d.cuadros is list
+        && (d.get('cuadroIds', null) == null || d.cuadroIds is list)
+        && d.cerradoEn is timestamp
+        && validParteManual()
+        && validParteMecanica();
+    }
+
+    function validParteManual() {
+      let d = request.resource.data;
+      return d.tipo != 'manual'
+        || (d.cuadrilla is string
+          && d.cuadrilla.size() > 0
+          && d.cantidadPersonas is int
+          && d.cantidadPersonas >= 1);
+    }
+
+    function validParteMecanica() {
+      let d = request.resource.data;
+      return d.tipo != 'mecanica'
+        || (d.persona is string
+          && d.persona.size() > 0
+          && d.maquinaria is string
+          && d.maquinaria.size() > 0
+          && (d.get('maquinariaModelo', null) == null || d.maquinariaModelo is string)
+          && (d.get('maquinariaId', null) == null || d.maquinariaId is string));
+    }
+
+    match /partes_labores/{parteId} {
+      allow read: if isSignedIn();
+      allow create: if operadorRegistrado()
+        && request.resource.data.operador == nombreOperadorAutenticado()
+        && validParteDeLaboresBase();
       allow update, delete: if false;
     }
   }

@@ -36,7 +36,7 @@ export default function TaskMenu({ fincaNombre, onSelectInicio, onSelectFin, onS
           </div>
           <div className="option-card-content">
             <h3>Cierre del día</h3>
-            <p>Registrar rendimiento diario de la tarea</p>
+            <p>Registrar rendimiento y cerrar parte de labores</p>
           </div>
         </button>
 

@@ -83,3 +83,24 @@ export interface TareaMecanica extends TareaBase {
 }
 
 export type Tarea = TareaManual | TareaMecanica
+
+/** Parte de labores cerrado desde campo al registrar el cierre del día. */
+export interface ParteDeLabores {
+  id: string
+  tareaId: string
+  fincaId: string
+  fincaNombre: string
+  tarea: string
+  tipo: TareaTipo
+  operador: string
+  rendimiento: string
+  cuadros: string[]
+  cuadroIds?: string[]
+  cuadrilla?: string
+  cantidadPersonas?: number
+  persona?: string
+  maquinaria?: string
+  maquinariaModelo?: string
+  maquinariaId?: string
+  cerradoEn: Timestamp
+}

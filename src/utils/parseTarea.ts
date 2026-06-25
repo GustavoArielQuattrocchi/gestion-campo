@@ -42,8 +42,10 @@ export type ParseTareaResult =
 
 /** Valida y normaliza un documento Firestore antes de usarlo en la UI. */
 export function parseTarea(id: string, raw: Record<string, unknown>): ParseTareaResult {
-  const fincaId = typeof raw.fincaId === 'string' ? raw.fincaId.trim() : ''
   const fincaNombre = typeof raw.fincaNombre === 'string' ? raw.fincaNombre.trim() : ''
+  const fincaIdRaw = typeof raw.fincaId === 'string' ? raw.fincaId.trim() : ''
+  // Documentos antiguos pueden tener solo fincaNombre (id y nombre coinciden en el catálogo).
+  const fincaId = fincaIdRaw || fincaNombre
   const tareaNombre = typeof raw.tarea === 'string' ? raw.tarea.trim() : ''
   const operador = typeof raw.operador === 'string' ? raw.operador : ''
   const estado = raw.estado
@@ -141,9 +143,13 @@ export function parseTarea(id: string, raw: Record<string, unknown>): ParseTarea
   }
 }
 
+const loggedInvalidTareaIds = new Set<string>()
+
 function logInvalidInDev(invalid: ParseInvalidEntry[]) {
   if (invalid.length === 0 || !import.meta.env?.DEV) return
   for (const entry of invalid) {
+    if (loggedInvalidTareaIds.has(entry.id)) continue
+    loggedInvalidTareaIds.add(entry.id)
     console.warn(`[parseTarea] Documento ignorado (${entry.id}): ${entry.reason}`)
   }
 }

@@ -12,7 +12,6 @@ import { useNavigate } from 'react-router-dom'
 import {
   collection,
   addDoc,
-  updateDoc,
   doc,
   query,
   where,
@@ -20,6 +19,7 @@ import {
   onSnapshotsInSync,
   Timestamp,
   arrayUnion,
+  writeBatch,
 } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import type { Tarea } from '../types'
@@ -48,6 +48,7 @@ import {
   OFFLINE_WRITE_TOAST,
   useOnlineStatus,
 } from '../hooks/useOnlineStatus'
+import { buildParteDeLaboresPayload } from '../utils/buildParteDeLaboresPayload'
 
 function initialSessionState() {
   const session = loadMobileSession()
@@ -173,7 +174,8 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         const { tareas, invalid } = parseTareasFromSnapshot(
           snapshot.docs.map(d => ({ id: d.id, data: () => d.data() as Record<string, unknown> })),
         )
-        setTareasActivas(tareas)
+        const operador = operadorNombre.trim()
+        setTareasActivas(operador ? tareas.filter(t => t.operador === operador) : tareas)
         setParseWarning(buildActiveTasksWarning(invalid.length))
         setPendingSync(snapshot.metadata.hasPendingWrites)
         if (snapshot.metadata.hasPendingWrites) {
@@ -198,7 +200,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     )
 
     return unsubscribe
-  }, [fincaId])
+  }, [fincaId, operadorNombre])
 
   const goToInicio = useCallback(() => {
     clearMobileSession()
@@ -339,23 +341,29 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
 
     submittingRef.current = true
     try {
-      await updateDoc(doc(db, 'tareas', tareaId), {
+      await registerOperador(operadorNombre)
+      const cerradoEn = Timestamp.now()
+      const batch = writeBatch(db)
+      batch.update(doc(db, 'tareas', tareaId), {
         rendimientosDiarios: arrayUnion(entry),
         rendimiento: texto,
       })
+      const parteRef = doc(collection(db, 'partes_labores'))
+      batch.set(parteRef, buildParteDeLaboresPayload(tarea, texto, operadorNombre, cerradoEn))
+      await batch.commit()
       setFirestoreError(null)
       if (!navigator.onLine) {
         markPendingSync()
         showToast(OFFLINE_WRITE_TOAST, 'info')
       }
       setSuccessMsg({
-        message: 'Rendimiento registrado',
+        message: 'Parte de labores cerrado',
         detail: `${tarea.tarea} — ${texto}`,
       })
       navigate(`${MOBILE_ROUTES.exito}?motivo=rendimiento`)
     } catch (err) {
-      console.error('Error al registrar rendimiento:', err)
-      setFirestoreError('Error al guardar el rendimiento. Revisá la conexión y las reglas de Firestore.')
+      console.error('Error al cerrar parte de labores:', err)
+      setFirestoreError('Error al guardar el parte de labores. Revisá la conexión y las reglas de Firestore.')
     } finally {
       submittingRef.current = false
     }

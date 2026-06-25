@@ -6,9 +6,16 @@ interface Props {
   onSelectTarea: (tarea: Tarea) => void
   onBack: () => void
   fincaNombre: string
+  emptyMessage?: string
 }
 
-export default function EndTaskList({ tareas, onSelectTarea, onBack, fincaNombre }: Props) {
+export default function EndTaskList({
+  tareas,
+  onSelectTarea,
+  onBack,
+  fincaNombre,
+  emptyMessage = 'No hay tareas en progreso',
+}: Props) {
   return (
     <div className="container fade-in">
       <div className="mobile-header">
@@ -22,7 +29,7 @@ export default function EndTaskList({ tareas, onSelectTarea, onBack, fincaNombre
       {tareas.length === 0 ? (
         <div className="empty-state">
           <Inbox size={48} />
-          <p>No hay tareas en progreso</p>
+          <p>{emptyMessage}</p>
         </div>
       ) : (
         tareas.map(tarea => (

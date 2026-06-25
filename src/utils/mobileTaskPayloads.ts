@@ -53,7 +53,7 @@ export function buildManualTaskFirestorePayload(
     cuadros: validated.cuadros,
     cuadroIds: validated.cuadroIds,
     estado: 'en_progreso',
-    operador: ctx.operadorNombre,
+    operador: ctx.operadorNombre.trim(),
     fechaInicio: ctx.fechaInicio,
   }
 }
@@ -74,7 +74,7 @@ export function buildMechanicalTaskFirestorePayload(
     cuadros: validated.cuadros,
     cuadroIds: validated.cuadroIds,
     estado: 'en_progreso',
-    operador: ctx.operadorNombre,
+    operador: ctx.operadorNombre.trim(),
     fechaInicio: ctx.fechaInicio,
   }
 }
