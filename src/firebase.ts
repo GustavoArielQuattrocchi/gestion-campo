@@ -1,6 +1,11 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
-import { initializeFirestore, persistentLocalCache } from 'firebase/firestore'
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  memoryLocalCache,
+} from 'firebase/firestore'
 
 const DEV_FALLBACKS = {
   apiKey: 'AIzaSyBtnzRh7cexw8Z-TTi08vxfU7yEbB5r660',
@@ -35,7 +40,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
 
-/** Caché local persistente: lecturas y escrituras funcionan sin red y se sincronizan al volver. */
-export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache(),
-})
+/** Caché local persistente con soporte multi-tab; fallback a memoria si falla (Safari privado, quota). */
+function createFirestore() {
+  try {
+    return initializeFirestore(app, {
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+    })
+  } catch {
+    return initializeFirestore(app, { localCache: memoryLocalCache() })
+  }
+}
+
+export const db = createFirestore()

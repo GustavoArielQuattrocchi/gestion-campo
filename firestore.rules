@@ -59,7 +59,9 @@ service cloud.firestore {
         || (d.persona is string
           && d.persona.size() > 0
           && d.maquinaria is string
-          && d.maquinaria.size() > 0);
+          && d.maquinaria.size() > 0
+          && (d.get('maquinariaModelo', null) == null || d.maquinariaModelo is string)
+          && (d.get('maquinariaId', null) == null || d.maquinariaId is string));
     }
 
     function operadorCoincideEnAlta() {
