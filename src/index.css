@@ -1568,6 +1568,14 @@ button.task-list-item {
   overflow: hidden;
 }
 
+.metric-modal--content {
+  max-width: 720px;
+}
+
+.metric-modal-body--content {
+  padding: 16px 20px 20px;
+}
+
 .metric-modal-header {
   display: flex;
   align-items: center;

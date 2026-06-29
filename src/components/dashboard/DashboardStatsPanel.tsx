@@ -5,6 +5,7 @@ import {
   Clock,
   TrendingUp,
   CalendarDays,
+  ClipboardList,
 } from 'lucide-react'
 import type { DashboardStats } from '../../utils/dashboardMetrics'
 import type { MetricKey } from '../../utils/getMetricDetail'
@@ -14,16 +15,22 @@ interface Props {
   open: boolean
   onToggle: () => void
   stats: DashboardStats
+  partesCount: number
   metricsNote: string | null
   onSelectMetric: (key: MetricKey) => void
+  onOpenEnProgreso: () => void
+  onOpenPartesLabores: () => void
 }
 
 export default function DashboardStatsPanel({
   open,
   onToggle,
   stats,
+  partesCount,
   metricsNote,
   onSelectMetric,
+  onOpenEnProgreso,
+  onOpenPartesLabores,
 }: Props) {
   return (
     <DashboardPanel
@@ -62,14 +69,27 @@ export default function DashboardStatsPanel({
         <button
           type="button"
           className="stat-card stat-card--interactive"
-          onClick={() => onSelectMetric('en_progreso')}
-          aria-label="Ver detalle: En progreso"
+          onClick={onOpenEnProgreso}
+          aria-label="Ver trabajos en progreso"
         >
           <div className="stat-icon" style={{ background: '#fff7ed', color: '#f97316' }}>
             <Clock size={18} />
           </div>
           <div className="stat-value">{stats.enProgreso}</div>
           <div className="stat-label">En progreso</div>
+        </button>
+
+        <button
+          type="button"
+          className="stat-card stat-card--interactive"
+          onClick={onOpenPartesLabores}
+          aria-label="Ver partes de labores"
+        >
+          <div className="stat-icon" style={{ background: '#ecfdf5', color: '#059669' }}>
+            <ClipboardList size={18} />
+          </div>
+          <div className="stat-value">{partesCount}</div>
+          <div className="stat-label">Partes de labores</div>
         </button>
 
         <button

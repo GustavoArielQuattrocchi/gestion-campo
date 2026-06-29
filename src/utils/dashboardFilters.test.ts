@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import type { Tarea } from '../types'
-import { applyDashboardFilters, sortByFechaInicio } from './dashboardFilters'
+import type { Tarea, ParteDeLabores } from '../types'
+import { applyDashboardFilters, applyPartesDashboardFilters, sortByFechaInicio } from './dashboardFilters'
 
 function mockTs(date: string) {
   return { toDate: () => new Date(date) } as Tarea['fechaInicio']
@@ -59,5 +59,37 @@ describe('sortByFechaInicio', () => {
     ])
     assert.equal(sorted[0].id, '2')
     assert.equal(sorted[1].id, '1')
+  })
+})
+
+function parte(overrides: Partial<ParteDeLabores> & { id: string }): ParteDeLabores {
+  return {
+    tareaId: 't1',
+    fincaId: 'FOA',
+    fincaNombre: 'Finca A',
+    tarea: 'Poda',
+    tipo: 'manual',
+    operador: 'Juan',
+    rendimiento: '10 ha',
+    cuadros: [],
+    cerradoEn: mockTs('2024-06-01T18:00:00') as ParteDeLabores['cerradoEn'],
+    ...overrides,
+  }
+}
+
+describe('applyPartesDashboardFilters', () => {
+  const partes = [
+    parte({ id: '1', fincaNombre: 'Finca A', tipo: 'manual' }),
+    parte({ id: '2', fincaNombre: 'Finca B', tipo: 'mecanica' }),
+  ]
+
+  it('oculta partes si el estado global es solo en progreso', () => {
+    assert.equal(applyPartesDashboardFilters(partes, 'todas', 'todos', 'en_progreso').length, 0)
+  })
+
+  it('filtra por finca y tipo con estado global todos', () => {
+    const result = applyPartesDashboardFilters(partes, 'Finca B', 'mecanica', 'todos')
+    assert.equal(result.length, 1)
+    assert.equal(result[0].id, '2')
   })
 })

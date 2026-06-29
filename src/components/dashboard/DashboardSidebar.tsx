@@ -1,5 +1,5 @@
 import { Clock } from 'lucide-react'
-import type { Tarea, ParteDeLabores } from '../../types'
+import type { Tarea } from '../../types'
 import type { DashboardStats } from '../../utils/dashboardMetrics'
 import type { MetricKey } from '../../utils/getMetricDetail'
 import type { DashboardPanelKey } from '../../hooks/useDashboardTareas'
@@ -7,8 +7,6 @@ import DashboardSidebarHeader from './DashboardSidebarHeader'
 import DashboardStatsPanel from './DashboardStatsPanel'
 import DashboardFiltersPanel from './DashboardFiltersPanel'
 import DashboardTasksPanel from './DashboardTasksPanel'
-import DashboardEnProgresoPanel from './DashboardEnProgresoPanel'
-import DashboardPartesLaboresPanel from './DashboardPartesLaboresPanel'
 
 interface Props {
   open: boolean
@@ -20,8 +18,11 @@ interface Props {
   panelsOpen: Record<DashboardPanelKey, boolean>
   onTogglePanel: (key: DashboardPanelKey) => void
   stats: DashboardStats
+  partesCount: number
   metricsNote: string | null
   onSelectMetric: (key: MetricKey) => void
+  onOpenEnProgreso: () => void
+  onOpenPartesLabores: () => void
   filtroFinca: string
   filtroTipo: string
   filtroEstado: string
@@ -30,18 +31,8 @@ interface Props {
   onTipoChange: (value: string) => void
   onEstadoChange: (value: string) => void
   tareasTabla: Tarea[]
-  tareasGestion: Tarea[]
   hasMore: boolean
   onLoadMore: () => void
-  finalizarCuadro: (tareaId: string, cuadroId: string) => Promise<void>
-  deshacerFinalizacionCuadro: (tareaId: string, cuadroId: string) => Promise<void>
-  finalizarTarea: (tareaId: string) => Promise<void>
-  reabrirTarea: (tareaId: string) => Promise<void>
-  partesLabores: ParteDeLabores[]
-  partesLaboresLoading: boolean
-  partesLaboresError: string | null
-  partesLaboresParseWarning: string | null
-  partesLaboresFincas: string[]
 }
 
 export default function DashboardSidebar({
@@ -54,8 +45,11 @@ export default function DashboardSidebar({
   panelsOpen,
   onTogglePanel,
   stats,
+  partesCount,
   metricsNote,
   onSelectMetric,
+  onOpenEnProgreso,
+  onOpenPartesLabores,
   filtroFinca,
   filtroTipo,
   filtroEstado,
@@ -64,18 +58,8 @@ export default function DashboardSidebar({
   onTipoChange,
   onEstadoChange,
   tareasTabla,
-  tareasGestion,
   hasMore,
   onLoadMore,
-  finalizarCuadro,
-  deshacerFinalizacionCuadro,
-  finalizarTarea,
-  reabrirTarea,
-  partesLabores,
-  partesLaboresLoading,
-  partesLaboresError,
-  partesLaboresParseWarning,
-  partesLaboresFincas,
 }: Props) {
   return (
     <aside className={`dashboard-sidebar ${open ? '' : 'is-collapsed'}`} aria-hidden={!open}>
@@ -128,28 +112,11 @@ export default function DashboardSidebar({
               open={panelsOpen.resumen}
               onToggle={() => onTogglePanel('resumen')}
               stats={stats}
+              partesCount={partesCount}
               metricsNote={metricsNote}
               onSelectMetric={onSelectMetric}
-            />
-
-            <DashboardEnProgresoPanel
-              open={panelsOpen.en_progreso}
-              onToggle={() => onTogglePanel('en_progreso')}
-              tareas={tareasGestion}
-              onFinalizarCuadro={finalizarCuadro}
-              onDeshacerFinalizacionCuadro={deshacerFinalizacionCuadro}
-              onFinalizarTarea={finalizarTarea}
-              onReabrirTarea={reabrirTarea}
-            />
-
-            <DashboardPartesLaboresPanel
-              open={panelsOpen.partes_labores}
-              onToggle={() => onTogglePanel('partes_labores')}
-              partes={partesLabores}
-              loading={partesLaboresLoading}
-              error={partesLaboresError}
-              parseWarning={partesLaboresParseWarning}
-              fincasDisponibles={partesLaboresFincas}
+              onOpenEnProgreso={onOpenEnProgreso}
+              onOpenPartesLabores={onOpenPartesLabores}
             />
 
             <DashboardFiltersPanel

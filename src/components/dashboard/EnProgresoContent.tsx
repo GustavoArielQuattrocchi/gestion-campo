@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Clock, CheckCircle2, RotateCcw } from 'lucide-react'
+import { CheckCircle2, RotateCcw } from 'lucide-react'
 import type { Tarea } from '../../types'
 import { getNombreCuadro } from '../../data/fincaData'
 import {
@@ -8,13 +8,14 @@ import {
   formatProgressLabel,
 } from '../../utils/tareaProgress'
 import { formatTareaMapLabel } from '../../utils/vineyardMapLabels'
-import DashboardPanel from './DashboardPanel'
 import TaskProgressBar from './TaskProgressBar'
 
 interface Props {
-  open: boolean
-  onToggle: () => void
   tareas: Tarea[]
+  filtroFinca: string
+  filtroTarea: string
+  onFiltroFincaChange: (value: string) => void
+  onFiltroTareaChange: (value: string) => void
   onFinalizarCuadro: (tareaId: string, cuadroId: string) => Promise<void>
   onDeshacerFinalizacionCuadro: (tareaId: string, cuadroId: string) => Promise<void>
   onFinalizarTarea: (tareaId: string) => Promise<void>
@@ -31,10 +32,12 @@ function matchesFiltros(
   return true
 }
 
-export default function DashboardEnProgresoPanel({
-  open,
-  onToggle,
+export default function EnProgresoContent({
   tareas,
+  filtroFinca,
+  filtroTarea,
+  onFiltroFincaChange,
+  onFiltroTareaChange,
   onFinalizarCuadro,
   onDeshacerFinalizacionCuadro,
   onFinalizarTarea,
@@ -49,8 +52,6 @@ export default function DashboardEnProgresoPanel({
     [tareas],
   )
 
-  const [filtroFinca, setFiltroFinca] = useState('todas')
-  const [filtroTarea, setFiltroTarea] = useState('todas')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [busyKey, setBusyKey] = useState<string | null>(null)
 
@@ -69,9 +70,9 @@ export default function DashboardEnProgresoPanel({
 
   useEffect(() => {
     if (filtroTarea !== 'todas' && !tareasOpciones.includes(filtroTarea)) {
-      setFiltroTarea('todas')
+      onFiltroTareaChange('todas')
     }
-  }, [filtroTarea, tareasOpciones])
+  }, [filtroTarea, tareasOpciones, onFiltroTareaChange])
 
   const enProgreso = useMemo(
     () => enProgresoAll.filter(t => matchesFiltros(t, filtroFinca, filtroTarea)),
@@ -94,12 +95,7 @@ export default function DashboardEnProgresoPanel({
   }
 
   return (
-    <DashboardPanel
-      title={`Trabajos en progreso (${enProgresoAll.length})`}
-      icon={<Clock size={16} />}
-      open={open}
-      onToggle={onToggle}
-    >
+    <>
       {(enProgresoAll.length > 0 || cerradasAll.length > 0) && (
         <div className="en-progreso-filters">
           <label className="en-progreso-filter">
@@ -107,7 +103,7 @@ export default function DashboardEnProgresoPanel({
             <select
               className="form-select"
               value={filtroFinca}
-              onChange={e => setFiltroFinca(e.target.value)}
+              onChange={e => onFiltroFincaChange(e.target.value)}
             >
               <option value="todas">Todas las fincas</option>
               {fincasOpciones.map(finca => (
@@ -122,7 +118,7 @@ export default function DashboardEnProgresoPanel({
             <select
               className="form-select"
               value={filtroTarea}
-              onChange={e => setFiltroTarea(e.target.value)}
+              onChange={e => onFiltroTareaChange(e.target.value)}
             >
               <option value="todas">Todas las tareas</option>
               {tareasOpciones.map(nombre => (
@@ -293,6 +289,6 @@ export default function DashboardEnProgresoPanel({
           </ul>
         </div>
       )}
-    </DashboardPanel>
+    </>
   )
 }
