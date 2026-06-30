@@ -12,7 +12,9 @@
     "deploy:all": "npm run build && npx firebase-tools deploy --only hosting,firestore",
     "preview": "vite preview",
     "test": "node scripts/run-tests.mjs",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "audit:cuadros": "node scripts/audit-cuadros-map-vs-catalog.mjs",
+    "sync:cuadros": "node scripts/sync-cuadros-catalog-from-mapa.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",

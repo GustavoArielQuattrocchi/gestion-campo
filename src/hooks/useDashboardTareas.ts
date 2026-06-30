@@ -22,7 +22,7 @@ import {
   readFilterParam,
 } from '../utils/dashboardState'
 
-export type DashboardPanelKey = 'resumen' | 'filtros' | 'tareas'
+export type DashboardPanelKey = 'resumen' | 'filtros' | 'tareas' | 'qr_cuadros'
 
 export function useDashboardTareas() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -48,6 +48,7 @@ export function useDashboardTareas() {
     resumen: true,
     filtros: true,
     tareas: false,
+    qr_cuadros: false,
   })
   const [selectedMetric, setSelectedMetric] = useState<MetricKey | null>(null)
   const [parseWarning, setParseWarning] = useState<string | null>(null)

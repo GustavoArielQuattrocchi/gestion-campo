@@ -7,6 +7,7 @@ import DashboardSidebarHeader from './DashboardSidebarHeader'
 import DashboardStatsPanel from './DashboardStatsPanel'
 import DashboardFiltersPanel from './DashboardFiltersPanel'
 import DashboardTasksPanel from './DashboardTasksPanel'
+import DashboardQrPanel from './qr/DashboardQrPanel'
 
 interface Props {
   open: boolean
@@ -129,6 +130,11 @@ export default function DashboardSidebar({
               onFincaChange={onFincaChange}
               onTipoChange={onTipoChange}
               onEstadoChange={onEstadoChange}
+            />
+
+            <DashboardQrPanel
+              open={panelsOpen.qr_cuadros}
+              onToggle={() => onTogglePanel('qr_cuadros')}
             />
 
             <DashboardTasksPanel

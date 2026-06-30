@@ -12,10 +12,12 @@ import {
   getFincaBounds,
   getFincaPrefix,
   getGlobalBounds,
-  parseDescripcion,
   type CuadroFeature,
   type CuadroFeatureProps,
 } from '../../data/mapaData'
+import { getCuadroDetalleById } from '../../data/fincaData'
+import { formatHectareas } from '../../utils/cuadroQr'
+import CuadroCatalogoResumen from '../cuadro/CuadroCatalogoResumen'
 import { formatTareaMapLabel } from '../../utils/vineyardMapLabels'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 import TaskProgressBar from './TaskProgressBar'
@@ -186,13 +188,13 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
   // Tooltip y click en cada feature.
   const onEachFeature = (feature: Feature, layer: Layer) => {
     const props = feature.properties as CuadroFeatureProps
-    const datos = parseDescripcion(props.description)
-    const variedad = datos['Variedad'] ?? datos['Cultivo'] ?? '—'
-    const has = datos['Hectareas'] ?? '—'
+    const cuadro = getCuadroDetalleById(props.name)
+    const variedad = cuadro?.variedad ?? '—'
+    const has = cuadro ? formatHectareas(cuadro.hectareas) : '—'
     const tooltipHtml = `
       <div style="font-size:12px;line-height:1.35">
-        <strong>${props.name}</strong><br/>
-        ${variedad} · ${has} ha
+        <strong>${cuadro?.nombre ?? props.name}</strong><br/>
+        ${variedad} · ${has}
       </div>
     `
     layer.bindTooltip(tooltipHtml, { sticky: true, direction: 'top' })
@@ -228,10 +230,10 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
   const detallesSeleccion = useMemo(() => {
     if (!seleccionado) return null
     const props = seleccionado.properties
+    const cuadro = getCuadroDetalleById(props.name)
     return {
       name: props.name,
-      finca: getFincaPrefix(props.name) ?? '—',
-      datos: parseDescripcion(props.description),
+      cuadro,
       estado: estadoPorCuadro.get(props.name),
     }
   }, [seleccionado, estadoPorCuadro])
@@ -293,22 +295,23 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
         <aside className="map-detail">
           <header>
             <div>
-              <div className="map-detail-name">{detallesSeleccion.name}</div>
-              <div className="map-detail-finca">Finca {detallesSeleccion.finca}</div>
+              <div className="map-detail-name">
+                {detallesSeleccion.cuadro?.nombre ?? detallesSeleccion.name}
+              </div>
+              <div className="map-detail-finca">
+                Finca {detallesSeleccion.cuadro?.finca ?? getFincaPrefix(detallesSeleccion.name) ?? '—'}
+              </div>
             </div>
             <button className="map-detail-close" onClick={() => setSeleccionado(null)}>
               ×
             </button>
           </header>
 
-          <dl className="map-detail-grid">
-            {Object.entries(detallesSeleccion.datos).map(([k, v]) => (
-              <div key={k} className="map-detail-row">
-                <dt>{k}</dt>
-                <dd>{v}</dd>
-              </div>
-            ))}
-          </dl>
+          {detallesSeleccion.cuadro ? (
+            <CuadroCatalogoResumen cuadro={detallesSeleccion.cuadro} compact />
+          ) : (
+            <p className="dashboard-panel-empty">Cuadro sin datos en el catálogo.</p>
+          )}
 
           {detallesSeleccion.estado && (
             <div className="map-detail-tasks">

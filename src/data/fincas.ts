@@ -4,6 +4,8 @@ export interface CuadroCatalogo {
   variedad: string
   vinedo: string
   hectareas: number
+  /** Campos técnicos del mapa/KML (Pie, Clon, Año de plantación, etc.) */
+  extras?: Record<string, string>
 }
 
 export const BASE_DATOS_FINCAS: Record<string, CuadroCatalogo[]> = {

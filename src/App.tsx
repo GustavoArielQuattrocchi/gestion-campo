@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 const MobileApp = lazy(() => import('./pages/MobileApp'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const OrdenesCuraPage = lazy(() => import('./modules/ordenesCura/OrdenesCuraPage'))
+const CuadroPublicPage = lazy(() => import('./pages/CuadroPublicPage'))
 
 function RouteFallback() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/campo/*" element={<MobileApp />} />
         <Route path="/escritorio" element={<Dashboard />} />
         <Route path="/ordenes-de-cura" element={<OrdenesCuraPage />} />
+        <Route path="/cuadro/:fincaId/:cuadroId" element={<CuadroPublicPage />} />
       </Routes>
     </Suspense>
   )
