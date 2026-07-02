@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, RotateCcw } from 'lucide-react'
+import { CheckCircle2, RotateCcw, Trash2 } from 'lucide-react'
 import type { Tarea } from '../../types'
 import { getNombreCuadro } from '../../data/fincaData'
 import {
@@ -20,6 +20,7 @@ interface Props {
   onDeshacerFinalizacionCuadro: (tareaId: string, cuadroId: string) => Promise<void>
   onFinalizarTarea: (tareaId: string) => Promise<void>
   onReabrirTarea: (tareaId: string) => Promise<void>
+  onEliminarTarea: (tareaId: string) => Promise<void>
 }
 
 function matchesFiltros(
@@ -42,6 +43,7 @@ export default function EnProgresoContent({
   onDeshacerFinalizacionCuadro,
   onFinalizarTarea,
   onReabrirTarea,
+  onEliminarTarea,
 }: Props) {
   const enProgresoAll = useMemo(
     () => tareas.filter(t => t.estado === 'en_progreso'),
@@ -92,6 +94,15 @@ export default function EnProgresoContent({
     } finally {
       setBusyKey(null)
     }
+  }
+
+  const confirmarEliminar = (tarea: Tarea) => {
+    const ok = window.confirm(
+      `¿Eliminar definitivamente la tarea "${tarea.tarea}" (${tarea.fincaNombre})?\n\n` +
+        'Se borrará la tarea y todos sus partes de labores asociados. Esta acción no se puede deshacer.',
+    )
+    if (!ok) return
+    void runAction(`delete:${tarea.id}`, () => onEliminarTarea(tarea.id))
   }
 
   return (
@@ -237,21 +248,32 @@ export default function EnProgresoContent({
                       </div>
                     )}
 
-                    <button
-                      type="button"
-                      className="btn-cerrar-tarea"
-                      disabled={!puedeCerrar || busyKey !== null}
-                      title={
-                        puedeCerrar
-                          ? 'Marcar la tarea como finalizada en el dashboard'
-                          : 'Finalizá todos los cuadros antes de cerrar la tarea'
-                      }
-                      onClick={() =>
-                        runAction(`close:${tarea.id}`, () => onFinalizarTarea(tarea.id))
-                      }
-                    >
-                      {busyKey === `close:${tarea.id}` ? 'Cerrando…' : 'Cerrar tarea'}
-                    </button>
+                    <div className="en-progreso-detail-actions">
+                      <button
+                        type="button"
+                        className="btn-cerrar-tarea"
+                        disabled={!puedeCerrar || busyKey !== null}
+                        title={
+                          puedeCerrar
+                            ? 'Marcar la tarea como finalizada en el dashboard'
+                            : 'Finalizá todos los cuadros antes de cerrar la tarea'
+                        }
+                        onClick={() =>
+                          runAction(`close:${tarea.id}`, () => onFinalizarTarea(tarea.id))
+                        }
+                      >
+                        {busyKey === `close:${tarea.id}` ? 'Cerrando…' : 'Cerrar tarea'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-eliminar-tarea"
+                        disabled={busyKey !== null}
+                        onClick={() => confirmarEliminar(tarea)}
+                      >
+                        <Trash2 size={14} />
+                        {busyKey === `delete:${tarea.id}` ? 'Eliminando…' : 'Eliminar'}
+                      </button>
+                    </div>
                   </div>
                 )}
               </li>
@@ -274,15 +296,26 @@ export default function EnProgresoContent({
                       {tarea.fincaNombre} · {formatTareaMapLabel(tarea)}
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    className="btn-reabrir-tarea"
-                    disabled={busyKey !== null}
-                    onClick={() => runAction(key, () => onReabrirTarea(tarea.id))}
-                  >
-                    <RotateCcw size={14} />
-                    {busyKey === key ? 'Reabriendo…' : 'Reabrir tarea'}
-                  </button>
+                  <div className="en-progreso-cerrada-actions">
+                    <button
+                      type="button"
+                      className="btn-reabrir-tarea"
+                      disabled={busyKey !== null}
+                      onClick={() => runAction(key, () => onReabrirTarea(tarea.id))}
+                    >
+                      <RotateCcw size={14} />
+                      {busyKey === key ? 'Reabriendo…' : 'Reabrir tarea'}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-eliminar-tarea"
+                      disabled={busyKey !== null}
+                      onClick={() => confirmarEliminar(tarea)}
+                    >
+                      <Trash2 size={14} />
+                      {busyKey === `delete:${tarea.id}` ? 'Eliminando…' : 'Eliminar'}
+                    </button>
+                  </div>
                 </li>
               )
             })}

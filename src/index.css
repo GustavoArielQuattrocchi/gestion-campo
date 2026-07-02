@@ -1446,7 +1446,8 @@ button.task-list-item {
 .btn-finalizar-cuadro,
 .btn-deshacer-cuadro,
 .btn-cerrar-tarea,
-.btn-reabrir-tarea {
+.btn-reabrir-tarea,
+.btn-eliminar-tarea {
   border: none;
   border-radius: 6px;
   padding: 6px 10px;
@@ -1466,7 +1467,8 @@ button.task-list-item {
 .btn-finalizar-cuadro:disabled,
 .btn-deshacer-cuadro:disabled,
 .btn-cerrar-tarea:disabled,
-.btn-reabrir-tarea:disabled {
+.btn-reabrir-tarea:disabled,
+.btn-eliminar-tarea:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -1514,6 +1516,30 @@ button.task-list-item {
   background: #eff6ff;
   color: #1d4ed8;
   border: 1px solid #bfdbfe;
+}
+
+.btn-eliminar-tarea {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.en-progreso-cerrada-actions,
+.en-progreso-detail-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.en-progreso-cerrada-actions > *,
+.en-progreso-detail-actions > * {
+  flex: 1;
+  margin-top: 0;
 }
 
 .rendimiento-history {

@@ -44,6 +44,7 @@ export default function Dashboard() {
     deshacerFinalizacionCuadro,
     finalizarTarea,
     reabrirTarea,
+    eliminarTarea,
   } = useDashboardTareas()
 
   const {
@@ -134,6 +135,7 @@ export default function Dashboard() {
           onDeshacerFinalizacionCuadro={deshacerFinalizacionCuadro}
           onFinalizarTarea={finalizarTarea}
           onReabrirTarea={reabrirTarea}
+          onEliminarTarea={eliminarTarea}
         />
       </DashboardContentModal>
 

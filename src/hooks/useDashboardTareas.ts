@@ -12,6 +12,7 @@ import { TAREAS_PAGE_SIZE } from '../utils/dashboardState'
 import { parseFirestoreError } from '../utils/firestoreError'
 import { applyDashboardFilters, sortByFechaInicio } from '../utils/dashboardFilters'
 import { allCuadrosTareaFinalizados } from '../utils/tareaProgress'
+import { deleteTareaConPartes } from '../utils/tareaMutations'
 import {
   buildFilterSearchParams,
   buildInvalidDocsWarning,
@@ -172,6 +173,17 @@ export function useDashboardTareas() {
       'No se pudo reabrir la tarea. Revisá la conexión y las reglas de Firestore.')
   }, [allTareas, runTareaUpdate])
 
+  const eliminarTarea = useCallback(async (tareaId: string) => {
+    setActionError(null)
+    try {
+      await deleteTareaConPartes(tareaId)
+    } catch (err) {
+      console.error('[Dashboard] No se pudo eliminar la tarea', err)
+      setActionError('No se pudo eliminar la tarea. Revisá la conexión y las reglas de Firestore.')
+      throw err
+    }
+  }, [])
+
   return {
     loading,
     hasMore,
@@ -202,5 +214,6 @@ export function useDashboardTareas() {
     deshacerFinalizacionCuadro,
     finalizarTarea,
     reabrirTarea,
+    eliminarTarea,
   }
 }

@@ -150,7 +150,7 @@ service cloud.firestore {
         || (esActualizacionDashboard() && validActualizacionDashboard())
         || (esAdmin() && esGestionRendimientoDashboard())
       );
-      allow delete: if false;
+      allow delete: if esAdmin();
     }
 
     match /informes_accidente/{informeId} {
