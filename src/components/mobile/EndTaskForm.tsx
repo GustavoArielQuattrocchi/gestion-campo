@@ -1,22 +1,33 @@
 import { useState } from 'react'
 import { ChevronLeft, Save } from 'lucide-react'
-import type { Tarea } from '../../types'
+import type { RendimientoUnidad, Tarea } from '../../types'
+import { RENDIMIENTO_UNIDADES } from '../../types'
 
 interface Props {
   tarea: Tarea
-  onSubmit: (rendimiento: string) => Promise<void>
+  onSubmit: (
+    cantidad: number,
+    unidad: RendimientoUnidad,
+    finalizarTarea: boolean,
+  ) => Promise<void>
   onBack: () => void
 }
 
 export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
-  const [rendimiento, setRendimiento] = useState('')
+  const [cantidad, setCantidad] = useState('')
+  const [unidad, setUnidad] = useState<RendimientoUnidad | ''>('')
+  const [tareaTerminada, setTareaTerminada] = useState(false)
   const [saving, setSaving] = useState(false)
 
+  const cantidadNum = Number(cantidad)
+  const cantidadValida = cantidad.trim() !== '' && Number.isFinite(cantidadNum) && cantidadNum > 0
+  const formValido = cantidadValida && unidad !== ''
+
   const handleSubmit = async () => {
-    if (!rendimiento.trim() || saving) return
+    if (!formValido || saving) return
     setSaving(true)
     try {
-      await onSubmit(rendimiento)
+      await onSubmit(cantidadNum, unidad as RendimientoUnidad, tareaTerminada)
     } finally {
       setSaving(false)
     }
@@ -97,26 +108,71 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
 
       <div className="card">
         <div className="card-title">Rendimiento del día</div>
-        <div className="form-group" style={{ marginBottom: 0 }}>
-          <input
-            type="text"
-            className="form-input"
-            placeholder="Ej: 500 kg cosechados, 3 hectáreas fumigadas..."
-            value={rendimiento}
-            onChange={e => setRendimiento(e.target.value)}
-            disabled={saving}
-          />
+        <div className="rendimiento-fields">
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Cantidad</label>
+            <input
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="any"
+              className="form-input"
+              placeholder="Ej: 12"
+              value={cantidad}
+              onChange={e => setCantidad(e.target.value)}
+              disabled={saving}
+            />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Unidad</label>
+            <select
+              className="form-input"
+              value={unidad}
+              onChange={e => setUnidad(e.target.value as RendimientoUnidad | '')}
+              disabled={saving}
+            >
+              <option value="" disabled>
+                Elegir…
+              </option>
+              {RENDIMIENTO_UNIDADES.map(u => (
+                <option key={u} value={u}>
+                  {u}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
+
+      <label className="end-task-finalizar">
+        <input
+          type="checkbox"
+          checked={tareaTerminada}
+          onChange={e => setTareaTerminada(e.target.checked)}
+          disabled={saving}
+        />
+        <span>
+          <strong>La tarea quedó terminada</strong>
+          <small>
+            {tareaTerminada
+              ? 'Se guardará el parte y la tarea no volverá a aparecer en la app.'
+              : 'Si el trabajo sigue mañana, dejalo desmarcado para cerrar solo el día.'}
+          </small>
+        </span>
+      </label>
 
       <button
         className="btn btn-primary"
         onClick={handleSubmit}
-        disabled={!rendimiento.trim() || saving}
-        style={{ opacity: rendimiento.trim() && !saving ? 1 : 0.5, marginBottom: 24 }}
+        disabled={!formValido || saving}
+        style={{ opacity: formValido && !saving ? 1 : 0.5, marginBottom: 24 }}
       >
         <Save size={18} />
-        {saving ? 'Guardando...' : 'Cerrar parte de labores'}
+        {saving
+          ? 'Guardando...'
+          : tareaTerminada
+            ? 'Cerrar parte y terminar tarea'
+            : 'Cerrar parte de labores'}
       </button>
     </div>
   )

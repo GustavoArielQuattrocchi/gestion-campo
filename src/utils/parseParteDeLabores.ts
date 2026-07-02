@@ -1,5 +1,6 @@
 import type { Timestamp } from 'firebase/firestore'
 import type { ParteDeLabores, TareaTipo } from '../types'
+import { isRendimientoUnidad } from './rendimiento'
 
 function isTimestamp(value: unknown): value is Timestamp {
   return (
@@ -34,6 +35,14 @@ export function parseParteDeLabores(
     ? raw.cuadroIds.filter((c): c is string => typeof c === 'string' && c.trim().length > 0)
     : undefined
 
+  const rendimientoCantidad =
+    typeof raw.rendimientoCantidad === 'number' && Number.isFinite(raw.rendimientoCantidad)
+      ? raw.rendimientoCantidad
+      : undefined
+  const rendimientoUnidad = isRendimientoUnidad(raw.rendimientoUnidad)
+    ? raw.rendimientoUnidad
+    : undefined
+
   const base: ParteDeLabores = {
     id,
     tareaId,
@@ -43,6 +52,8 @@ export function parseParteDeLabores(
     tipo,
     operador,
     rendimiento,
+    ...(rendimientoCantidad !== undefined ? { rendimientoCantidad } : {}),
+    ...(rendimientoUnidad ? { rendimientoUnidad } : {}),
     cuadros,
     ...(cuadroIds?.length ? { cuadroIds } : {}),
     cerradoEn: raw.cerradoEn,

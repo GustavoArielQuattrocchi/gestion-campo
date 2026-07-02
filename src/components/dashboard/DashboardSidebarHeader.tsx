@@ -1,7 +1,10 @@
-import { Sprout, Smartphone, FileText } from 'lucide-react'
+import { Sprout, Smartphone, FileText, LogOut } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../../providers/AuthProvider'
 
 export default function DashboardSidebarHeader() {
+  const { user, logout } = useAuth()
+
   return (
     <div className="dashboard-sidebar-header">
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -11,6 +14,19 @@ export default function DashboardSidebarHeader() {
           <p className="subtitle">Panel de control</p>
         </div>
       </div>
+      {user?.email && (
+        <div className="dashboard-sidebar-account">
+          <span title={user.email}>{user.email}</span>
+          <button
+            type="button"
+            className="btn-icon"
+            onClick={() => logout()}
+            title="Cerrar sesión"
+          >
+            <LogOut size={14} /> Salir
+          </button>
+        </div>
+      )}
       <div className="dashboard-sidebar-actions">
         <Link to="/campo" style={{ textDecoration: 'none', flex: 1 }}>
           <button

@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import AdminGate from './components/auth/AdminGate'
 
 const MobileApp = lazy(() => import('./pages/MobileApp'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -29,8 +30,22 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/campo" replace />} />
         <Route path="/campo/*" element={<MobileApp />} />
-        <Route path="/escritorio" element={<Dashboard />} />
-        <Route path="/ordenes-de-cura" element={<OrdenesCuraPage />} />
+        <Route
+          path="/escritorio"
+          element={
+            <AdminGate>
+              <Dashboard />
+            </AdminGate>
+          }
+        />
+        <Route
+          path="/ordenes-de-cura"
+          element={
+            <AdminGate>
+              <OrdenesCuraPage />
+            </AdminGate>
+          }
+        />
         <Route path="/cuadro/:fincaId/:cuadroId" element={<CuadroPublicPage />} />
       </Routes>
     </Suspense>

@@ -40,11 +40,27 @@ export interface CuadroSelection {
 
 export const emptyCuadroSelection = (): CuadroSelection => ({ cuadros: [], cuadroIds: [] })
 
+/** Unidades de medida disponibles para el rendimiento de una labor. */
+export type RendimientoUnidad = 'jornal' | 'hileras' | 'claros' | 'plantas'
+
+export const RENDIMIENTO_UNIDADES: RendimientoUnidad[] = [
+  'jornal',
+  'hileras',
+  'claros',
+  'plantas',
+]
+
 /** Registro diario de rendimiento desde la app campo (la tarea sigue en progreso). */
 export interface RendimientoDiario {
   fecha: Timestamp
   texto: string
   operador: string
+  /** Valor numérico del rendimiento (documentos nuevos). */
+  cantidad?: number
+  /** Unidad de medida asociada (documentos nuevos). */
+  unidad?: RendimientoUnidad
+  /** Id del parte de labores vinculado a este registro. */
+  parteId?: string
 }
 
 interface TareaBase {
@@ -94,6 +110,10 @@ export interface ParteDeLabores {
   tipo: TareaTipo
   operador: string
   rendimiento: string
+  /** Valor numérico del rendimiento (documentos nuevos). */
+  rendimientoCantidad?: number
+  /** Unidad de medida del rendimiento (documentos nuevos). */
+  rendimientoUnidad?: RendimientoUnidad
   cuadros: string[]
   cuadroIds?: string[]
   cuadrilla?: string

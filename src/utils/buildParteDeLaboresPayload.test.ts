@@ -54,4 +54,17 @@ describe('buildParteDeLaboresPayload', () => {
     assert.equal(payload.maquinariaId, 'FOA-2')
     assert.equal(payload.persona, 'Pedro')
   })
+
+  it('incluye cantidad y unidad numéricas cuando se proveen', () => {
+    const payload = buildParteDeLaboresPayload(manual, '12 jornal', 'María', mockTs, 12, 'jornal')
+    assert.equal(payload.rendimiento, '12 jornal')
+    assert.equal(payload.rendimientoCantidad, 12)
+    assert.equal(payload.rendimientoUnidad, 'jornal')
+  })
+
+  it('omite cantidad y unidad si no se proveen (legacy)', () => {
+    const payload = buildParteDeLaboresPayload(manual, '3 ha', 'María', mockTs)
+    assert.equal('rendimientoCantidad' in payload, false)
+    assert.equal('rendimientoUnidad' in payload, false)
+  })
 })

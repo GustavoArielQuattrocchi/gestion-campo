@@ -19,10 +19,12 @@ import {
   onSnapshotsInSync,
   Timestamp,
   arrayUnion,
+  updateDoc,
   writeBatch,
 } from 'firebase/firestore'
 import { auth, db } from '../firebase'
-import type { Tarea } from '../types'
+import type { RendimientoUnidad, Tarea } from '../types'
+import { formatRendimiento } from '../utils/rendimiento'
 import { MOBILE_ROUTES } from '../mobile/routes'
 import { parseTareasFromSnapshot } from '../utils/parseTarea'
 import type { MobileToastState, MobileToastVariant } from '../components/mobile/MobileToast'
@@ -93,7 +95,12 @@ interface MobileAppContextValue {
     cuadros: string[]
     cuadroIds: string[]
   }) => Promise<boolean>
-  handleRegisterRendimiento: (tareaId: string, rendimiento: string) => Promise<void>
+  handleRegisterRendimiento: (
+    tareaId: string,
+    cantidad: number,
+    unidad: RendimientoUnidad,
+    finalizarTarea?: boolean,
+  ) => Promise<void>
   handleAccidentSuccess: (detail?: string) => void
   getTareaActiva: (tareaId: string) => Tarea | undefined
 }
@@ -325,45 +332,69 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     }
   }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync])
 
-  const handleRegisterRendimiento = useCallback(async (tareaId: string, rendimiento: string) => {
+  const handleRegisterRendimiento = useCallback(async (
+    tareaId: string,
+    cantidad: number,
+    unidad: RendimientoUnidad,
+    finalizarTarea = false,
+  ) => {
     if (submittingRef.current) return
     const tarea = tareasActivas.find(t => t.id === tareaId)
     if (!tarea) return
 
-    const texto = rendimiento.trim()
-    if (!texto) return
-
-    const entry = {
-      fecha: Timestamp.now(),
-      texto,
-      operador: operadorNombre,
-    }
+    if (!Number.isFinite(cantidad) || cantidad <= 0) return
+    const texto = formatRendimiento(cantidad, unidad)
 
     submittingRef.current = true
     try {
       await registerOperador(operadorNombre)
       const cerradoEn = Timestamp.now()
       const batch = writeBatch(db)
+      const parteRef = doc(collection(db, 'partes_labores'))
+      const entry = {
+        fecha: Timestamp.now(),
+        texto,
+        operador: operadorNombre,
+        cantidad,
+        unidad,
+        parteId: parteRef.id,
+      }
       batch.update(doc(db, 'tareas', tareaId), {
         rendimientosDiarios: arrayUnion(entry),
         rendimiento: texto,
       })
-      const parteRef = doc(collection(db, 'partes_labores'))
-      batch.set(parteRef, buildParteDeLaboresPayload(tarea, texto, operadorNombre, cerradoEn))
+      batch.set(
+        parteRef,
+        buildParteDeLaboresPayload(tarea, texto, operadorNombre, cerradoEn, cantidad, unidad),
+      )
       await batch.commit()
+
+      if (finalizarTarea) {
+        await updateDoc(doc(db, 'tareas', tareaId), {
+          estado: 'finalizada',
+          fechaFin: Timestamp.now(),
+        })
+      }
+
       setFirestoreError(null)
       if (!navigator.onLine) {
         markPendingSync()
         showToast(OFFLINE_WRITE_TOAST, 'info')
       }
       setSuccessMsg({
-        message: 'Parte de labores cerrado',
-        detail: `${tarea.tarea} — ${texto}`,
+        message: finalizarTarea ? 'Tarea finalizada' : 'Parte de labores cerrado',
+        detail: finalizarTarea
+          ? `${tarea.tarea} — ${texto}`
+          : `${tarea.tarea} — ${texto}`,
       })
       navigate(`${MOBILE_ROUTES.exito}?motivo=rendimiento`)
     } catch (err) {
       console.error('Error al cerrar parte de labores:', err)
-      setFirestoreError('Error al guardar el parte de labores. Revisá la conexión y las reglas de Firestore.')
+      setFirestoreError(
+        finalizarTarea
+          ? 'Error al guardar el parte o finalizar la tarea. Revisá la conexión y las reglas de Firestore.'
+          : 'Error al guardar el parte de labores. Revisá la conexión y las reglas de Firestore.',
+      )
     } finally {
       submittingRef.current = false
     }

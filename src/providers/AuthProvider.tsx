@@ -1,21 +1,56 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { onAuthStateChanged, signInAnonymously, type User } from 'firebase/auth'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import {
+  onAuthStateChanged,
+  signInAnonymously,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  signOut,
+  type User,
+} from 'firebase/auth'
 import { auth } from '../firebase'
+
+/** Dominio de correo autorizado para administradores del escritorio. */
+export const ADMIN_EMAIL_DOMAIN = 'salentein.com'
+
+export function isAdminEmail(email: string | null | undefined): boolean {
+  return typeof email === 'string' && email.trim().toLowerCase().endsWith(`@${ADMIN_EMAIL_DOMAIN}`)
+}
+
+/** Un usuario es admin si tiene sesión con contraseña, dominio autorizado y email verificado. */
+export function isAdminUser(user: User | null): boolean {
+  return (
+    !!user &&
+    !user.isAnonymous &&
+    isAdminEmail(user.email) &&
+    user.emailVerified
+  )
+}
 
 interface AuthContextValue {
   user: User | null
   ready: boolean
   error: string | null
+  isAdmin: boolean
+  loginAdmin: (email: string, password: string) => Promise<void>
+  registerAdmin: (email: string, password: string) => Promise<void>
+  resendVerification: () => Promise<void>
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
   ready: false,
   error: null,
+  isAdmin: false,
+  loginAdmin: async () => {},
+  registerAdmin: async () => {},
+  resendVerification: async () => {},
+  logout: async () => {},
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthContextValue>({
+  const [state, setState] = useState<{ user: User | null; ready: boolean; error: string | null }>({
     user: null,
     ready: false,
     error: null,
@@ -54,6 +89,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe
   }, [])
 
+  const loginAdmin = useCallback(async (email: string, password: string) => {
+    const normalized = email.trim().toLowerCase()
+    if (!isAdminEmail(normalized)) {
+      throw new Error(`Solo se permiten cuentas @${ADMIN_EMAIL_DOMAIN}.`)
+    }
+    const credential = await signInWithEmailAndPassword(auth, normalized, password)
+    // Defensa extra: si por algún motivo el dominio no coincide, cerrar sesión.
+    if (!isAdminEmail(credential.user.email)) {
+      await signOut(auth)
+      throw new Error(`Solo se permiten cuentas @${ADMIN_EMAIL_DOMAIN}.`)
+    }
+  }, [])
+
+  const registerAdmin = useCallback(async (email: string, password: string) => {
+    const normalized = email.trim().toLowerCase()
+    if (!isAdminEmail(normalized)) {
+      throw new Error(`Solo se permiten cuentas @${ADMIN_EMAIL_DOMAIN}.`)
+    }
+    const credential = await createUserWithEmailAndPassword(auth, normalized, password)
+    if (!isAdminEmail(credential.user.email)) {
+      await signOut(auth)
+      throw new Error(`Solo se permiten cuentas @${ADMIN_EMAIL_DOMAIN}.`)
+    }
+    await sendEmailVerification(credential.user)
+  }, [])
+
+  const resendVerification = useCallback(async () => {
+    if (auth.currentUser && !auth.currentUser.isAnonymous) {
+      await sendEmailVerification(auth.currentUser)
+    }
+  }, [])
+
+  const logout = useCallback(async () => {
+    await signOut(auth)
+  }, [])
+
   if (!state.ready) {
     return (
       <div className="auth-shell">
@@ -70,7 +141,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     )
   }
 
-  return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>
+  const value: AuthContextValue = {
+    user: state.user,
+    ready: state.ready,
+    error: state.error,
+    isAdmin: isAdminUser(state.user),
+    loginAdmin,
+    registerAdmin,
+    resendVerification,
+    logout,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth(): AuthContextValue {

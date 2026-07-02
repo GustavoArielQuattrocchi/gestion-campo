@@ -61,7 +61,9 @@ function FinalizarDetalleRoute() {
   return (
     <EndTaskForm
       tarea={tarea}
-      onSubmit={rendimiento => handleRegisterRendimiento(tareaId, rendimiento)}
+      onSubmit={(cantidad, unidad, finalizarTarea) =>
+        handleRegisterRendimiento(tareaId, cantidad, unidad, finalizarTarea)
+      }
       onBack={() => navigate(MOBILE_ROUTES.finalizar)}
     />
   )

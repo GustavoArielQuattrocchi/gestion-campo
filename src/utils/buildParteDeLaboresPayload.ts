@@ -1,5 +1,5 @@
 import type { Timestamp } from 'firebase/firestore'
-import type { ParteDeLabores, Tarea } from '../types'
+import type { ParteDeLabores, RendimientoUnidad, Tarea } from '../types'
 
 export type ParteDeLaboresFirestorePayload = Omit<ParteDeLabores, 'id'>
 
@@ -8,6 +8,8 @@ export function buildParteDeLaboresPayload(
   rendimiento: string,
   operador: string,
   cerradoEn: Timestamp,
+  rendimientoCantidad?: number,
+  rendimientoUnidad?: RendimientoUnidad,
 ): ParteDeLaboresFirestorePayload {
   const base = {
     tareaId: tarea.id,
@@ -17,6 +19,8 @@ export function buildParteDeLaboresPayload(
     tipo: tarea.tipo,
     operador: operador.trim(),
     rendimiento: rendimiento.trim(),
+    ...(typeof rendimientoCantidad === 'number' ? { rendimientoCantidad } : {}),
+    ...(rendimientoUnidad ? { rendimientoUnidad } : {}),
     cuadros: tarea.cuadros ?? [],
     ...(tarea.cuadroIds?.length ? { cuadroIds: tarea.cuadroIds } : {}),
     cerradoEn,
