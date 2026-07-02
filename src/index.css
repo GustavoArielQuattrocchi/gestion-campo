@@ -142,6 +142,67 @@
   cursor: not-allowed;
 }
 
+.password-field {
+  position: relative;
+}
+
+.password-field .form-input {
+  width: 100%;
+  padding-right: 42px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--gray-500);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.password-toggle:hover:not(:disabled) {
+  color: var(--gray-700);
+  background: var(--gray-100);
+}
+
+.password-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-gate-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+}
+
+.admin-gate-hint--warn {
+  color: var(--red-500);
+}
+
+.admin-gate-hint--ok {
+  color: var(--green-700);
+}
+
+.admin-gate-spam-hint {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--gray-700);
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-sm);
+  text-align: left;
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--gray-50);

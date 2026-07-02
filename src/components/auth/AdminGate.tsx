@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react'
-import { LogIn, MailCheck, RefreshCw, ShieldCheck, UserPlus } from 'lucide-react'
+import { Eye, EyeOff, LogIn, MailCheck, RefreshCw, ShieldCheck, UserPlus } from 'lucide-react'
 import { ADMIN_EMAIL_DOMAIN, isAdminEmail, useAuth } from '../../providers/AuthProvider'
+
+const MIN_PASSWORD_LENGTH = 6
 
 type Mode = 'login' | 'register'
 
@@ -31,6 +33,8 @@ export default function AdminGate({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -43,15 +47,34 @@ export default function AdminGate({ children }: { children: ReactNode }) {
   const dominioValido = isAdminEmail(user?.email)
   const necesitaVerificar = logueadoNoAdmin && dominioValido && !user?.emailVerified
 
+  const esRegistro = mode === 'register'
+  const passwordsCoinciden = password === confirmPassword
+  const passwordSuficiente = password.length >= MIN_PASSWORD_LENGTH
+  const registroValido = passwordSuficiente && passwordsCoinciden
+  const submitDeshabilitado =
+    busy || !email.trim() || !password.trim() || (esRegistro && !registroValido)
+
   const toggleMode = () => {
     setMode(m => (m === 'login' ? 'register' : 'login'))
     setError(null)
     setInfo(null)
+    setConfirmPassword('')
+    setShowPassword(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (busy) return
+    if (esRegistro) {
+      if (!passwordSuficiente) {
+        setError(`La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`)
+        return
+      }
+      if (!passwordsCoinciden) {
+        setError('Las contraseñas no coinciden.')
+        return
+      }
+    }
     setBusy(true)
     setError(null)
     setInfo(null)
@@ -75,7 +98,7 @@ export default function AdminGate({ children }: { children: ReactNode }) {
     setInfo(null)
     try {
       await resendVerification()
-      setInfo('Te enviamos un email de verificación. Revisá tu bandeja y luego recargá la página.')
+      setInfo('Te enviamos un email de verificación. Revisá tu bandeja (y la carpeta de correo no deseado) y luego recargá la página.')
     } catch (err) {
       setError(mapAuthError(err))
     } finally {
@@ -93,7 +116,11 @@ export default function AdminGate({ children }: { children: ReactNode }) {
           <h1>Verificá tu email</h1>
           <p>
             Iniciaste sesión como <strong>{user?.email}</strong>, pero tu correo todavía no está
-            verificado. Verificalo para acceder al panel.
+            verificado. Abrí el enlace que te enviamos para acceder al panel.
+          </p>
+          <p className="admin-gate-spam-hint">
+            Si no lo ves en la bandeja de entrada, revisá <strong>Correo no deseado</strong> o{' '}
+            <strong>Spam</strong>.
           </p>
           {info && <p className="admin-gate-info">{info}</p>}
           {error && <p className="admin-gate-error">{error}</p>}
@@ -128,8 +155,6 @@ export default function AdminGate({ children }: { children: ReactNode }) {
     )
   }
 
-  const esRegistro = mode === 'register'
-
   return (
     <div className="admin-gate">
       <form className="admin-gate-card" onSubmit={handleSubmit}>
@@ -159,25 +184,60 @@ export default function AdminGate({ children }: { children: ReactNode }) {
 
         <div className="form-group">
           <label className="form-label">Contraseña</label>
-          <input
-            type="password"
-            className="form-input"
-            autoComplete={esRegistro ? 'new-password' : 'current-password'}
-            placeholder={esRegistro ? 'Mínimo 6 caracteres' : '••••••••'}
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            disabled={busy}
-            minLength={esRegistro ? 6 : undefined}
-            required
-          />
+          <div className="password-field">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              className="form-input"
+              autoComplete={esRegistro ? 'new-password' : 'current-password'}
+              placeholder={esRegistro ? `Mínimo ${MIN_PASSWORD_LENGTH} caracteres` : '••••••••'}
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              disabled={busy}
+              minLength={esRegistro ? MIN_PASSWORD_LENGTH : undefined}
+              required
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword(s => !s)}
+              disabled={busy}
+              aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
         </div>
+
+        {esRegistro && (
+          <div className="form-group">
+            <label className="form-label">Repetir contraseña</label>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              className="form-input"
+              autoComplete="new-password"
+              placeholder="Repetí la contraseña"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              disabled={busy}
+              minLength={MIN_PASSWORD_LENGTH}
+              required
+            />
+            {confirmPassword.length > 0 && !passwordsCoinciden && (
+              <p className="admin-gate-hint admin-gate-hint--warn">Las contraseñas no coinciden.</p>
+            )}
+            {confirmPassword.length > 0 && passwordsCoinciden && passwordSuficiente && (
+              <p className="admin-gate-hint admin-gate-hint--ok">Las contraseñas coinciden.</p>
+            )}
+          </div>
+        )}
 
         {error && <p className="admin-gate-error">{error}</p>}
 
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={busy || !email.trim() || !password.trim()}
+          disabled={submitDeshabilitado}
         >
           {esRegistro ? <UserPlus size={16} /> : <LogIn size={16} />}
           {busy
