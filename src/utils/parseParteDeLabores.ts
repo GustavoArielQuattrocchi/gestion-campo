@@ -43,6 +43,8 @@ export function parseParteDeLabores(
     ? raw.rendimientoUnidad
     : undefined
 
+  const finalizoTarea = raw.finalizoTarea === true ? true : undefined
+
   const base: ParteDeLabores = {
     id,
     tareaId,
@@ -54,6 +56,7 @@ export function parseParteDeLabores(
     rendimiento,
     ...(rendimientoCantidad !== undefined ? { rendimientoCantidad } : {}),
     ...(rendimientoUnidad ? { rendimientoUnidad } : {}),
+    ...(finalizoTarea ? { finalizoTarea } : {}),
     cuadros,
     ...(cuadroIds?.length ? { cuadroIds } : {}),
     cerradoEn: raw.cerradoEn,

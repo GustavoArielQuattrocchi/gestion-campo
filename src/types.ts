@@ -114,6 +114,8 @@ export interface ParteDeLabores {
   rendimientoCantidad?: number
   /** Unidad de medida del rendimiento (documentos nuevos). */
   rendimientoUnidad?: RendimientoUnidad
+  /** true si este parte finalizó la tarea (cierre definitivo desde campo). */
+  finalizoTarea?: boolean
   cuadros: string[]
   cuadroIds?: string[]
   cuadrilla?: string

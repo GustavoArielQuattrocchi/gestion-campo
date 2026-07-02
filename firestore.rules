@@ -101,11 +101,15 @@ service cloud.firestore {
         || keys.hasOnly(['estado', 'fechaFin']);
     }
 
-    function esEdicionRendimientoDashboard() {
+    // Gestión admin del historial de rendimiento de una tarea desde el escritorio.
+    // Permite editar el historial y, al eliminar un parte, reabrir la tarea
+    // (cambiar estado/fechaFin) en una sola escritura atómica.
+    function esGestionRendimientoDashboard() {
       let keys = request.resource.data.diff(resource.data).affectedKeys();
-      return keys.hasOnly(['rendimientosDiarios', 'rendimiento'])
-        && request.resource.data.rendimientosDiarios is list
-        && request.resource.data.rendimiento is string;
+      return keys.hasOnly(['rendimientosDiarios', 'rendimiento', 'estado', 'fechaFin'])
+        && (!keys.hasAny(['rendimientosDiarios']) || request.resource.data.rendimientosDiarios is list)
+        && (!keys.hasAny(['rendimiento']) || request.resource.data.rendimiento is string)
+        && (!keys.hasAny(['estado']) || request.resource.data.estado in ['en_progreso', 'finalizada']);
     }
 
     function validActualizacionDashboard() {
@@ -144,7 +148,7 @@ service cloud.firestore {
           && esSoloRegistroRendimiento()
           && validRegistroRendimiento())
         || (esActualizacionDashboard() && validActualizacionDashboard())
-        || (esAdmin() && esEdicionRendimientoDashboard())
+        || (esAdmin() && esGestionRendimientoDashboard())
       );
       allow delete: if false;
     }
@@ -182,6 +186,7 @@ service cloud.firestore {
         && (d.get('rendimientoCantidad', null) == null || d.rendimientoCantidad is number)
         && (d.get('rendimientoUnidad', null) == null
           || d.rendimientoUnidad in ['jornal', 'hileras', 'claros', 'plantas'])
+        && (d.get('finalizoTarea', null) == null || d.finalizoTarea is bool)
         && d.cuadros is list
         && (d.get('cuadroIds', null) == null || d.cuadroIds is list)
         && d.cerradoEn is timestamp

@@ -67,4 +67,14 @@ describe('buildParteDeLaboresPayload', () => {
     assert.equal('rendimientoCantidad' in payload, false)
     assert.equal('rendimientoUnidad' in payload, false)
   })
+
+  it('marca finalizoTarea cuando el cierre finaliza la tarea', () => {
+    const payload = buildParteDeLaboresPayload(manual, '12 jornal', 'María', mockTs, 12, 'jornal', true)
+    assert.equal(payload.finalizoTarea, true)
+  })
+
+  it('omite finalizoTarea en un cierre de día normal', () => {
+    const payload = buildParteDeLaboresPayload(manual, '12 jornal', 'María', mockTs, 12, 'jornal', false)
+    assert.equal('finalizoTarea' in payload, false)
+  })
 })

@@ -10,6 +10,7 @@ export function buildParteDeLaboresPayload(
   cerradoEn: Timestamp,
   rendimientoCantidad?: number,
   rendimientoUnidad?: RendimientoUnidad,
+  finalizoTarea?: boolean,
 ): ParteDeLaboresFirestorePayload {
   const base = {
     tareaId: tarea.id,
@@ -21,6 +22,7 @@ export function buildParteDeLaboresPayload(
     rendimiento: rendimiento.trim(),
     ...(typeof rendimientoCantidad === 'number' ? { rendimientoCantidad } : {}),
     ...(rendimientoUnidad ? { rendimientoUnidad } : {}),
+    ...(finalizoTarea ? { finalizoTarea: true } : {}),
     cuadros: tarea.cuadros ?? [],
     ...(tarea.cuadroIds?.length ? { cuadroIds: tarea.cuadroIds } : {}),
     cerradoEn,

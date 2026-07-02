@@ -5,6 +5,7 @@ import {
   applyRendimientoEdit,
   lastRendimientoTexto,
   removeRendimientoEntry,
+  resolveParteDeletion,
   type RendimientoMatch,
 } from './partesLaboresSync.ts'
 
@@ -69,5 +70,37 @@ describe('partesLaboresSync', () => {
     const result = removeRendimientoEntry(one, match)
     assert.equal(result.entries.length, 0)
     assert.equal(result.rendimiento, '')
+  })
+})
+
+describe('resolveParteDeletion', () => {
+  it('reabre la tarea si el parte la finalizó', () => {
+    const match: RendimientoMatch = { parteId: 'p2', operador: 'Juan', texto: '8 hileras' }
+    const result = resolveParteDeletion(entries, match, { finalizada: true, finalizoTarea: true })
+    assert.equal(result.changed, true)
+    assert.equal(result.reopen, true)
+    assert.equal(result.entries.length, 1)
+  })
+
+  it('reabre la tarea si era el último registro', () => {
+    const one: RendimientoDiario[] = [entries[0]]
+    const match: RendimientoMatch = { parteId: 'p1', operador: 'Juan', texto: '5 hileras' }
+    const result = resolveParteDeletion(one, match, { finalizada: true })
+    assert.equal(result.reopen, true)
+    assert.equal(result.entries.length, 0)
+  })
+
+  it('no reabre en multi-día si el parte no finalizó y quedan registros', () => {
+    const match: RendimientoMatch = { parteId: 'p1', operador: 'Juan', texto: '5 hileras' }
+    const result = resolveParteDeletion(entries, match, { finalizada: true })
+    assert.equal(result.changed, true)
+    assert.equal(result.reopen, false)
+    assert.equal(result.entries.length, 1)
+  })
+
+  it('no reabre si la tarea no estaba finalizada', () => {
+    const match: RendimientoMatch = { parteId: 'p2', operador: 'Juan', texto: '8 hileras' }
+    const result = resolveParteDeletion(entries, match, { finalizada: false, finalizoTarea: true })
+    assert.equal(result.reopen, false)
   })
 })

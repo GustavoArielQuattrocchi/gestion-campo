@@ -365,7 +365,15 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       })
       batch.set(
         parteRef,
-        buildParteDeLaboresPayload(tarea, texto, operadorNombre, cerradoEn, cantidad, unidad),
+        buildParteDeLaboresPayload(
+          tarea,
+          texto,
+          operadorNombre,
+          cerradoEn,
+          cantidad,
+          unidad,
+          finalizarTarea,
+        ),
       )
       await batch.commit()
 

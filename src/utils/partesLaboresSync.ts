@@ -55,3 +55,27 @@ export function removeRendimientoEntry(
   })
   return { entries: next, rendimiento: lastRendimientoTexto(next), changed: removed }
 }
+
+export interface ParteDeletionResult {
+  entries: RendimientoDiario[]
+  rendimiento: string
+  changed: boolean
+  /** true si la tarea debe reabrirse (volver a 'en_progreso'). */
+  reopen: boolean
+}
+
+/**
+ * Resuelve el efecto de eliminar un parte sobre la tarea: quita su registro del
+ * historial y decide si la tarea debe reabrirse. Se reabre cuando la tarea está
+ * finalizada y este parte fue el que la cerró (finalizoTarea) o era el último
+ * registro que le quedaba.
+ */
+export function resolveParteDeletion(
+  entries: RendimientoDiario[],
+  match: RendimientoMatch,
+  opts: { finalizada: boolean; finalizoTarea?: boolean },
+): ParteDeletionResult {
+  const { entries: next, rendimiento, changed } = removeRendimientoEntry(entries, match)
+  const reopen = opts.finalizada && (opts.finalizoTarea === true || next.length === 0)
+  return { entries: next, rendimiento, changed, reopen }
+}
