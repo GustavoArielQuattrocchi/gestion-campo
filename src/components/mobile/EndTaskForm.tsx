@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { ChevronLeft, Save } from 'lucide-react'
 import type { RendimientoUnidad, Tarea } from '../../types'
 import { RENDIMIENTO_UNIDADES } from '../../types'
+import { resolveTaskCuadroIds, computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
+import { getNombreCuadro } from '../../data/fincaData'
 
 interface Props {
   tarea: Tarea
@@ -9,6 +11,7 @@ interface Props {
     cantidad: number,
     unidad: RendimientoUnidad,
     finalizarTarea: boolean,
+    cuadrosFinalizadosHoy: string[],
   ) => Promise<void>
   onBack: () => void
 }
@@ -17,7 +20,26 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
   const [cantidad, setCantidad] = useState('')
   const [unidad, setUnidad] = useState<RendimientoUnidad | ''>('')
   const [tareaTerminada, setTareaTerminada] = useState(false)
+  const [cuadrosFinalizadosHoy, setCuadrosFinalizadosHoy] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
+
+  const progress = useMemo(() => computeTareaProgress(tarea), [tarea])
+  const cuadrosPendientes = useMemo(() => {
+    const allIds = resolveTaskCuadroIds(tarea)
+    const finalizadosSet = new Set(tarea.cuadroIdsFinalizados ?? [])
+    return allIds.filter(id => !finalizadosSet.has(id))
+  }, [tarea])
+
+  const todosFinalizados = useMemo(() => {
+    const pendientesRestantes = cuadrosPendientes.filter(id => !cuadrosFinalizadosHoy.includes(id))
+    return pendientesRestantes.length === 0 && (cuadrosPendientes.length > 0 || (tarea.cuadroIdsFinalizados?.length ?? 0) > 0)
+  }, [cuadrosPendientes, cuadrosFinalizadosHoy, tarea.cuadroIdsFinalizados])
+
+  const toggleCuadro = (cuadroId: string) => {
+    setCuadrosFinalizadosHoy(prev =>
+      prev.includes(cuadroId) ? prev.filter(id => id !== cuadroId) : [...prev, cuadroId],
+    )
+  }
 
   const cantidadNum = Number(cantidad)
   const cantidadValida = cantidad.trim() !== '' && Number.isFinite(cantidadNum) && cantidadNum > 0
@@ -27,7 +49,7 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
     if (!formValido || saving) return
     setSaving(true)
     try {
-      await onSubmit(cantidadNum, unidad as RendimientoUnidad, tareaTerminada)
+      await onSubmit(cantidadNum, unidad as RendimientoUnidad, tareaTerminada, cuadrosFinalizadosHoy)
     } finally {
       setSaving(false)
     }
@@ -144,19 +166,48 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
         </div>
       </div>
 
+      {cuadrosPendientes.length > 0 && (
+        <div className="card">
+          <div className="card-title">Cuadros terminados hoy</div>
+          <p style={{ fontSize: 12, color: 'var(--gray-500)', margin: '0 0 10px' }}>
+            Marcá los cuadros que se completaron durante el día.
+          </p>
+          <ul className="cuadros-checklist">
+            {cuadrosPendientes.map(cuadroId => (
+              <li key={cuadroId}>
+                <label className="cuadro-check-label">
+                  <input
+                    type="checkbox"
+                    checked={cuadrosFinalizadosHoy.includes(cuadroId)}
+                    onChange={() => toggleCuadro(cuadroId)}
+                    disabled={saving}
+                  />
+                  <span>{getNombreCuadro(tarea.fincaId, cuadroId)}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+          <div style={{ marginTop: 8, fontSize: 12, color: 'var(--gray-500)' }}>
+            Avance actual: {formatProgressLabel(progress)}
+          </div>
+        </div>
+      )}
+
       <label className="end-task-finalizar">
         <input
           type="checkbox"
           checked={tareaTerminada}
           onChange={e => setTareaTerminada(e.target.checked)}
-          disabled={saving}
+          disabled={saving || !todosFinalizados}
         />
         <span>
           <strong>La tarea quedó terminada</strong>
           <small>
-            {tareaTerminada
-              ? 'Se guardará el parte y la tarea no volverá a aparecer en la app.'
-              : 'Si el trabajo sigue mañana, dejalo desmarcado para cerrar solo el día.'}
+            {!todosFinalizados
+              ? 'Finalizá todos los cuadros para poder terminar la tarea.'
+              : tareaTerminada
+                ? 'Se guardará el parte y la tarea no volverá a aparecer en la app.'
+                : 'Si el trabajo sigue mañana, dejalo desmarcado para cerrar solo el día.'}
           </small>
         </span>
       </label>

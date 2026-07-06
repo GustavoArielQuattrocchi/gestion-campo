@@ -61,8 +61,8 @@ function FinalizarDetalleRoute() {
   return (
     <EndTaskForm
       tarea={tarea}
-      onSubmit={(cantidad, unidad, finalizarTarea) =>
-        handleRegisterRendimiento(tareaId, cantidad, unidad, finalizarTarea)
+      onSubmit={(cantidad, unidad, finalizarTarea, cuadrosFinalizadosHoy) =>
+        handleRegisterRendimiento(tareaId, cantidad, unidad, finalizarTarea, cuadrosFinalizadosHoy)
       }
       onBack={() => navigate(MOBILE_ROUTES.finalizar)}
     />
@@ -121,6 +121,7 @@ export default function MobileRoutes() {
     handleOperatorSubmit,
     handleStartManualTask,
     handleStartMechanicalTask,
+    handleContinueTask,
   } = useMobileAppContext()
 
   const tareasPendientesCierre = useMemo(
@@ -172,7 +173,9 @@ export default function MobileRoutes() {
           element={
             <ManualTaskForm
               fincaNombre={fincaNombre}
+              tareasActivas={tareasActivas}
               onSubmit={handleStartManualTask}
+              onContinue={handleContinueTask}
               onBack={() => navigate(MOBILE_ROUTES.tareaTipo)}
             />
           }
@@ -183,7 +186,9 @@ export default function MobileRoutes() {
             <MechanicalTaskForm
               fincaId={fincaId}
               fincaNombre={fincaNombre}
+              tareasActivas={tareasActivas}
               onSubmit={handleStartMechanicalTask}
+              onContinue={(tareaId, cuadros, cuadroIds) => handleContinueTask(tareaId, cuadros, cuadroIds)}
               onBack={() => navigate(MOBILE_ROUTES.tareaTipo)}
             />
           }

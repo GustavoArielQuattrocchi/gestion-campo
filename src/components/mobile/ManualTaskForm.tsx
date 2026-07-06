@@ -1,11 +1,14 @@
-import { useState, useCallback } from 'react'
-import { ChevronLeft, Save, CheckCircle } from 'lucide-react'
+import { useState, useCallback, useMemo } from 'react'
+import { ChevronLeft, Save, CheckCircle, RefreshCw } from 'lucide-react'
 import { cuadrillas, tareasManuales } from '../../data/catalog'
-import { emptyCuadroSelection, type CuadroSelection } from '../../types'
+import { emptyCuadroSelection, type CuadroSelection, type Tarea } from '../../types'
+import { findTareaContinuableManual } from '../../utils/findTareaContinuable'
+import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 import CuadroSelector from './CuadroSelector'
 
 interface Props {
   fincaNombre: string
+  tareasActivas: Tarea[]
   onSubmit: (data: {
     cuadrilla: string
     tarea: string
@@ -13,16 +16,22 @@ interface Props {
     cuadros: string[]
     cuadroIds: string[]
   }) => Promise<boolean>
+  onContinue: (tareaId: string, cuadros: string[], cuadroIds: string[], cantidadPersonas?: number) => Promise<boolean>
   onBack: () => void
 }
 
-export default function ManualTaskForm({ fincaNombre, onSubmit, onBack }: Props) {
+export default function ManualTaskForm({ fincaNombre, tareasActivas, onSubmit, onContinue, onBack }: Props) {
   const [cuadrilla, setCuadrilla] = useState('')
   const [tarea, setTarea] = useState('')
   const [cantidadPersonas, setCantidadPersonas] = useState('')
   const [cuadroSelection, setCuadroSelection] = useState<CuadroSelection>(emptyCuadroSelection)
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<{ message: string; detail: string } | null>(null)
+
+  const tareaContinuable = useMemo(
+    () => findTareaContinuableManual(tareasActivas, tarea, cuadrilla),
+    [tareasActivas, tarea, cuadrilla],
+  )
 
   const resetForm = useCallback(() => {
     setCuadrilla('')
@@ -40,18 +49,29 @@ export default function ManualTaskForm({ fincaNombre, onSubmit, onBack }: Props)
 
     setSaving(true)
     try {
-      const ok = await onSubmit({
-        cuadrilla,
-        tarea,
-        cantidadPersonas: n,
-        cuadros: cuadroSelection.cuadros,
-        cuadroIds: cuadroSelection.cuadroIds,
-      })
-      if (ok) {
-        const detail = `${tarea} — ${cuadrilla} con ${cantidadPersonas} personas`
-        setToast({ message: 'Tarea cargada correctamente', detail })
-        resetForm()
-        setTimeout(() => setToast(null), 3500)
+      let ok: boolean
+      if (tareaContinuable) {
+        ok = await onContinue(tareaContinuable.id, cuadroSelection.cuadros, cuadroSelection.cuadroIds, n)
+        if (ok) {
+          const detail = `Cuadros agregados a ${tarea} — ${cuadrilla}`
+          setToast({ message: 'Tarea actualizada', detail })
+          resetForm()
+          setTimeout(() => setToast(null), 3500)
+        }
+      } else {
+        ok = await onSubmit({
+          cuadrilla,
+          tarea,
+          cantidadPersonas: n,
+          cuadros: cuadroSelection.cuadros,
+          cuadroIds: cuadroSelection.cuadroIds,
+        })
+        if (ok) {
+          const detail = `${tarea} — ${cuadrilla} con ${cantidadPersonas} personas`
+          setToast({ message: 'Tarea cargada correctamente', detail })
+          resetForm()
+          setTimeout(() => setToast(null), 3500)
+        }
       }
     } finally {
       setSaving(false)
@@ -135,6 +155,22 @@ export default function ManualTaskForm({ fincaNombre, onSubmit, onBack }: Props)
         </div>
       </div>
 
+      {tareaContinuable && (() => {
+        const progress = computeTareaProgress(tareaContinuable)
+        return (
+          <div className="card continue-task-banner">
+            <RefreshCw size={16} />
+            <div>
+              <strong>Ya existe esta tarea en progreso</strong>
+              <small>
+                {formatProgressLabel(progress)} · {(tareaContinuable.cuadros ?? []).join(', ')}
+              </small>
+              <small>Los cuadros nuevos se agregarán a la tarea existente.</small>
+            </div>
+          </div>
+        )
+      })()}
+
       <button
         className="btn btn-primary"
         onClick={handleSubmit}
@@ -142,7 +178,11 @@ export default function ManualTaskForm({ fincaNombre, onSubmit, onBack }: Props)
         style={{ opacity: isValid && !saving ? 1 : 0.5, marginBottom: 24 }}
       >
         <Save size={18} />
-        {saving ? 'Guardando...' : 'Iniciar Tarea'}
+        {saving
+          ? 'Guardando...'
+          : tareaContinuable
+            ? 'Agregar cuadros a tarea existente'
+            : 'Iniciar Tarea'}
       </button>
     </div>
   )

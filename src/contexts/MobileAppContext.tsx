@@ -100,7 +100,9 @@ interface MobileAppContextValue {
     cantidad: number,
     unidad: RendimientoUnidad,
     finalizarTarea?: boolean,
+    cuadrosFinalizadosHoy?: string[],
   ) => Promise<void>
+  handleContinueTask: (tareaId: string, cuadros: string[], cuadroIds: string[], cantidadPersonas?: number) => Promise<boolean>
   handleAccidentSuccess: (detail?: string) => void
   getTareaActiva: (tareaId: string) => Tarea | undefined
 }
@@ -181,8 +183,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         const { tareas, invalid } = parseTareasFromSnapshot(
           snapshot.docs.map(d => ({ id: d.id, data: () => d.data() as Record<string, unknown> })),
         )
-        const operador = operadorNombre.trim()
-        setTareasActivas(operador ? tareas.filter(t => t.operador === operador) : tareas)
+        setTareasActivas(tareas)
         setParseWarning(buildActiveTasksWarning(invalid.length))
         setPendingSync(snapshot.metadata.hasPendingWrites)
         if (snapshot.metadata.hasPendingWrites) {
@@ -332,11 +333,44 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     }
   }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync])
 
+  const handleContinueTask = useCallback(async (
+    tareaId: string,
+    cuadros: string[],
+    cuadroIds: string[],
+    cantidadPersonas?: number,
+  ): Promise<boolean> => {
+    if (submittingRef.current) return false
+    submittingRef.current = true
+    try {
+      const updates: Record<string, unknown> = {
+        cuadros: arrayUnion(...cuadros),
+        cuadroIds: arrayUnion(...cuadroIds),
+      }
+      if (cantidadPersonas !== undefined) {
+        updates.cantidadPersonas = cantidadPersonas
+      }
+      await updateDoc(doc(db, 'tareas', tareaId), updates)
+      setFirestoreError(null)
+      if (!navigator.onLine) {
+        markPendingSync()
+        showToast(OFFLINE_WRITE_TOAST, 'info')
+      }
+      return true
+    } catch (err) {
+      console.error('Error al continuar tarea:', err)
+      setFirestoreError('Error al agregar cuadros a la tarea. Revisá la conexión y las reglas de Firestore.')
+      return false
+    } finally {
+      submittingRef.current = false
+    }
+  }, [showToast, markPendingSync])
+
   const handleRegisterRendimiento = useCallback(async (
     tareaId: string,
     cantidad: number,
     unidad: RendimientoUnidad,
     finalizarTarea = false,
+    cuadrosFinalizadosHoy: string[] = [],
   ) => {
     if (submittingRef.current) return
     const tarea = tareasActivas.find(t => t.id === tareaId)
@@ -359,10 +393,18 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         unidad,
         parteId: parteRef.id,
       }
-      batch.update(doc(db, 'tareas', tareaId), {
+      const tareaUpdate: Record<string, unknown> = {
         rendimientosDiarios: arrayUnion(entry),
         rendimiento: texto,
-      })
+      }
+      if (cuadrosFinalizadosHoy.length > 0) {
+        tareaUpdate.cuadroIdsFinalizados = arrayUnion(...cuadrosFinalizadosHoy)
+      }
+      if (finalizarTarea) {
+        tareaUpdate.estado = 'finalizada'
+        tareaUpdate.fechaFin = Timestamp.now()
+      }
+      batch.update(doc(db, 'tareas', tareaId), tareaUpdate)
       batch.set(
         parteRef,
         buildParteDeLaboresPayload(
@@ -376,13 +418,6 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         ),
       )
       await batch.commit()
-
-      if (finalizarTarea) {
-        await updateDoc(doc(db, 'tareas', tareaId), {
-          estado: 'finalizada',
-          fechaFin: Timestamp.now(),
-        })
-      }
 
       setFirestoreError(null)
       if (!navigator.onLine) {
@@ -442,6 +477,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       handleSelectFinca,
       handleStartManualTask,
       handleStartMechanicalTask,
+      handleContinueTask,
       handleRegisterRendimiento,
       handleAccidentSuccess,
       getTareaActiva,
@@ -466,6 +502,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       handleSelectFinca,
       handleStartManualTask,
       handleStartMechanicalTask,
+      handleContinueTask,
       handleRegisterRendimiento,
       handleAccidentSuccess,
       getTareaActiva,

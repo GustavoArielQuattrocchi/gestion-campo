@@ -19,6 +19,13 @@ function mergeCuadro(mapEntry: CuadroCatalogo, manual?: CuadroCatalogo): CuadroC
   }
 }
 
+const VARIEDADES_EXCLUIDAS = new Set(['centeno', 'inculto'])
+
+/** True si el cuadro es viñedo o nogal (excluye centeno, inculto, etc.). */
+export function esCuadroProductivo(c: CuadroCatalogo): boolean {
+  return !VARIEDADES_EXCLUIDAS.has(c.variedad.toLowerCase())
+}
+
 /** Catálogo completo (mapa + overrides manuales) para mapa, QR y consulta por id. */
 function buildCatalogoUnificado(): Record<string, CuadroCatalogo[]> {
   const result: Record<string, CuadroCatalogo[]> = {}
@@ -80,7 +87,7 @@ export function getCuadroDetalleById(cuadroId: string): CuadroDetalle | null {
 export function getTotalHectareasFinca(fincaId: string): number {
   const cuadros = CATALOGO_UNIFICADO[fincaId]
   if (!cuadros) return 0
-  return cuadros.reduce((sum, c) => sum + c.hectareas, 0)
+  return cuadros.filter(esCuadroProductivo).reduce((sum, c) => sum + c.hectareas, 0)
 }
 
 export function getHectareasCuadro(fincaId: string, cuadroId: string): number {
