@@ -141,6 +141,18 @@ service cloud.firestore {
         && (!keys.hasAny(['estado']) || request.resource.data.estado in ['en_progreso', 'finalizada']);
     }
 
+    // Consolidación admin: fusionar cuadros, rendimientos y campos de tareas duplicadas.
+    function esConsolidacionAdmin() {
+      let keys = request.resource.data.diff(resource.data).affectedKeys();
+      return keys.hasOnly(['cuadros', 'cuadroIds', 'cuadroIdsFinalizados', 'rendimientosDiarios', 'rendimiento', 'cantidadPersonas'])
+        && request.resource.data.cuadros is list
+        && request.resource.data.cuadroIds is list
+        && (!keys.hasAny(['cuadroIdsFinalizados']) || request.resource.data.cuadroIdsFinalizados is list)
+        && (!keys.hasAny(['rendimientosDiarios']) || request.resource.data.rendimientosDiarios is list)
+        && (!keys.hasAny(['rendimiento']) || request.resource.data.rendimiento is string)
+        && (!keys.hasAny(['cantidadPersonas']) || request.resource.data.cantidadPersonas is int);
+    }
+
     function validActualizacionDashboard() {
       let keys = request.resource.data.diff(resource.data).affectedKeys();
       return (keys.hasOnly(['cuadroIdsFinalizados'])
@@ -182,6 +194,7 @@ service cloud.firestore {
         || (operadorRegistrado() && esContinuacionTarea())
         || (esActualizacionDashboard() && validActualizacionDashboard())
         || (esAdmin() && esGestionRendimientoDashboard())
+        || (esAdmin() && esConsolidacionAdmin())
       );
       allow delete: if esAdmin();
     }
@@ -261,7 +274,10 @@ service cloud.firestore {
       allow create: if operadorRegistrado()
         && request.resource.data.operador == nombreOperadorAutenticado()
         && validParteDeLaboresBase();
-      allow update: if esAdmin() && esEdicionRendimientoParte();
+      allow update: if esAdmin() && (
+        esEdicionRendimientoParte()
+        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tareaId'])
+      );
       allow delete: if esAdmin();
     }
 

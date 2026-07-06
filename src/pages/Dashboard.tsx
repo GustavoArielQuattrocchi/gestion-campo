@@ -45,6 +45,8 @@ export default function Dashboard() {
     finalizarTarea,
     reabrirTarea,
     eliminarTarea,
+    duplicadosCount,
+    consolidarDuplicados,
   } = useDashboardTareas()
 
   const {
@@ -129,6 +131,7 @@ export default function Dashboard() {
           tareas={tareasFiltradas}
           filtroFinca={enProgresoFiltroFinca}
           filtroTarea={enProgresoFiltroTarea}
+          duplicadosCount={duplicadosCount}
           onFiltroFincaChange={setEnProgresoFiltroFinca}
           onFiltroTareaChange={setEnProgresoFiltroTarea}
           onFinalizarCuadro={finalizarCuadro}
@@ -136,6 +139,7 @@ export default function Dashboard() {
           onFinalizarTarea={finalizarTarea}
           onReabrirTarea={reabrirTarea}
           onEliminarTarea={eliminarTarea}
+          onConsolidarDuplicados={consolidarDuplicados}
         />
       </DashboardContentModal>
 

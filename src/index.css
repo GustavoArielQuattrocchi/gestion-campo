@@ -1356,6 +1356,52 @@ button.task-list-item {
   margin-bottom: 12px;
 }
 
+.consolidar-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1px solid #f59e0b;
+  border-radius: var(--radius-md);
+}
+
+.consolidar-banner-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #92400e;
+}
+
+.consolidar-banner-text svg {
+  flex-shrink: 0;
+}
+
+.btn-consolidar {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: #d97706;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-consolidar:hover {
+  background: #b45309;
+}
+
+.btn-consolidar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .en-progreso-filter {
   display: flex;
   flex-direction: column;

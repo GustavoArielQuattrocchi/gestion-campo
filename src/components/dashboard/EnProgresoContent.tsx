@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, RotateCcw, Trash2 } from 'lucide-react'
+import { CheckCircle2, Merge, RotateCcw, Trash2 } from 'lucide-react'
 import type { Tarea } from '../../types'
 import { getNombreCuadro } from '../../data/fincaData'
 import {
@@ -14,6 +14,7 @@ interface Props {
   tareas: Tarea[]
   filtroFinca: string
   filtroTarea: string
+  duplicadosCount: number
   onFiltroFincaChange: (value: string) => void
   onFiltroTareaChange: (value: string) => void
   onFinalizarCuadro: (tareaId: string, cuadroId: string) => Promise<void>
@@ -21,6 +22,7 @@ interface Props {
   onFinalizarTarea: (tareaId: string) => Promise<void>
   onReabrirTarea: (tareaId: string) => Promise<void>
   onEliminarTarea: (tareaId: string) => Promise<void>
+  onConsolidarDuplicados: () => Promise<number>
 }
 
 function matchesFiltros(
@@ -37,6 +39,7 @@ export default function EnProgresoContent({
   tareas,
   filtroFinca,
   filtroTarea,
+  duplicadosCount,
   onFiltroFincaChange,
   onFiltroTareaChange,
   onFinalizarCuadro,
@@ -44,6 +47,7 @@ export default function EnProgresoContent({
   onFinalizarTarea,
   onReabrirTarea,
   onEliminarTarea,
+  onConsolidarDuplicados,
 }: Props) {
   const enProgresoAll = useMemo(
     () => tareas.filter(t => t.estado === 'en_progreso'),
@@ -139,6 +143,31 @@ export default function EnProgresoContent({
               ))}
             </select>
           </label>
+        </div>
+      )}
+
+      {duplicadosCount > 0 && (
+        <div className="consolidar-banner">
+          <div className="consolidar-banner-text">
+            <Merge size={16} />
+            <span>
+              Hay <strong>{duplicadosCount} tarea{duplicadosCount > 1 ? 's' : ''} duplicada{duplicadosCount > 1 ? 's' : ''}</strong> que
+              pueden consolidarse (misma finca + labor + cuadrilla).
+            </span>
+          </div>
+          <button
+            type="button"
+            className="btn-consolidar"
+            disabled={busyKey !== null}
+            onClick={() =>
+              runAction('consolidar', async () => {
+                const n = await onConsolidarDuplicados()
+                window.alert(`Se consolidaron ${n} tarea${n > 1 ? 's' : ''} duplicada${n > 1 ? 's' : ''}.`)
+              })
+            }
+          >
+            {busyKey === 'consolidar' ? 'Consolidando…' : 'Consolidar ahora'}
+          </button>
         </div>
       )}
 

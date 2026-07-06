@@ -13,6 +13,7 @@ import { parseFirestoreError } from '../utils/firestoreError'
 import { applyDashboardFilters, sortByFechaInicio } from '../utils/dashboardFilters'
 import { allCuadrosTareaFinalizados } from '../utils/tareaProgress'
 import { deleteTareaConPartes } from '../utils/tareaMutations'
+import { consolidarTodos, findDuplicados } from '../utils/consolidarTareas'
 import {
   buildFilterSearchParams,
   buildInvalidDocsWarning,
@@ -184,6 +185,23 @@ export function useDashboardTareas() {
     }
   }, [])
 
+  const duplicadosCount = useMemo(
+    () => findDuplicados(allTareas).reduce((sum, g) => sum + g.duplicadas.length, 0),
+    [allTareas],
+  )
+
+  const consolidarDuplicados = useCallback(async () => {
+    setActionError(null)
+    try {
+      const merged = await consolidarTodos(allTareas)
+      return merged
+    } catch (err) {
+      console.error('[Dashboard] Error al consolidar tareas duplicadas', err)
+      setActionError('No se pudieron consolidar las tareas. Revisá la conexión y las reglas de Firestore.')
+      throw err
+    }
+  }, [allTareas])
+
   return {
     loading,
     hasMore,
@@ -215,5 +233,7 @@ export function useDashboardTareas() {
     finalizarTarea,
     reabrirTarea,
     eliminarTarea,
+    duplicadosCount,
+    consolidarDuplicados,
   }
 }
