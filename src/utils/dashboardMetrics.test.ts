@@ -42,6 +42,24 @@ describe('computePersonasPorDia', () => {
     assert.equal(result.dias, 2)
     assert.equal(result.promedio, '10.0')
   })
+
+  it('usa fechas de rendimientos diarios en tareas multi-día', () => {
+    const manuales = [
+      manual({
+        id: '1',
+        cantidadPersonas: 8,
+        fechaInicio: mockTs('2024-06-26T10:00:00'),
+        rendimientosDiarios: [
+          { fecha: mockTs('2024-06-26T18:00:00'), texto: '50 hileras', operador: 'Juan' },
+          { fecha: mockTs('2024-07-01T18:00:00'), texto: '40 hileras', operador: 'Juan' },
+          { fecha: mockTs('2024-07-08T18:00:00'), texto: '35 hileras', operador: 'Juan' },
+        ],
+      }),
+    ]
+    const result = computePersonasPorDia(manuales)
+    assert.equal(result.dias, 3)
+    assert.equal(result.promedio, '8.0')
+  })
 })
 
 describe('countDiasConActividad', () => {

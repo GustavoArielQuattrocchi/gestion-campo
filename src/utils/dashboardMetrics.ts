@@ -28,13 +28,50 @@ export function getConRendimiento(tareas: Tarea[]): Tarea[] {
   )
 }
 
+export interface DailyManualStaffing {
+  fecha: string
+  personas: number
+  tareas: number
+}
+
+/** Agrupa dotación manual por día real de actividad (cierres diarios o fecha de inicio legacy). */
+export function aggregateManualStaffingByDay(
+  manuales: Extract<Tarea, { tipo: 'manual' }>[],
+): DailyManualStaffing[] {
+  const byDate = new Map<string, { personas: number; tareas: number }>()
+
+  for (const t of manuales) {
+    const addDay = (dayKey: string, personas: number) => {
+      const prev = byDate.get(dayKey) ?? { personas: 0, tareas: 0 }
+      byDate.set(dayKey, {
+        personas: prev.personas + personas,
+        tareas: prev.tareas + 1,
+      })
+    }
+
+    if (t.rendimientosDiarios && t.rendimientosDiarios.length > 0) {
+      const daysSeen = new Set<string>()
+      for (const rd of t.rendimientosDiarios) {
+        if (!rd.fecha?.toDate) continue
+        const dayKey = format(rd.fecha.toDate(), 'yyyy-MM-dd')
+        if (daysSeen.has(dayKey)) continue
+        daysSeen.add(dayKey)
+        addDay(dayKey, t.cantidadPersonas || 0)
+      }
+    } else if (t.fechaInicio?.toDate) {
+      addDay(format(t.fechaInicio.toDate(), 'yyyy-MM-dd'), t.cantidadPersonas || 0)
+    }
+  }
+
+  return Array.from(byDate.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([fecha, v]) => ({ fecha, ...v }))
+}
+
 export function countDiasConActividad(tareas: Tarea[]): number {
-  const fechas = new Set(
-    tareas
-      .filter(t => t.fechaInicio?.toDate)
-      .map(t => format(t.fechaInicio!.toDate(), 'yyyy-MM-dd')),
-  )
-  return fechas.size || 1
+  const manuales = getManuales(tareas)
+  const dias = aggregateManualStaffingByDay(manuales).length
+  return dias || 1
 }
 
 export interface PersonasPorDiaResult {
@@ -47,12 +84,14 @@ export interface PersonasPorDiaResult {
 export function computePersonasPorDia(
   manuales: Extract<Tarea, { tipo: 'manual' }>[],
 ): PersonasPorDiaResult {
+  const daily = aggregateManualStaffingByDay(manuales)
   const totalPersonas = manuales.reduce((sum, t) => sum + (t.cantidadPersonas || 0), 0)
-  const dias = countDiasConActividad(manuales)
+  const dias = daily.length || 1
+  const sumDailyHeadcount = daily.reduce((sum, d) => sum + d.personas, 0)
   return {
     totalPersonas,
     dias,
-    promedio: dias > 0 ? (totalPersonas / dias).toFixed(1) : '0',
+    promedio: dias > 0 ? (sumDailyHeadcount / dias).toFixed(1) : '0',
   }
 }
 

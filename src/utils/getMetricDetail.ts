@@ -3,6 +3,7 @@ import { es } from 'date-fns/locale'
 import type { Tarea } from '../types'
 import { formatTimestamp } from './formatTimestamp'
 import {
+  aggregateManualStaffingByDay,
   computePersonasPorDia,
   getConRendimiento,
   getEnProgreso,
@@ -116,21 +117,11 @@ export function getMetricDetail(metric: MetricKey, tareas: Tarea[]): MetricDetai
 
     case 'personas_dia': {
       const manuales = getManuales(tareas)
-      const porDia = new Map<string, { personas: number; tareas: number }>()
-      for (const t of manuales) {
-        const day = t.fechaInicio?.toDate
-          ? format(t.fechaInicio.toDate(), 'yyyy-MM-dd')
-          : 'Sin fecha'
-        const prev = porDia.get(day) ?? { personas: 0, tareas: 0 }
-        porDia.set(day, {
-          personas: prev.personas + (t.cantidadPersonas || 0),
-          tareas: prev.tareas + 1,
-        })
-      }
-      const rows = Array.from(porDia.entries())
-        .sort(([a], [b]) => b.localeCompare(a))
-        .map(([dia, v]) => ({
-          fecha: dia === 'Sin fecha' ? dia : format(new Date(`${dia}T12:00:00`), 'dd MMM yyyy', { locale: es }),
+      const rows = aggregateManualStaffingByDay(manuales)
+        .slice()
+        .sort((a, b) => b.fecha.localeCompare(a.fecha))
+        .map(v => ({
+          fecha: format(new Date(`${v.fecha}T12:00:00`), 'dd MMM yyyy', { locale: es }),
           tareas: String(v.tareas),
           personas: String(v.personas),
           promedio: v.tareas > 0 ? (v.personas / v.tareas).toFixed(1) : '0',

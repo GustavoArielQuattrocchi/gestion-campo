@@ -80,16 +80,31 @@ export function computeDailyStaffing(tareas: Tarea[]): DailyStaffing[] {
   const byDate = new Map<string, { date: Date; personas: number; tareas: number; fincas: Set<string> }>()
 
   for (const t of manualTareas) {
-    const d = t.fechaInicio.toDate()
-    const key = toDateKey(d)
-    let bucket = byDate.get(key)
-    if (!bucket) {
-      bucket = { date: d, personas: 0, tareas: 0, fincas: new Set() }
-      byDate.set(key, bucket)
+    const addDay = (d: Date) => {
+      const key = toDateKey(d)
+      let bucket = byDate.get(key)
+      if (!bucket) {
+        bucket = { date: d, personas: 0, tareas: 0, fincas: new Set() }
+        byDate.set(key, bucket)
+      }
+      bucket.personas += t.cantidadPersonas
+      bucket.tareas += 1
+      bucket.fincas.add(t.fincaNombre)
     }
-    bucket.personas += t.cantidadPersonas
-    bucket.tareas += 1
-    bucket.fincas.add(t.fincaNombre)
+
+    if (t.rendimientosDiarios && t.rendimientosDiarios.length > 0) {
+      const daysSeen = new Set<string>()
+      for (const rd of t.rendimientosDiarios) {
+        if (!rd.fecha?.toDate) continue
+        const d = rd.fecha.toDate()
+        const key = toDateKey(d)
+        if (daysSeen.has(key)) continue
+        daysSeen.add(key)
+        addDay(d)
+      }
+    } else if (t.fechaInicio?.toDate) {
+      addDay(t.fechaInicio.toDate())
+    }
   }
 
   return Array.from(byDate.entries())
