@@ -130,13 +130,13 @@ export default function DashboardStatsPanel({
           type="button"
           className="stat-card stat-card--interactive"
           onClick={() => onSelectMetric('total_personas')}
-          aria-label="Ver detalle: Total personas"
+          aria-label="Ver detalle: Personas-día"
         >
           <div className="stat-icon" style={{ background: '#fce7f3', color: '#db2777' }}>
             <CalendarDays size={18} />
           </div>
-          <div className="stat-value">{stats.totalPersonas}</div>
-          <div className="stat-label">Total personas</div>
+          <div className="stat-value">{stats.personasDias}</div>
+          <div className="stat-label">Personas-día</div>
         </button>
 
         <button

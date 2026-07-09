@@ -3,14 +3,14 @@ import { useSearchParams } from 'react-router-dom'
 import { arrayUnion, arrayRemove, collection, deleteField, doc, onSnapshot, Timestamp, updateDoc } from 'firebase/firestore'
 import type { UpdateData } from 'firebase/firestore'
 import { db } from '../firebase'
-import type { Tarea } from '../types'
+import type { Tarea, ParteDeLabores } from '../types'
 import { getFincaNombres } from '../data/catalog'
 import { computeDashboardStats } from '../utils/dashboardMetrics'
 import { getMetricDetail, type MetricKey } from '../utils/getMetricDetail'
 import { parseTareasFromSnapshot } from '../utils/parseTarea'
 import { TAREAS_PAGE_SIZE } from '../utils/dashboardState'
 import { parseFirestoreError } from '../utils/firestoreError'
-import { applyDashboardFilters, sortByFechaInicio } from '../utils/dashboardFilters'
+import { applyDashboardFilters, sortByFechaInicio, filterPartesForStaffing } from '../utils/dashboardFilters'
 import { allCuadrosTareaFinalizados } from '../utils/tareaProgress'
 import { deleteTareaConPartes } from '../utils/tareaMutations'
 import { consolidarTodos, findDuplicados } from '../utils/consolidarTareas'
@@ -26,7 +26,7 @@ import {
 
 export type DashboardPanelKey = 'resumen' | 'filtros' | 'tareas' | 'qr_cuadros'
 
-export function useDashboardTareas() {
+export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
   const [searchParams, setSearchParams] = useSearchParams()
   const fincasFiltro = useMemo(() => getFincaNombres(), [])
   const fincasAllowed = useMemo(() => new Set(['todas', ...fincasFiltro]), [fincasFiltro])
@@ -107,12 +107,20 @@ export function useDashboardTareas() {
     [tareasFiltradas.length, visibleCount],
   )
 
-  const stats = useMemo(() => computeDashboardStats(tareasFiltradas), [tareasFiltradas])
+  const partesForStaffing = useMemo(
+    () => filterPartesForStaffing(allPartes, filtroFinca, filtroTipo),
+    [allPartes, filtroFinca, filtroTipo],
+  )
+
+  const stats = useMemo(
+    () => computeDashboardStats(tareasFiltradas, partesForStaffing),
+    [tareasFiltradas, partesForStaffing],
+  )
 
   const metricDetail = useMemo(() => {
     if (!selectedMetric) return null
-    return getMetricDetail(selectedMetric, tareasFiltradas)
-  }, [selectedMetric, tareasFiltradas])
+    return getMetricDetail(selectedMetric, tareasFiltradas, partesForStaffing)
+  }, [selectedMetric, tareasFiltradas, partesForStaffing])
 
   const loadMore = useCallback(() => {
     if (!hasMore) return
@@ -241,5 +249,6 @@ export function useDashboardTareas() {
     eliminarTarea,
     duplicadosCount,
     consolidarDuplicados,
+    partesForStaffing,
   }
 }

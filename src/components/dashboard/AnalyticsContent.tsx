@@ -6,6 +6,7 @@ import {
   computeCumulativeProgress,
   computeAnalyticsKPIs,
 } from '../../utils/analyticsAggregations'
+import { aggregateManualStaffingFromPartes } from '../../utils/dashboardMetrics'
 import { computeTareaProgress } from '../../utils/tareaProgress'
 import BarChart from './charts/BarChart'
 import LineChart from './charts/LineChart'
@@ -24,14 +25,28 @@ const TABS: { key: TabKey; label: string }[] = [
 interface Props {
   tareas: Tarea[]
   partes: ParteDeLabores[]
+  partesStaffing?: ParteDeLabores[]
 }
 
-export default function AnalyticsContent({ tareas, partes }: Props) {
+export default function AnalyticsContent({ tareas, partes, partesStaffing }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>('productividad')
   const [selectedUnit, setSelectedUnit] = useState<string>('hileras')
 
   const dailyProd = useMemo(() => computeDailyProductivity(tareas), [tareas])
-  const dailyStaff = useMemo(() => computeDailyStaffing(tareas), [tareas])
+  const dailyStaff = useMemo(() => {
+    const staffingPartes = partesStaffing ?? partes
+    const fromPartes = aggregateManualStaffingFromPartes(staffingPartes)
+    if (fromPartes.length > 0) {
+      return fromPartes.map(d => ({
+        fecha: d.fecha,
+        label: d.fecha.slice(8, 10) + '/' + d.fecha.slice(5, 7),
+        personas: d.personas,
+        tareas: d.tareas,
+        fincas: [] as string[],
+      }))
+    }
+    return computeDailyStaffing(tareas)
+  }, [tareas, partes, partesStaffing])
   const progress = useMemo(() => computeCumulativeProgress(tareas), [tareas])
   const kpis = useMemo(() => computeAnalyticsKPIs(tareas, partes), [tareas, partes])
 

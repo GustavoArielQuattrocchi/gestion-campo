@@ -18,6 +18,13 @@ type ContentModalKey = 'en_progreso' | 'partes_labores' | 'analytics' | 'segurid
 
 export default function Dashboard() {
   const {
+    partes: partesLabores,
+    loading: partesLaboresLoading,
+    error: partesLaboresError,
+    parseWarning: partesLaboresParseWarning,
+  } = usePartesLabores()
+
+  const {
     loading,
     error,
     indexCreateUrl,
@@ -50,14 +57,8 @@ export default function Dashboard() {
     eliminarTarea,
     duplicadosCount,
     consolidarDuplicados,
-  } = useDashboardTareas()
-
-  const {
-    partes: partesLabores,
-    loading: partesLaboresLoading,
-    error: partesLaboresError,
-    parseWarning: partesLaboresParseWarning,
-  } = usePartesLabores()
+    partesForStaffing,
+  } = useDashboardTareas(partesLabores)
 
   const {
     informes: informesAccidente,
@@ -184,6 +185,7 @@ export default function Dashboard() {
         <AnalyticsContent
           tareas={tareasFiltradas}
           partes={partesGlobales}
+          partesStaffing={partesForStaffing}
         />
       </DashboardContentModal>
 

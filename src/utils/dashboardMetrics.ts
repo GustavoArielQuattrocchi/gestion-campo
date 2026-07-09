@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import type { Tarea } from '../types'
+import type { ParteDeLabores, Tarea } from '../types'
 
 export interface DashboardStats {
   total: number
@@ -7,7 +7,8 @@ export interface DashboardStats {
   enProgreso: number
   personasPorDia: string
   rendimientoPorTarea: number
-  totalPersonas: number
+  /** Suma acumulada de personas-día (cada cierre manual desde campo). */
+  personasDias: number
 }
 
 export function getFinalizadas(tareas: Tarea[]): Tarea[] {
@@ -32,6 +33,27 @@ export interface DailyManualStaffing {
   fecha: string
   personas: number
   tareas: number
+}
+
+/** Agrupa personas por día desde partes de labores cerrados en campo. */
+export function aggregateManualStaffingFromPartes(partes: ParteDeLabores[]): DailyManualStaffing[] {
+  const byDate = new Map<string, { personas: number; tareas: number }>()
+
+  for (const p of partes) {
+    if (p.tipo !== 'manual' || !p.cerradoEn?.toDate) continue
+    const personas = p.cantidadPersonas ?? 0
+    if (personas < 1) continue
+    const dayKey = format(p.cerradoEn.toDate(), 'yyyy-MM-dd')
+    const prev = byDate.get(dayKey) ?? { personas: 0, tareas: 0 }
+    byDate.set(dayKey, {
+      personas: prev.personas + personas,
+      tareas: prev.tareas + 1,
+    })
+  }
+
+  return Array.from(byDate.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([fecha, v]) => ({ fecha, ...v }))
 }
 
 /** Agrupa dotación manual por día real de actividad (cierres diarios o fecha de inicio legacy). */
@@ -68,38 +90,54 @@ export function aggregateManualStaffingByDay(
     .map(([fecha, v]) => ({ fecha, ...v }))
 }
 
-export function countDiasConActividad(tareas: Tarea[]): number {
+/** Prefiere partes de labores (fuente campo); fallback a rendimientos en tareas legacy. */
+export function resolveManualStaffingByDay(
+  manuales: Extract<Tarea, { tipo: 'manual' }>[],
+  partes: ParteDeLabores[],
+): DailyManualStaffing[] {
+  const fromPartes = aggregateManualStaffingFromPartes(partes)
+  if (fromPartes.length > 0) return fromPartes
+  return aggregateManualStaffingByDay(manuales)
+}
+
+export function countDiasConActividad(
+  tareas: Tarea[],
+  partes: ParteDeLabores[] = [],
+): number {
   const manuales = getManuales(tareas)
-  const dias = aggregateManualStaffingByDay(manuales).length
+  const dias = resolveManualStaffingByDay(manuales, partes).length
   return dias || 1
 }
 
 export interface PersonasPorDiaResult {
-  totalPersonas: number
+  personasDias: number
   dias: number
   promedio: string
 }
 
-/** Promedio de personas/día basado solo en tareas manuales (tarjeta y modal usan esto). */
+/** Personas-día acumuladas y promedio diario (solo tareas manuales / partes campo). */
 export function computePersonasPorDia(
   manuales: Extract<Tarea, { tipo: 'manual' }>[],
+  partes: ParteDeLabores[] = [],
 ): PersonasPorDiaResult {
-  const daily = aggregateManualStaffingByDay(manuales)
-  const totalPersonas = manuales.reduce((sum, t) => sum + (t.cantidadPersonas || 0), 0)
+  const daily = resolveManualStaffingByDay(manuales, partes)
+  const personasDias = daily.reduce((sum, d) => sum + d.personas, 0)
   const dias = daily.length || 1
-  const sumDailyHeadcount = daily.reduce((sum, d) => sum + d.personas, 0)
   return {
-    totalPersonas,
+    personasDias,
     dias,
-    promedio: dias > 0 ? (sumDailyHeadcount / dias).toFixed(1) : '0',
+    promedio: dias > 0 ? (personasDias / dias).toFixed(1) : '0',
   }
 }
 
-export function computeDashboardStats(tareas: Tarea[]): DashboardStats {
+export function computeDashboardStats(
+  tareas: Tarea[],
+  partes: ParteDeLabores[] = [],
+): DashboardStats {
   const finalizadas = getFinalizadas(tareas)
   const enProgreso = getEnProgreso(tareas)
   const manuales = getManuales(tareas)
-  const { totalPersonas, promedio } = computePersonasPorDia(manuales)
+  const { personasDias, promedio } = computePersonasPorDia(manuales, partes)
 
   return {
     total: tareas.length,
@@ -107,6 +145,6 @@ export function computeDashboardStats(tareas: Tarea[]): DashboardStats {
     enProgreso: enProgreso.length,
     personasPorDia: promedio,
     rendimientoPorTarea: getConRendimiento(tareas).length,
-    totalPersonas,
+    personasDias,
   }
 }

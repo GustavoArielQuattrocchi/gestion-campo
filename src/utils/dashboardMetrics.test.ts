@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import type { Tarea } from '../types'
+import type { ParteDeLabores, Tarea } from '../types'
 import {
+  aggregateManualStaffingFromPartes,
   computeDashboardStats,
   computePersonasPorDia,
   countDiasConActividad,
@@ -30,6 +31,23 @@ function manual(
   }
 }
 
+function parteManual(overrides: Partial<ParteDeLabores> & { id: string }): ParteDeLabores {
+  return {
+    tareaId: '1',
+    fincaId: 'foa',
+    fincaNombre: 'Finca Ocho A',
+    tarea: 'Poda',
+    tipo: 'manual',
+    operador: 'Juan',
+    rendimiento: '10 hileras',
+    cuadros: [],
+    cuadrilla: 'C1',
+    cantidadPersonas: 8,
+    cerradoEn: mockTs('2024-07-01T18:00:00'),
+    ...overrides,
+  }
+}
+
 describe('computePersonasPorDia', () => {
   it('promedia solo tareas manuales por día con actividad', () => {
     const manuales = [
@@ -38,7 +56,7 @@ describe('computePersonasPorDia', () => {
       manual({ id: '3', cantidadPersonas: 4, fechaInicio: mockTs('2024-06-02T10:00:00') }),
     ]
     const result = computePersonasPorDia(manuales)
-    assert.equal(result.totalPersonas, 20)
+    assert.equal(result.personasDias, 20)
     assert.equal(result.dias, 2)
     assert.equal(result.promedio, '10.0')
   })
@@ -57,8 +75,40 @@ describe('computePersonasPorDia', () => {
       }),
     ]
     const result = computePersonasPorDia(manuales)
+    assert.equal(result.personasDias, 24)
     assert.equal(result.dias, 3)
     assert.equal(result.promedio, '8.0')
+  })
+
+  it('prioriza partes de labores cerrados desde campo', () => {
+    const manuales = [
+      manual({
+        id: '1',
+        cantidadPersonas: 8,
+        fechaInicio: mockTs('2024-06-26T10:00:00'),
+      }),
+    ]
+    const partes = [
+      parteManual({ id: 'p1', cantidadPersonas: 10, cerradoEn: mockTs('2024-07-01T18:00:00') }),
+      parteManual({ id: 'p2', cantidadPersonas: 10, cerradoEn: mockTs('2024-07-08T18:00:00') }),
+    ]
+    const result = computePersonasPorDia(manuales, partes)
+    assert.equal(result.personasDias, 20)
+    assert.equal(result.dias, 2)
+    assert.equal(result.promedio, '10.0')
+  })
+})
+
+describe('aggregateManualStaffingFromPartes', () => {
+  it('suma personas por día de cierre', () => {
+    const partes = [
+      parteManual({ id: 'p1', cantidadPersonas: 6, cerradoEn: mockTs('2024-07-09T12:00:00') }),
+      parteManual({ id: 'p2', cantidadPersonas: 4, cerradoEn: mockTs('2024-07-09T18:00:00') }),
+    ]
+    const daily = aggregateManualStaffingFromPartes(partes)
+    assert.equal(daily.length, 1)
+    assert.equal(daily[0].personas, 10)
+    assert.equal(daily[0].tareas, 2)
   })
 })
 
@@ -98,8 +148,19 @@ describe('computeDashboardStats', () => {
     assert.equal(stats.finalizadas, 2)
     assert.equal(stats.enProgreso, 1)
     assert.equal(stats.rendimientoPorTarea, 1)
-    assert.equal(stats.totalPersonas, 12)
+    assert.equal(stats.personasDias, 12)
     assert.equal(stats.personasPorDia, '12.0')
     assert.equal(getManuales(tareas).length, 2)
+  })
+
+  it('usa partes de labores para personas-día', () => {
+    const tareas: Tarea[] = [manual({ id: '1', cantidadPersonas: 5 })]
+    const partes = [
+      parteManual({ id: 'p1', cantidadPersonas: 12, cerradoEn: mockTs('2024-07-09T10:00:00') }),
+      parteManual({ id: 'p2', cantidadPersonas: 12, cerradoEn: mockTs('2024-07-10T10:00:00') }),
+    ]
+    const stats = computeDashboardStats(tareas, partes)
+    assert.equal(stats.personasDias, 24)
+    assert.equal(stats.personasPorDia, '12.0')
   })
 })

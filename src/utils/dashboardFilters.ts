@@ -22,6 +22,21 @@ export function applyDashboardFilters(
   })
 }
 
+/** Partes manuales para métricas de dotación (ignora filtro de estado: cada cierre cuenta). */
+export function filterPartesForStaffing(
+  partes: ParteDeLabores[],
+  filtroFinca: string,
+  filtroTipo: string,
+): ParteDeLabores[] {
+  if (filtroTipo === 'mecanica') return []
+  return partes.filter(p => {
+    if (p.tipo !== 'manual') return false
+    if ((p.cantidadPersonas ?? 0) < 1) return false
+    if (filtroFinca !== 'todas' && p.fincaNombre !== filtroFinca) return false
+    return true
+  })
+}
+
 /** Partes de labores respetan finca y tipo globales; solo visibles si el estado global no es solo "en progreso". */
 export function applyPartesDashboardFilters(
   partes: ParteDeLabores[],

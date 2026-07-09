@@ -1,14 +1,14 @@
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import type { Tarea } from '../types'
+import type { ParteDeLabores, Tarea } from '../types'
 import { formatTimestamp } from './formatTimestamp'
 import {
-  aggregateManualStaffingByDay,
   computePersonasPorDia,
   getConRendimiento,
   getEnProgreso,
   getFinalizadas,
   getManuales,
+  resolveManualStaffingByDay,
 } from './dashboardMetrics'
 import { computeTareaProgress, formatProgressLabel } from './tareaProgress'
 
@@ -61,7 +61,11 @@ function filaFinalizada(t: Tarea): Record<string, string> {
   }
 }
 
-export function getMetricDetail(metric: MetricKey, tareas: Tarea[]): MetricDetailResult {
+export function getMetricDetail(
+  metric: MetricKey,
+  tareas: Tarea[],
+  partes: ParteDeLabores[] = [],
+): MetricDetailResult {
   switch (metric) {
     case 'total':
       return {
@@ -117,7 +121,7 @@ export function getMetricDetail(metric: MetricKey, tareas: Tarea[]): MetricDetai
 
     case 'personas_dia': {
       const manuales = getManuales(tareas)
-      const rows = aggregateManualStaffingByDay(manuales)
+      const rows = resolveManualStaffingByDay(manuales, partes)
         .slice()
         .sort((a, b) => b.fecha.localeCompare(a.fecha))
         .map(v => ({
@@ -126,17 +130,17 @@ export function getMetricDetail(metric: MetricKey, tareas: Tarea[]): MetricDetai
           personas: String(v.personas),
           promedio: v.tareas > 0 ? (v.personas / v.tareas).toFixed(1) : '0',
         }))
-      const { totalPersonas, dias, promedio } = computePersonasPorDia(manuales)
+      const { personasDias, dias, promedio } = computePersonasPorDia(manuales, partes)
       return {
         title: 'Personas / día',
         columns: [
           { key: 'fecha', label: 'Fecha' },
-          { key: 'tareas', label: 'Tareas manuales' },
+          { key: 'tareas', label: 'Partes / tareas' },
           { key: 'personas', label: 'Personas' },
-          { key: 'promedio', label: 'Pers. / tarea' },
+          { key: 'promedio', label: 'Pers. / parte' },
         ],
         rows,
-        summary: `${totalPersonas} personas en ${dias} día(s) con actividad manual → promedio ${promedio} personas/día`,
+        summary: `${personasDias} personas-día en ${dias} día(s) con actividad → promedio ${promedio} personas/día`,
       }
     }
 
@@ -161,8 +165,33 @@ export function getMetricDetail(metric: MetricKey, tareas: Tarea[]): MetricDetai
 
     case 'total_personas': {
       const manuales = getManuales(tareas)
+      const { personasDias, dias } = computePersonasPorDia(manuales, partes)
+      if (partes.length > 0) {
+        const manualPartes = partes.filter(p => p.tipo === 'manual')
+        return {
+          title: 'Personas-día (campo)',
+          columns: [
+            { key: 'fecha', label: 'Fecha cierre' },
+            { key: 'tarea', label: 'Labor' },
+            { key: 'cuadrilla', label: 'Cuadrilla' },
+            { key: 'personas', label: 'Personas' },
+            { key: 'finca', label: 'Finca' },
+          ],
+          rows: manualPartes
+            .slice()
+            .sort((a, b) => b.cerradoEn.toDate().getTime() - a.cerradoEn.toDate().getTime())
+            .map(p => ({
+              fecha: formatTimestamp(p.cerradoEn),
+              tarea: p.tarea,
+              cuadrilla: p.cuadrilla ?? '—',
+              personas: String(p.cantidadPersonas ?? 0),
+              finca: p.fincaNombre,
+            })),
+          summary: `Total: ${personasDias} personas-día en ${dias} día(s) con cierres desde campo`,
+        }
+      }
       return {
-        title: 'Total personas asignadas',
+        title: 'Personas-día (campo)',
         columns: [
           { key: 'tarea', label: 'Tarea' },
           { key: 'cuadrilla', label: 'Cuadrilla' },
@@ -177,7 +206,7 @@ export function getMetricDetail(metric: MetricKey, tareas: Tarea[]): MetricDetai
           finca: t.fincaNombre,
           fechaInicio: formatTimestamp(t.fechaInicio),
         })),
-        summary: `Suma: ${manuales.reduce((s, t) => s + (t.cantidadPersonas || 0), 0)} personas (solo tareas manuales)`,
+        summary: `Total: ${personasDias} personas-día en ${dias} día(s) (datos legacy sin partes)`,
       }
     }
   }
