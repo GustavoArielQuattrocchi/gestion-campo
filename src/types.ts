@@ -31,6 +31,13 @@ export interface CatalogItem {
 }
 
 export type TareaEstado = 'en_progreso' | 'finalizada'
+
+/** Registro de finalización de un cuadro con timestamp y operador. */
+export interface CuadroFinalizacion {
+  cuadroId: string
+  fecha: Timestamp
+  operador: string
+}
 export type TareaTipo = 'manual' | 'mecanica'
 
 export interface CuadroSelection {
@@ -50,6 +57,15 @@ export const RENDIMIENTO_UNIDADES: RendimientoUnidad[] = [
   'plantas',
 ]
 
+/** Datos meteorológicos capturados al cerrar un parte de labores. */
+export interface WeatherSnapshot {
+  temperatureMax: number
+  temperatureMin: number
+  precipitation: number
+  windSpeedMax: number
+  weatherCode: number
+}
+
 /** Registro diario de rendimiento desde la app campo (la tarea sigue en progreso). */
 export interface RendimientoDiario {
   fecha: Timestamp
@@ -61,6 +77,13 @@ export interface RendimientoDiario {
   unidad?: RendimientoUnidad
   /** Id del parte de labores vinculado a este registro. */
   parteId?: string
+  horaInicio?: string
+  horaFin?: string
+  observaciones?: string
+  /** Rendimiento por cuadro individual (opcional). Clave = cuadroId, valor = cantidad. */
+  rendimientoPorCuadro?: Record<string, number>
+  /** Clima al momento del cierre diario. */
+  clima?: WeatherSnapshot
 }
 
 interface TareaBase {
@@ -73,6 +96,8 @@ interface TareaBase {
   cuadroIds?: string[]
   /** Cuadros marcados como finalizados desde el dashboard. */
   cuadroIdsFinalizados?: string[]
+  /** Metadata de cada finalización de cuadro (fecha + operador). Complementa cuadroIdsFinalizados. */
+  cuadroFinalizaciones?: CuadroFinalizacion[]
   estado: TareaEstado
   operador: string
   fechaInicio: Timestamp
@@ -96,6 +121,8 @@ export interface TareaMecanica extends TareaBase {
   /** Modelo del tractor (ej. NEW HOLLAND TT-65-D). Opcional en documentos legacy. */
   maquinariaModelo?: string
   maquinariaId?: string
+  /** Referencia a una orden de cura vinculada (ej. OC-FOA-2026-001). */
+  ordenCuraRef?: string
 }
 
 export type Tarea = TareaManual | TareaMecanica
@@ -124,5 +151,11 @@ export interface ParteDeLabores {
   maquinaria?: string
   maquinariaModelo?: string
   maquinariaId?: string
+  horaInicio?: string
+  horaFin?: string
+  observaciones?: string
+  /** Rendimiento por cuadro individual (opcional). Clave = cuadroId, valor = cantidad. */
+  rendimientoPorCuadro?: Record<string, number>
+  clima?: WeatherSnapshot
   cerradoEn: Timestamp
 }

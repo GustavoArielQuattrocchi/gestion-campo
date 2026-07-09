@@ -6,6 +6,8 @@ import {
   TrendingUp,
   CalendarDays,
   ClipboardList,
+  LineChart,
+  ShieldAlert,
 } from 'lucide-react'
 import type { DashboardStats } from '../../utils/dashboardMetrics'
 import type { MetricKey } from '../../utils/getMetricDetail'
@@ -16,10 +18,13 @@ interface Props {
   onToggle: () => void
   stats: DashboardStats
   partesCount: number
+  accidentCount: number
   metricsNote: string | null
   onSelectMetric: (key: MetricKey) => void
   onOpenEnProgreso: () => void
   onOpenPartesLabores: () => void
+  onOpenAnalytics: () => void
+  onOpenSeguridad: () => void
 }
 
 export default function DashboardStatsPanel({
@@ -27,10 +32,13 @@ export default function DashboardStatsPanel({
   onToggle,
   stats,
   partesCount,
+  accidentCount,
   metricsNote,
   onSelectMetric,
   onOpenEnProgreso,
   onOpenPartesLabores,
+  onOpenAnalytics,
+  onOpenSeguridad,
 }: Props) {
   return (
     <DashboardPanel
@@ -129,6 +137,32 @@ export default function DashboardStatsPanel({
           </div>
           <div className="stat-value">{stats.totalPersonas}</div>
           <div className="stat-label">Total personas</div>
+        </button>
+
+        <button
+          type="button"
+          className="stat-card stat-card--interactive"
+          onClick={onOpenSeguridad}
+          aria-label="Ver informes de seguridad"
+        >
+          <div className="stat-icon" style={{ background: '#fef2f2', color: '#ef4444' }}>
+            <ShieldAlert size={18} />
+          </div>
+          <div className="stat-value">{accidentCount}</div>
+          <div className="stat-label">Accidentes</div>
+        </button>
+
+        <button
+          type="button"
+          className="stat-card stat-card--interactive stat-card--analytics"
+          onClick={onOpenAnalytics}
+          aria-label="Ver indicadores de productividad"
+        >
+          <div className="stat-icon" style={{ background: '#ede9fe', color: '#8b5cf6' }}>
+            <LineChart size={18} />
+          </div>
+          <div className="stat-value">📊</div>
+          <div className="stat-label">Indicadores</div>
         </button>
       </div>
 

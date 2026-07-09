@@ -23,7 +23,7 @@ import {
   writeBatch,
 } from 'firebase/firestore'
 import { auth, db } from '../firebase'
-import type { RendimientoUnidad, Tarea } from '../types'
+import type { RendimientoUnidad, Tarea, WeatherSnapshot } from '../types'
 import { formatRendimiento } from '../utils/rendimiento'
 import { MOBILE_ROUTES } from '../mobile/routes'
 import { parseTareasFromSnapshot } from '../utils/parseTarea'
@@ -67,6 +67,7 @@ interface MobileAppContextValue {
   fincaNombre: string
   tareasActivas: Tarea[]
   successMsg: { message: string; detail: string }
+  lastCreatedTareaId: string | null
   firestoreError: string | null
   parseWarning: string | null
   toast: MobileToastState | null
@@ -94,6 +95,7 @@ interface MobileAppContextValue {
     maquinariaId?: string
     cuadros: string[]
     cuadroIds: string[]
+    ordenCuraRef?: string
   }) => Promise<boolean>
   handleRegisterRendimiento: (
     tareaId: string,
@@ -101,6 +103,13 @@ interface MobileAppContextValue {
     unidad: RendimientoUnidad,
     finalizarTarea?: boolean,
     cuadrosFinalizadosHoy?: string[],
+    extras?: {
+      horaInicio?: string
+      horaFin?: string
+      observaciones?: string
+      rendimientoPorCuadro?: Record<string, number>
+      clima?: WeatherSnapshot
+    },
   ) => Promise<void>
   handleContinueTask: (tareaId: string, cuadros: string[], cuadroIds: string[], cantidadPersonas?: number) => Promise<boolean>
   handleAccidentSuccess: (detail?: string) => void
@@ -117,6 +126,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
   const [fincaNombre, setFincaNombre] = useState(sessionInit.fincaNombre)
   const [tareasActivas, setTareasActivas] = useState<Tarea[]>([])
   const [successMsg, setSuccessMsg] = useState({ message: '', detail: '' })
+  const [lastCreatedTareaId, setLastCreatedTareaId] = useState<string | null>(null)
   const [firestoreError, setFirestoreError] = useState<string | null>(null)
   const [parseWarning, setParseWarning] = useState<string | null>(null)
   const [toast, setToast] = useState<MobileToastState | null>(null)
@@ -276,12 +286,18 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
 
     submittingRef.current = true
     try {
-      await addDoc(collection(db, 'tareas'), payload)
+      const docRef = await addDoc(collection(db, 'tareas'), payload)
       setFirestoreError(null)
+      setLastCreatedTareaId(docRef.id)
+      setSuccessMsg({
+        message: 'Tarea cargada correctamente',
+        detail: `${data.tarea} — ${data.cuadrilla} con ${data.cantidadPersonas} personas`,
+      })
       if (!navigator.onLine) {
         markPendingSync()
         showToast(OFFLINE_WRITE_TOAST, 'info')
       }
+      navigate(`${MOBILE_ROUTES.exito}?motivo=inicio`)
       return true
     } catch (err) {
       console.error('Error al crear tarea manual:', err)
@@ -290,7 +306,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     } finally {
       submittingRef.current = false
     }
-  }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync])
+  }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync, navigate])
 
   const handleStartMechanicalTask = useCallback(async (data: {
     tarea: string
@@ -300,6 +316,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     maquinariaId?: string
     cuadros: string[]
     cuadroIds: string[]
+    ordenCuraRef?: string
   }): Promise<boolean> => {
     if (submittingRef.current) return false
     const validated = validateMechanicalTaskCreate(data)
@@ -317,12 +334,18 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
 
     submittingRef.current = true
     try {
-      await addDoc(collection(db, 'tareas'), payload)
+      const docRef = await addDoc(collection(db, 'tareas'), payload)
       setFirestoreError(null)
+      setLastCreatedTareaId(docRef.id)
+      setSuccessMsg({
+        message: 'Tarea cargada correctamente',
+        detail: `${data.tarea} — ${data.persona} con ${data.maquinaria}`,
+      })
       if (!navigator.onLine) {
         markPendingSync()
         showToast(OFFLINE_WRITE_TOAST, 'info')
       }
+      navigate(`${MOBILE_ROUTES.exito}?motivo=inicio`)
       return true
     } catch (err) {
       console.error('Error al crear tarea mecánica:', err)
@@ -331,7 +354,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     } finally {
       submittingRef.current = false
     }
-  }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync])
+  }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync, navigate])
 
   const handleContinueTask = useCallback(async (
     tareaId: string,
@@ -351,10 +374,16 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       }
       await updateDoc(doc(db, 'tareas', tareaId), updates)
       setFirestoreError(null)
+      setLastCreatedTareaId(tareaId)
+      setSuccessMsg({
+        message: 'Cuadros agregados a tarea existente',
+        detail: `Se agregaron ${cuadros.length} cuadro${cuadros.length > 1 ? 's' : ''} a la tarea`,
+      })
       if (!navigator.onLine) {
         markPendingSync()
         showToast(OFFLINE_WRITE_TOAST, 'info')
       }
+      navigate(`${MOBILE_ROUTES.exito}?motivo=inicio`)
       return true
     } catch (err) {
       console.error('Error al continuar tarea:', err)
@@ -363,7 +392,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     } finally {
       submittingRef.current = false
     }
-  }, [showToast, markPendingSync])
+  }, [showToast, markPendingSync, navigate])
 
   const handleRegisterRendimiento = useCallback(async (
     tareaId: string,
@@ -371,6 +400,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     unidad: RendimientoUnidad,
     finalizarTarea = false,
     cuadrosFinalizadosHoy: string[] = [],
+    extras: { horaInicio?: string; horaFin?: string; observaciones?: string; rendimientoPorCuadro?: Record<string, number>; clima?: WeatherSnapshot } = {},
   ) => {
     if (submittingRef.current) return
     const tarea = tareasActivas.find(t => t.id === tareaId)
@@ -385,7 +415,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       const cerradoEn = Timestamp.now()
       const batch = writeBatch(db)
       const parteRef = doc(collection(db, 'partes_labores'))
-      const entry = {
+      const entry: Record<string, unknown> = {
         fecha: Timestamp.now(),
         texto,
         operador: operadorNombre,
@@ -393,12 +423,26 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         unidad,
         parteId: parteRef.id,
       }
+      if (extras.horaInicio) entry.horaInicio = extras.horaInicio
+      if (extras.horaFin) entry.horaFin = extras.horaFin
+      if (extras.observaciones) entry.observaciones = extras.observaciones
+      if (extras.rendimientoPorCuadro && Object.keys(extras.rendimientoPorCuadro).length > 0) {
+        entry.rendimientoPorCuadro = extras.rendimientoPorCuadro
+      }
+      if (extras.clima) entry.clima = extras.clima
       const tareaUpdate: Record<string, unknown> = {
         rendimientosDiarios: arrayUnion(entry),
         rendimiento: texto,
       }
       if (cuadrosFinalizadosHoy.length > 0) {
         tareaUpdate.cuadroIdsFinalizados = arrayUnion(...cuadrosFinalizadosHoy)
+        const ahora = Timestamp.now()
+        const finalizaciones = cuadrosFinalizadosHoy.map(cuadroId => ({
+          cuadroId,
+          fecha: ahora,
+          operador: operadorNombre,
+        }))
+        tareaUpdate.cuadroFinalizaciones = arrayUnion(...finalizaciones)
       }
       if (finalizarTarea) {
         tareaUpdate.estado = 'finalizada'
@@ -415,6 +459,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
           cantidad,
           unidad,
           finalizarTarea,
+          extras,
         ),
       )
       await batch.commit()
@@ -463,6 +508,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       fincaNombre,
       tareasActivas,
       successMsg,
+      lastCreatedTareaId,
       firestoreError,
       parseWarning,
       toast,
@@ -488,6 +534,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       fincaNombre,
       tareasActivas,
       successMsg,
+      lastCreatedTareaId,
       firestoreError,
       parseWarning,
       toast,

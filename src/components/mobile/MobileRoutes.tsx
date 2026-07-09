@@ -61,8 +61,8 @@ function FinalizarDetalleRoute() {
   return (
     <EndTaskForm
       tarea={tarea}
-      onSubmit={(cantidad, unidad, finalizarTarea, cuadrosFinalizadosHoy) =>
-        handleRegisterRendimiento(tareaId, cantidad, unidad, finalizarTarea, cuadrosFinalizadosHoy)
+      onSubmit={(cantidad, unidad, finalizarTarea, cuadrosFinalizadosHoy, extras) =>
+        handleRegisterRendimiento(tareaId, cantidad, unidad, finalizarTarea, cuadrosFinalizadosHoy, extras)
       }
       onBack={() => navigate(MOBILE_ROUTES.finalizar)}
     />
@@ -72,8 +72,13 @@ function FinalizarDetalleRoute() {
 function ExitoRoute() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { successMsg } = useMobileAppContext()
+  const { successMsg, lastCreatedTareaId, tareasActivas } = useMobileAppContext()
   const motivo = searchParams.get('motivo')
+
+  const pendientesCierre = useMemo(
+    () => filterTareasPendientesParteLabores(tareasActivas),
+    [tareasActivas],
+  )
 
   if (!motivo || !successMsg.message) {
     return <Navigate to={MOBILE_ROUTES.menu} replace />
@@ -83,7 +88,13 @@ function ExitoRoute() {
     <SuccessScreen
       message={successMsg.message}
       detail={successMsg.detail}
+      motivo={motivo}
+      pendientesCierreCount={pendientesCierre.length}
+      lastCreatedTareaId={lastCreatedTareaId}
       onContinue={() => navigate(MOBILE_ROUTES.menu)}
+      onCerrarParte={tareaId => navigate(MOBILE_ROUTES.finalizarDetalle(tareaId))}
+      onCargarOtra={() => navigate(MOBILE_ROUTES.tareaTipo)}
+      onCerrarSiguiente={() => navigate(MOBILE_ROUTES.finalizar)}
     />
   )
 }
@@ -151,9 +162,12 @@ export default function MobileRoutes() {
           element={
             <TaskMenu
               fincaNombre={fincaNombre}
+              tareasActivas={tareasActivas}
+              pendientesCierreCount={tareasPendientesCierre.length}
               onSelectInicio={() => navigate(MOBILE_ROUTES.tareaTipo)}
               onSelectFin={() => navigate(MOBILE_ROUTES.finalizar)}
               onSelectAccidente={() => navigate(MOBILE_ROUTES.informe)}
+              onCerrarTarea={tareaId => navigate(MOBILE_ROUTES.finalizarDetalle(tareaId))}
               onBack={() => navigate(MOBILE_ROUTES.finca)}
             />
           }

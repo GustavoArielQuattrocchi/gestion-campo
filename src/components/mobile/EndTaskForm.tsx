@@ -1,9 +1,11 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { ChevronLeft, Save } from 'lucide-react'
 import type { RendimientoUnidad, Tarea } from '../../types'
 import { RENDIMIENTO_UNIDADES } from '../../types'
 import { resolveTaskCuadroIds, computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 import { getNombreCuadro } from '../../data/fincaData'
+import { getDefaultUnit } from '../../data/laborUnits'
+import { fetchTodayWeather, weatherCodeToLabel, getWeatherEmoji, type WeatherData } from '../../utils/weatherService'
 
 interface Props {
   tarea: Tarea
@@ -12,16 +14,36 @@ interface Props {
     unidad: RendimientoUnidad,
     finalizarTarea: boolean,
     cuadrosFinalizadosHoy: string[],
+    extras: {
+      horaInicio?: string
+      horaFin?: string
+      observaciones?: string
+      rendimientoPorCuadro?: Record<string, number>
+      clima?: WeatherData
+    },
   ) => Promise<void>
   onBack: () => void
 }
 
 export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
   const [cantidad, setCantidad] = useState('')
-  const [unidad, setUnidad] = useState<RendimientoUnidad | ''>('')
+  const [unidad, setUnidad] = useState<RendimientoUnidad | ''>(() => getDefaultUnit(tarea.tarea) || '')
   const [tareaTerminada, setTareaTerminada] = useState(false)
   const [cuadrosFinalizadosHoy, setCuadrosFinalizadosHoy] = useState<string[]>([])
+  const [rendimientoPorCuadro, setRendimientoPorCuadro] = useState<Record<string, number>>({})
   const [saving, setSaving] = useState(false)
+  const [horaInicio, setHoraInicio] = useState('')
+  const [horaFin, setHoraFin] = useState('')
+  const [observaciones, setObservaciones] = useState('')
+  const [weather, setWeather] = useState<WeatherData | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetchTodayWeather(tarea.fincaId).then(data => {
+      if (!cancelled) setWeather(data)
+    })
+    return () => { cancelled = true }
+  }, [tarea.fincaId])
 
   const progress = useMemo(() => computeTareaProgress(tarea), [tarea])
   const cuadrosPendientes = useMemo(() => {
@@ -36,9 +58,16 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
   }, [cuadrosPendientes, cuadrosFinalizadosHoy, tarea.cuadroIdsFinalizados])
 
   const toggleCuadro = (cuadroId: string) => {
-    setCuadrosFinalizadosHoy(prev =>
-      prev.includes(cuadroId) ? prev.filter(id => id !== cuadroId) : [...prev, cuadroId],
-    )
+    setCuadrosFinalizadosHoy(prev => {
+      if (prev.includes(cuadroId)) {
+        setRendimientoPorCuadro(r => {
+          const { [cuadroId]: _, ...rest } = r
+          return rest
+        })
+        return prev.filter(id => id !== cuadroId)
+      }
+      return [...prev, cuadroId]
+    })
   }
 
   const cantidadNum = Number(cantidad)
@@ -49,7 +78,13 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
     if (!formValido || saving) return
     setSaving(true)
     try {
-      await onSubmit(cantidadNum, unidad as RendimientoUnidad, tareaTerminada, cuadrosFinalizadosHoy)
+      const extras: { horaInicio?: string; horaFin?: string; observaciones?: string; rendimientoPorCuadro?: Record<string, number>; clima?: WeatherData } = {}
+      if (horaInicio) extras.horaInicio = horaInicio
+      if (horaFin) extras.horaFin = horaFin
+      if (observaciones.trim()) extras.observaciones = observaciones.trim()
+      if (Object.keys(rendimientoPorCuadro).length > 0) extras.rendimientoPorCuadro = rendimientoPorCuadro
+      if (weather) extras.clima = weather
+      await onSubmit(cantidadNum, unidad as RendimientoUnidad, tareaTerminada, cuadrosFinalizadosHoy, extras)
     } finally {
       setSaving(false)
     }
@@ -117,6 +152,18 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
         </div>
       </div>
 
+      {weather && (
+        <div className="card weather-card">
+          <div className="weather-card-content">
+            <span className="weather-icon">{getWeatherEmoji(weather.weatherCode)}</span>
+            <div>
+              <strong>{weatherCodeToLabel(weather.weatherCode)}</strong>
+              <span>{weather.temperatureMin}° / {weather.temperatureMax}° · {weather.precipitation} mm</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {tarea.rendimientosDiarios && tarea.rendimientosDiarios.length > 0 && (
         <div className="card">
           <div className="card-title">Registros anteriores</div>
@@ -127,6 +174,32 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
           </ul>
         </div>
       )}
+
+      <div className="card">
+        <div className="card-title">Horario de trabajo (opcional)</div>
+        <div className="horario-fields">
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Hora inicio</label>
+            <input
+              type="time"
+              className="form-input"
+              value={horaInicio}
+              onChange={e => setHoraInicio(e.target.value)}
+              disabled={saving}
+            />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Hora fin</label>
+            <input
+              type="time"
+              className="form-input"
+              value={horaFin}
+              onChange={e => setHoraFin(e.target.value)}
+              disabled={saving}
+            />
+          </div>
+        </div>
+      </div>
 
       <div className="card">
         <div className="card-title">Rendimiento del día</div>
@@ -173,25 +246,66 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
             Marcá los cuadros que se completaron durante el día.
           </p>
           <ul className="cuadros-checklist">
-            {cuadrosPendientes.map(cuadroId => (
-              <li key={cuadroId}>
-                <label className="cuadro-check-label">
-                  <input
-                    type="checkbox"
-                    checked={cuadrosFinalizadosHoy.includes(cuadroId)}
-                    onChange={() => toggleCuadro(cuadroId)}
-                    disabled={saving}
-                  />
-                  <span>{getNombreCuadro(tarea.fincaId, cuadroId)}</span>
-                </label>
-              </li>
-            ))}
+            {cuadrosPendientes.map(cuadroId => {
+              const isChecked = cuadrosFinalizadosHoy.includes(cuadroId)
+              return (
+                <li key={cuadroId}>
+                  <label className="cuadro-check-label">
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => toggleCuadro(cuadroId)}
+                      disabled={saving}
+                    />
+                    <span>{getNombreCuadro(tarea.fincaId, cuadroId)}</span>
+                  </label>
+                  {isChecked && (
+                    <div className="cuadro-check-rendimiento">
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        min="0"
+                        step="any"
+                        placeholder="Rend."
+                        value={rendimientoPorCuadro[cuadroId] ?? ''}
+                        onChange={e => {
+                          const val = e.target.value
+                          setRendimientoPorCuadro(prev => {
+                            if (val === '') {
+                              const { [cuadroId]: _, ...rest } = prev
+                              return rest
+                            }
+                            return { ...prev, [cuadroId]: Number(val) }
+                          })
+                        }}
+                        disabled={saving}
+                      />
+                      <span>opcional</span>
+                    </div>
+                  )}
+                </li>
+              )
+            })}
           </ul>
           <div style={{ marginTop: 8, fontSize: 12, color: 'var(--gray-500)' }}>
             Avance actual: {formatProgressLabel(progress)}
           </div>
         </div>
       )}
+
+      <div className="card">
+        <div className="card-title">Observaciones (opcional)</div>
+        <div className="observaciones-field">
+          <textarea
+            placeholder="Notas del día, estado del cuadro, problemas observados..."
+            maxLength={500}
+            value={observaciones}
+            onChange={e => setObservaciones(e.target.value)}
+            disabled={saving}
+          />
+          <div className="observaciones-counter">{observaciones.length}/500</div>
+        </div>
+      </div>
 
       <label className="end-task-finalizar">
         <input

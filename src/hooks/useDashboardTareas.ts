@@ -142,8 +142,14 @@ export function useDashboardTareas() {
 
   const finalizarCuadro = useCallback(
     (tareaId: string, cuadroId: string) =>
-      runTareaUpdate(tareaId, { cuadroIdsFinalizados: arrayUnion(cuadroId) },
-        'No se pudo finalizar el cuadro. Revisá la conexión y las reglas de Firestore.'),
+      runTareaUpdate(tareaId, {
+        cuadroIdsFinalizados: arrayUnion(cuadroId),
+        cuadroFinalizaciones: arrayUnion({
+          cuadroId,
+          fecha: Timestamp.now(),
+          operador: 'admin',
+        }),
+      }, 'No se pudo finalizar el cuadro. Revisá la conexión y las reglas de Firestore.'),
     [runTareaUpdate],
   )
 

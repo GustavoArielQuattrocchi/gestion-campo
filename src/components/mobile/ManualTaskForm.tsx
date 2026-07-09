@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo } from 'react'
-import { ChevronLeft, Save, CheckCircle, RefreshCw } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { ChevronLeft, Save, RefreshCw } from 'lucide-react'
 import { cuadrillas, tareasManuales } from '../../data/catalog'
 import { emptyCuadroSelection, type CuadroSelection, type Tarea } from '../../types'
 import { findTareaContinuableManual } from '../../utils/findTareaContinuable'
@@ -26,19 +26,11 @@ export default function ManualTaskForm({ fincaNombre, tareasActivas, onSubmit, o
   const [cantidadPersonas, setCantidadPersonas] = useState('')
   const [cuadroSelection, setCuadroSelection] = useState<CuadroSelection>(emptyCuadroSelection)
   const [saving, setSaving] = useState(false)
-  const [toast, setToast] = useState<{ message: string; detail: string } | null>(null)
 
   const tareaContinuable = useMemo(
     () => findTareaContinuableManual(tareasActivas, tarea, cuadrilla),
     [tareasActivas, tarea, cuadrilla],
   )
-
-  const resetForm = useCallback(() => {
-    setCuadrilla('')
-    setTarea('')
-    setCantidadPersonas('')
-    setCuadroSelection(emptyCuadroSelection())
-  }, [])
 
   const isValid = cuadrilla && tarea && cantidadPersonas && cuadroSelection.cuadroIds.length > 0
 
@@ -49,29 +41,16 @@ export default function ManualTaskForm({ fincaNombre, tareasActivas, onSubmit, o
 
     setSaving(true)
     try {
-      let ok: boolean
       if (tareaContinuable) {
-        ok = await onContinue(tareaContinuable.id, cuadroSelection.cuadros, cuadroSelection.cuadroIds, n)
-        if (ok) {
-          const detail = `Cuadros agregados a ${tarea} — ${cuadrilla}`
-          setToast({ message: 'Tarea actualizada', detail })
-          resetForm()
-          setTimeout(() => setToast(null), 3500)
-        }
+        await onContinue(tareaContinuable.id, cuadroSelection.cuadros, cuadroSelection.cuadroIds, n)
       } else {
-        ok = await onSubmit({
+        await onSubmit({
           cuadrilla,
           tarea,
           cantidadPersonas: n,
           cuadros: cuadroSelection.cuadros,
           cuadroIds: cuadroSelection.cuadroIds,
         })
-        if (ok) {
-          const detail = `${tarea} — ${cuadrilla} con ${cantidadPersonas} personas`
-          setToast({ message: 'Tarea cargada correctamente', detail })
-          resetForm()
-          setTimeout(() => setToast(null), 3500)
-        }
       }
     } finally {
       setSaving(false)
@@ -80,20 +59,6 @@ export default function ManualTaskForm({ fincaNombre, tareasActivas, onSubmit, o
 
   return (
     <div className="container slide-up">
-      {toast && (
-        <div className="success-toast">
-          <div className="success-toast-inner">
-            <div className="success-toast-icon">
-              <CheckCircle size={20} />
-            </div>
-            <div className="success-toast-text">
-              <strong>{toast.message}</strong>
-              <span>{toast.detail}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="mobile-header">
         <button className="nav-back" onClick={onBack}>
           <ChevronLeft size={18} /> Volver

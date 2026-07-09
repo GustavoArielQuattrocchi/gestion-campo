@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo } from 'react'
-import { ChevronLeft, Save, CheckCircle, RefreshCw } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { ChevronLeft, Save, RefreshCw } from 'lucide-react'
 import { getMaquinariasPorFinca, tareasMecanicas } from '../../data/catalog'
 import { emptyCuadroSelection, type CuadroSelection, type Tarea } from '../../types'
 import { findTareaContinuableMecanica } from '../../utils/findTareaContinuable'
@@ -18,6 +18,7 @@ interface Props {
     maquinariaId?: string
     cuadros: string[]
     cuadroIds: string[]
+    ordenCuraRef?: string
   }) => Promise<boolean>
   onContinue: (tareaId: string, cuadros: string[], cuadroIds: string[]) => Promise<boolean>
   onBack: () => void
@@ -28,8 +29,8 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
   const [persona, setPersona] = useState('')
   const [maquinariaId, setMaquinariaId] = useState('')
   const [cuadroSelection, setCuadroSelection] = useState<CuadroSelection>(emptyCuadroSelection)
+  const [ordenCuraRef, setOrdenCuraRef] = useState('')
   const [saving, setSaving] = useState(false)
-  const [toast, setToast] = useState<{ message: string; detail: string } | null>(null)
 
   const maquinariasFinca = useMemo(() => getMaquinariasPorFinca(fincaId), [fincaId])
 
@@ -37,13 +38,6 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
     () => findTareaContinuableMecanica(tareasActivas, tarea, persona),
     [tareasActivas, tarea, persona],
   )
-
-  const resetForm = useCallback(() => {
-    setTarea('')
-    setPersona('')
-    setMaquinariaId('')
-    setCuadroSelection(emptyCuadroSelection())
-  }, [])
 
   const isValid = tarea && persona && maquinariaId && cuadroSelection.cuadroIds.length > 0
 
@@ -54,17 +48,10 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
 
     setSaving(true)
     try {
-      let ok: boolean
       if (tareaContinuable) {
-        ok = await onContinue(tareaContinuable.id, cuadroSelection.cuadros, cuadroSelection.cuadroIds)
-        if (ok) {
-          const detail = `Cuadros agregados a ${tarea} — ${persona}`
-          setToast({ message: 'Tarea actualizada', detail })
-          resetForm()
-          setTimeout(() => setToast(null), 3500)
-        }
+        await onContinue(tareaContinuable.id, cuadroSelection.cuadros, cuadroSelection.cuadroIds)
       } else {
-        ok = await onSubmit({
+        await onSubmit({
           tarea,
           persona,
           maquinaria: tractor.nombre,
@@ -72,13 +59,8 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
           maquinariaId: tractor.id,
           cuadros: cuadroSelection.cuadros,
           cuadroIds: cuadroSelection.cuadroIds,
+          ...(ordenCuraRef.trim() ? { ordenCuraRef: ordenCuraRef.trim() } : {}),
         })
-        if (ok) {
-          const detail = `${tarea} — ${persona} con ${tractor.nombre} (${tractor.modelo})`
-          setToast({ message: 'Tarea cargada correctamente', detail })
-          resetForm()
-          setTimeout(() => setToast(null), 3500)
-        }
       }
     } finally {
       setSaving(false)
@@ -87,20 +69,6 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
 
   return (
     <div className="container slide-up">
-      {toast && (
-        <div className="success-toast">
-          <div className="success-toast-inner">
-            <div className="success-toast-icon">
-              <CheckCircle size={20} />
-            </div>
-            <div className="success-toast-text">
-              <strong>{toast.message}</strong>
-              <span>{toast.detail}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="mobile-header">
         <button className="nav-back" onClick={onBack}>
           <ChevronLeft size={18} /> Volver
@@ -166,6 +134,19 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
             onChange={setCuadroSelection}
           />
         </div>
+
+        {tarea === 'Curacion' && (
+          <div className="form-group">
+            <label className="form-label">Orden de cura (opcional)</label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Ej: OC-FOA-2026-001"
+              value={ordenCuraRef}
+              onChange={e => setOrdenCuraRef(e.target.value)}
+            />
+          </div>
+        )}
       </div>
 
       {tareaContinuable && (() => {

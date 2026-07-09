@@ -1,5 +1,5 @@
 import type { Timestamp } from 'firebase/firestore'
-import type { ParteDeLabores, RendimientoUnidad, Tarea } from '../types'
+import type { ParteDeLabores, RendimientoUnidad, Tarea, WeatherSnapshot } from '../types'
 
 export type ParteDeLaboresFirestorePayload = Omit<ParteDeLabores, 'id'>
 
@@ -11,6 +11,7 @@ export function buildParteDeLaboresPayload(
   rendimientoCantidad?: number,
   rendimientoUnidad?: RendimientoUnidad,
   finalizoTarea?: boolean,
+  extras: { horaInicio?: string; horaFin?: string; observaciones?: string; rendimientoPorCuadro?: Record<string, number>; clima?: WeatherSnapshot } = {},
 ): ParteDeLaboresFirestorePayload {
   const base = {
     tareaId: tarea.id,
@@ -25,6 +26,13 @@ export function buildParteDeLaboresPayload(
     ...(finalizoTarea ? { finalizoTarea: true } : {}),
     cuadros: tarea.cuadros ?? [],
     ...(tarea.cuadroIds?.length ? { cuadroIds: tarea.cuadroIds } : {}),
+    ...(extras.horaInicio ? { horaInicio: extras.horaInicio } : {}),
+    ...(extras.horaFin ? { horaFin: extras.horaFin } : {}),
+    ...(extras.observaciones ? { observaciones: extras.observaciones } : {}),
+    ...(extras.rendimientoPorCuadro && Object.keys(extras.rendimientoPorCuadro).length > 0
+      ? { rendimientoPorCuadro: extras.rendimientoPorCuadro }
+      : {}),
+    ...(extras.clima ? { clima: extras.clima } : {}),
     cerradoEn,
   }
 

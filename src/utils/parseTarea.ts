@@ -74,6 +74,20 @@ export function parseTarea(id: string, raw: Record<string, unknown>): ParseTarea
     ? raw.cuadroIdsFinalizados.filter((c): c is string => typeof c === 'string' && c.trim().length > 0)
     : []
 
+  const cuadroFinalizaciones = Array.isArray(raw.cuadroFinalizaciones)
+    ? raw.cuadroFinalizaciones
+        .map(entry => {
+          if (!entry || typeof entry !== 'object') return null
+          const e = entry as Record<string, unknown>
+          const cuadroId = typeof e.cuadroId === 'string' ? e.cuadroId.trim() : ''
+          const fecha = parseTimestamp(e.fecha)
+          const op = typeof e.operador === 'string' ? e.operador.trim() : ''
+          if (!cuadroId || !fecha) return null
+          return { cuadroId, fecha, operador: op } as import('../types').CuadroFinalizacion
+        })
+        .filter((r): r is NonNullable<typeof r> => r !== null)
+    : []
+
   const rendimientosDiarios = Array.isArray(raw.rendimientosDiarios)
     ? raw.rendimientosDiarios
         .map(entry => {
@@ -83,7 +97,14 @@ export function parseTarea(id: string, raw: Record<string, unknown>): ParseTarea
           const texto = typeof e.texto === 'string' ? e.texto.trim() : ''
           const op = typeof e.operador === 'string' ? e.operador.trim() : ''
           if (!fecha || !texto) return null
-          return { fecha, texto, operador: op || operador }
+          const result: Record<string, unknown> = { fecha, texto, operador: op || operador }
+          if (typeof e.cantidad === 'number' && Number.isFinite(e.cantidad)) result.cantidad = e.cantidad
+          if (typeof e.unidad === 'string' && e.unidad.trim()) result.unidad = e.unidad.trim()
+          if (typeof e.parteId === 'string' && e.parteId.trim()) result.parteId = e.parteId.trim()
+          if (typeof e.horaInicio === 'string' && e.horaInicio.trim()) result.horaInicio = e.horaInicio.trim()
+          if (typeof e.horaFin === 'string' && e.horaFin.trim()) result.horaFin = e.horaFin.trim()
+          if (typeof e.observaciones === 'string' && e.observaciones.trim()) result.observaciones = e.observaciones.trim()
+          return result as unknown as import('../types').RendimientoDiario
         })
         .filter((r): r is NonNullable<typeof r> => r !== null)
     : []
@@ -96,6 +117,7 @@ export function parseTarea(id: string, raw: Record<string, unknown>): ParseTarea
     cuadros,
     ...(cuadroIds.length > 0 ? { cuadroIds } : {}),
     ...(cuadroIdsFinalizados.length > 0 ? { cuadroIdsFinalizados } : {}),
+    ...(cuadroFinalizaciones.length > 0 ? { cuadroFinalizaciones } : {}),
     estado,
     operador,
     fechaInicio,
@@ -129,6 +151,10 @@ export function parseTarea(id: string, raw: Record<string, unknown>): ParseTarea
     typeof raw.maquinariaId === 'string' && raw.maquinariaId.trim()
       ? raw.maquinariaId.trim()
       : undefined
+  const ordenCuraRef =
+    typeof raw.ordenCuraRef === 'string' && raw.ordenCuraRef.trim()
+      ? raw.ordenCuraRef.trim()
+      : undefined
 
   return {
     success: true,
@@ -139,6 +165,7 @@ export function parseTarea(id: string, raw: Record<string, unknown>): ParseTarea
       maquinaria,
       ...(maquinariaModelo ? { maquinariaModelo } : {}),
       ...(maquinariaId ? { maquinariaId } : {}),
+      ...(ordenCuraRef ? { ordenCuraRef } : {}),
     },
   }
 }

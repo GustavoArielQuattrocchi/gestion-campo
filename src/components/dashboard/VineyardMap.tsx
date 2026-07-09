@@ -44,6 +44,23 @@ const DEFAULT_ZOOM = 14
 const CUADRO_FILL = '#9ca3af'
 const CUADRO_STROKE = '#6b7280'
 
+/** Interpolates red→yellow→green based on ratio 0..1. */
+function heatColor(ratio: number): string {
+  const clamped = Math.max(0, Math.min(1, ratio))
+  if (clamped < 0.5) {
+    const t = clamped * 2
+    const r = 239
+    const g = Math.round(68 + t * (163 - 68))
+    const b = Math.round(68 - t * 68)
+    return `rgb(${r},${g},${b})`
+  }
+  const t = (clamped - 0.5) * 2
+  const r = Math.round(239 - t * (239 - 22))
+  const g = Math.round(163 + t * (197 - 163))
+  const b = Math.round(0 + t * 94)
+  return `rgb(${r},${g},${b})`
+}
+
 function FitBoundsOnFinca({ bounds }: { bounds: LatLngBoundsExpression | null }) {
   const map = useMap()
   useEffect(() => {
@@ -53,8 +70,11 @@ function FitBoundsOnFinca({ bounds }: { bounds: LatLngBoundsExpression | null })
   return null
 }
 
+type MapViewMode = 'estado' | 'rendimiento'
+
 export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }: Props) {
   const [seleccionado, setSeleccionado] = useState<CuadroFeature | null>(null)
+  const [viewMode, setViewMode] = useState<MapViewMode>('estado')
 
   // Set de IDs (ej "FOA-5") con tareas en progreso o finalizadas.
   const estadoPorCuadro = useMemo(() => {
@@ -108,6 +128,32 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
     return map
   }, [tareas])
 
+  // Agregación de rendimiento por cuadro para heat map.
+  const rendimientoHeatData = useMemo(() => {
+    const totals = new Map<string, number>()
+    for (const tarea of tareas) {
+      for (const rd of tarea.rendimientosDiarios ?? []) {
+        const rpc = rd.rendimientoPorCuadro
+        if (!rpc) continue
+        for (const [cuadroId, val] of Object.entries(rpc)) {
+          if (typeof val === 'number' && val > 0) {
+            totals.set(cuadroId, (totals.get(cuadroId) ?? 0) + val)
+          }
+        }
+      }
+    }
+    const perHa = new Map<string, number>()
+    let maxVal = 0
+    for (const [cuadroId, total] of totals) {
+      const cuadro = getCuadroDetalleById(cuadroId)
+      const ha = cuadro?.hectareas ?? 1
+      const valor = total / ha
+      perHa.set(cuadroId, valor)
+      if (valor > maxVal) maxVal = valor
+    }
+    return { perHa, maxVal }
+  }, [tareas])
+
   // Filtra features según finca seleccionada.
   const features = useMemo(() => {
     if (filtroFinca && filtroFinca !== 'todas') {
@@ -138,35 +184,60 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
     (feature?: Feature, hover = false): PathOptions => {
       if (!feature) return {}
       const props = feature.properties as CuadroFeatureProps
-      const estado = estadoPorCuadro.get(props.name)
 
       let base: PathOptions
-      if (estado?.pendiente) {
-        base = {
-          fill: true,
-          fillColor: CUADRO_FILL,
-          fillOpacity: 0.5,
-          color: '#16a34a',
-          weight: 2.5,
-          opacity: 1,
-        }
-      } else if (estado?.cuadroFinalizado) {
-        base = {
-          fill: true,
-          fillColor: '#d1d5db',
-          fillOpacity: 0.55,
-          color: '#4b5563',
-          weight: 2.5,
-          opacity: 1,
+
+      if (viewMode === 'rendimiento') {
+        const val = rendimientoHeatData.perHa.get(props.name)
+        if (val != null && rendimientoHeatData.maxVal > 0) {
+          const ratio = val / rendimientoHeatData.maxVal
+          base = {
+            fill: true,
+            fillColor: heatColor(ratio),
+            fillOpacity: 0.7,
+            color: '#374151',
+            weight: 1.5,
+            opacity: 0.9,
+          }
+        } else {
+          base = {
+            fill: true,
+            fillColor: '#e5e7eb',
+            fillOpacity: 0.35,
+            color: '#9ca3af',
+            weight: 1,
+            opacity: 0.6,
+          }
         }
       } else {
-        base = {
-          fill: true,
-          fillColor: CUADRO_FILL,
-          fillOpacity: 0.4,
-          color: CUADRO_STROKE,
-          weight: 1,
-          opacity: 0.75,
+        const estado = estadoPorCuadro.get(props.name)
+        if (estado?.pendiente) {
+          base = {
+            fill: true,
+            fillColor: CUADRO_FILL,
+            fillOpacity: 0.5,
+            color: '#16a34a',
+            weight: 2.5,
+            opacity: 1,
+          }
+        } else if (estado?.cuadroFinalizado) {
+          base = {
+            fill: true,
+            fillColor: '#d1d5db',
+            fillOpacity: 0.55,
+            color: '#4b5563',
+            weight: 2.5,
+            opacity: 1,
+          }
+        } else {
+          base = {
+            fill: true,
+            fillColor: CUADRO_FILL,
+            fillOpacity: 0.4,
+            color: CUADRO_STROKE,
+            weight: 1,
+            opacity: 0.75,
+          }
         }
       }
 
@@ -176,13 +247,13 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
       return {
         ...base,
         fill: true,
-        fillColor: CUADRO_FILL,
+        fillColor: base.fillColor ?? CUADRO_FILL,
         weight: weight + 1,
         color: '#111827',
         fillOpacity: Math.min((base.fillOpacity ?? 0.4) + 0.15, 0.85),
       }
     },
-    [estadoPorCuadro]
+    [estadoPorCuadro, viewMode, rendimientoHeatData]
   )
 
   // Tooltip y click en cada feature.
@@ -191,12 +262,26 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
     const cuadro = getCuadroDetalleById(props.name)
     const variedad = cuadro?.variedad ?? '—'
     const has = cuadro ? formatHectareas(cuadro.hectareas) : '—'
-    const tooltipHtml = `
-      <div style="font-size:12px;line-height:1.35">
-        <strong>${cuadro?.nombre ?? props.name}</strong><br/>
-        ${variedad} · ${has}
-      </div>
-    `
+
+    let tooltipHtml: string
+    if (viewMode === 'rendimiento') {
+      const rendHa = rendimientoHeatData.perHa.get(props.name)
+      const rendLabel = rendHa != null ? `${rendHa.toFixed(1)} /ha` : 'Sin datos'
+      tooltipHtml = `
+        <div style="font-size:12px;line-height:1.35">
+          <strong>${cuadro?.nombre ?? props.name}</strong><br/>
+          Rendimiento: ${rendLabel}<br/>
+          ${variedad} · ${has}
+        </div>
+      `
+    } else {
+      tooltipHtml = `
+        <div style="font-size:12px;line-height:1.35">
+          <strong>${cuadro?.nombre ?? props.name}</strong><br/>
+          ${variedad} · ${has}
+        </div>
+      `
+    }
     layer.bindTooltip(tooltipHtml, { sticky: true, direction: 'top' })
 
     layer.on('click', () => {
@@ -224,8 +309,8 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
       .map(([k, v]) => `${k}:${v.pendiente ? 'p' : ''}${v.cuadroFinalizado ? 'f' : ''}`)
       .sort()
       .join(',')
-    return `${filtroFinca}|${features.length}|${marcados}`
-  }, [filtroFinca, features, estadoPorCuadro])
+    return `${filtroFinca}|${features.length}|${marcados}|${viewMode}`
+  }, [filtroFinca, features, estadoPorCuadro, viewMode])
 
   const detallesSeleccion = useMemo(() => {
     if (!seleccionado) return null
@@ -274,21 +359,58 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
           <FitBoundsOnFinca bounds={bounds} />
         </MapContainer>
 
-        <div className="map-legend">
-          <div className="map-legend-title">Estado de cuadros</div>
-          <div className="map-legend-item">
-            <span className="legend-swatch" style={{ borderColor: '#16a34a' }} />
-            <span>Cuadro en progreso</span>
-          </div>
-          <div className="map-legend-item">
-            <span className="legend-swatch" style={{ borderColor: '#4b5563' }} />
-            <span>Cuadro finalizado</span>
-          </div>
-          <div className="map-legend-item">
-            <span className="legend-swatch" style={{ borderColor: '#9ca3af' }} />
-            <span>Sin actividad</span>
-          </div>
+        <div className="map-view-toggle">
+          <button
+            className={viewMode === 'estado' ? 'active' : ''}
+            onClick={() => setViewMode('estado')}
+          >
+            Estado
+          </button>
+          <button
+            className={viewMode === 'rendimiento' ? 'active' : ''}
+            onClick={() => setViewMode('rendimiento')}
+          >
+            Rendimiento
+          </button>
         </div>
+
+        {viewMode === 'estado' ? (
+          <div className="map-legend">
+            <div className="map-legend-title">Estado de cuadros</div>
+            <div className="map-legend-item">
+              <span className="legend-swatch" style={{ borderColor: '#16a34a' }} />
+              <span>Cuadro en progreso</span>
+            </div>
+            <div className="map-legend-item">
+              <span className="legend-swatch" style={{ borderColor: '#4b5563' }} />
+              <span>Cuadro finalizado</span>
+            </div>
+            <div className="map-legend-item">
+              <span className="legend-swatch" style={{ borderColor: '#9ca3af' }} />
+              <span>Sin actividad</span>
+            </div>
+          </div>
+        ) : (
+          <div className="map-legend">
+            <div className="map-legend-title">Rendimiento / ha</div>
+            <div className="map-legend-item">
+              <span className="legend-swatch" style={{ background: heatColor(1), borderColor: heatColor(1) }} />
+              <span>Alto</span>
+            </div>
+            <div className="map-legend-item">
+              <span className="legend-swatch" style={{ background: heatColor(0.5), borderColor: heatColor(0.5) }} />
+              <span>Medio</span>
+            </div>
+            <div className="map-legend-item">
+              <span className="legend-swatch" style={{ background: heatColor(0), borderColor: heatColor(0) }} />
+              <span>Bajo</span>
+            </div>
+            <div className="map-legend-item">
+              <span className="legend-swatch" style={{ background: '#e5e7eb', borderColor: '#9ca3af' }} />
+              <span>Sin datos</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {detallesSeleccion && (

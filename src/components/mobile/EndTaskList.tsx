@@ -1,5 +1,6 @@
-import { ChevronLeft, Clock, ChevronRight, Inbox } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Inbox } from 'lucide-react'
 import type { Tarea } from '../../types'
+import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 
 interface Props {
   tareas: Tarea[]
@@ -23,7 +24,7 @@ export default function EndTaskList({
           <ChevronLeft size={18} /> Volver
         </button>
         <h1>Cierre del día</h1>
-        <p>{fincaNombre} — Tareas en progreso</p>
+        <p>{fincaNombre} — Tareas pendientes de cierre</p>
       </div>
 
       {tareas.length === 0 ? (
@@ -32,32 +33,48 @@ export default function EndTaskList({
           <p>{emptyMessage}</p>
         </div>
       ) : (
-        tareas.map(tarea => (
-          <button
-            type="button"
-            key={tarea.id}
-            className="task-list-item"
-            onClick={() => onSelectTarea(tarea)}
-          >
-            <div className="option-card-icon green" style={{ width: 40, height: 40 }}>
-              <Clock size={20} />
-            </div>
-            <div className="task-info">
-              <h4>{tarea.tarea}</h4>
-              <p>
-                {tarea.tipo === 'manual'
-                  ? `${tarea.cuadrilla} · ${tarea.cantidadPersonas} personas`
-                  : tarea.maquinariaModelo
-                    ? `${tarea.maquinaria} (${tarea.maquinariaModelo})`
-                    : `${tarea.persona} · ${tarea.maquinaria}`
-                }
-                {' · '}
-                {(tarea.cuadros ?? []).join(', ') || '—'}
-              </p>
-            </div>
-            <ChevronRight size={20} color="#9ca3af" />
-          </button>
-        ))
+        tareas.map(tarea => {
+          const progress = computeTareaProgress(tarea)
+          const ejecutor =
+            tarea.tipo === 'manual'
+              ? `${tarea.cuadrilla} · ${tarea.cantidadPersonas} personas`
+              : tarea.maquinariaModelo
+                ? `${tarea.maquinaria} (${tarea.maquinariaModelo})`
+                : `${tarea.persona} · ${tarea.maquinaria}`
+          const finalizados = tarea.cuadroIdsFinalizados?.length ?? 0
+          const totalCuadros = (tarea.cuadroIds ?? tarea.cuadros ?? []).length
+
+          return (
+            <button
+              type="button"
+              key={tarea.id}
+              className="task-list-item task-list-item--rich"
+              onClick={() => onSelectTarea(tarea)}
+            >
+              <div className="task-info">
+                <h4>{tarea.tarea}</h4>
+                <p className="task-list-ejecutor">{ejecutor}</p>
+                <div className="task-list-progress-row">
+                  <div className="jornada-progress-bar">
+                    <div
+                      className="jornada-progress-fill"
+                      style={{ width: `${Math.min(100, progress.porcentaje)}%` }}
+                    />
+                  </div>
+                  <span className="jornada-progress-label">
+                    {formatProgressLabel(progress)}
+                  </span>
+                </div>
+                {finalizados > 0 && (
+                  <p className="task-list-cuadros-info">
+                    {finalizados} de {totalCuadros} cuadros finalizados
+                  </p>
+                )}
+              </div>
+              <ChevronRight size={20} color="#9ca3af" />
+            </button>
+          )
+        })
       )}
     </div>
   )

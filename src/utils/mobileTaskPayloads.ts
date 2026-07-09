@@ -24,6 +24,7 @@ export interface MechanicalTaskFirestorePayload {
   maquinaria: string
   maquinariaModelo?: string
   maquinariaId?: string
+  ordenCuraRef?: string
   cuadros: string[]
   cuadroIds: string[]
   estado: 'en_progreso'
@@ -71,6 +72,7 @@ export function buildMechanicalTaskFirestorePayload(
     maquinaria: validated.maquinaria,
     ...(validated.maquinariaModelo ? { maquinariaModelo: validated.maquinariaModelo } : {}),
     ...(validated.maquinariaId ? { maquinariaId: validated.maquinariaId } : {}),
+    ...(validated.ordenCuraRef ? { ordenCuraRef: validated.ordenCuraRef } : {}),
     cuadros: validated.cuadros,
     cuadroIds: validated.cuadroIds,
     estado: 'en_progreso',

@@ -21,9 +21,12 @@ interface Props {
   stats: DashboardStats
   partesCount: number
   metricsNote: string | null
+  accidentCount: number
   onSelectMetric: (key: MetricKey) => void
   onOpenEnProgreso: () => void
   onOpenPartesLabores: () => void
+  onOpenAnalytics: () => void
+  onOpenSeguridad: () => void
   filtroFinca: string
   filtroTipo: string
   filtroEstado: string
@@ -47,10 +50,13 @@ export default function DashboardSidebar({
   onTogglePanel,
   stats,
   partesCount,
+  accidentCount,
   metricsNote,
   onSelectMetric,
   onOpenEnProgreso,
   onOpenPartesLabores,
+  onOpenAnalytics,
+  onOpenSeguridad,
   filtroFinca,
   filtroTipo,
   filtroEstado,
@@ -114,10 +120,13 @@ export default function DashboardSidebar({
               onToggle={() => onTogglePanel('resumen')}
               stats={stats}
               partesCount={partesCount}
+              accidentCount={accidentCount}
               metricsNote={metricsNote}
               onSelectMetric={onSelectMetric}
               onOpenEnProgreso={onOpenEnProgreso}
               onOpenPartesLabores={onOpenPartesLabores}
+              onOpenAnalytics={onOpenAnalytics}
+              onOpenSeguridad={onOpenSeguridad}
             />
 
             <DashboardFiltersPanel

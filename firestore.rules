@@ -69,7 +69,8 @@ service cloud.firestore {
           && d.maquinaria is string
           && d.maquinaria.size() > 0
           && (d.get('maquinariaModelo', null) == null || d.maquinariaModelo is string)
-          && (d.get('maquinariaId', null) == null || d.maquinariaId is string));
+          && (d.get('maquinariaId', null) == null || d.maquinariaId is string)
+          && (d.get('ordenCuraRef', null) == null || d.ordenCuraRef is string));
     }
 
     function operadorCoincideEnAlta() {
@@ -99,7 +100,7 @@ service cloud.firestore {
     // Cualquier operador registrado puede cerrar el día (no solo el creador).
     function esCierreDelDiaMobile() {
       let keys = request.resource.data.diff(resource.data).affectedKeys();
-      return keys.hasOnly(['rendimientosDiarios', 'rendimiento', 'cuadroIdsFinalizados', 'estado', 'fechaFin'])
+      return keys.hasOnly(['rendimientosDiarios', 'rendimiento', 'cuadroIdsFinalizados', 'cuadroFinalizaciones', 'estado', 'fechaFin'])
         && resource.data.estado == 'en_progreso';
     }
 
@@ -111,6 +112,7 @@ service cloud.firestore {
         && d.rendimiento is string
         && d.rendimiento.size() > 0
         && (!keys.hasAny(['cuadroIdsFinalizados']) || d.cuadroIdsFinalizados is list)
+        && (!keys.hasAny(['cuadroFinalizaciones']) || d.cuadroFinalizaciones is list)
         && (!keys.hasAny(['estado']) || (d.estado == 'finalizada' && d.fechaFin is timestamp));
     }
 
@@ -144,7 +146,7 @@ service cloud.firestore {
     // Consolidación admin: fusionar cuadros, rendimientos y campos de tareas duplicadas.
     function esConsolidacionAdmin() {
       let keys = request.resource.data.diff(resource.data).affectedKeys();
-      return keys.hasOnly(['cuadros', 'cuadroIds', 'cuadroIdsFinalizados', 'rendimientosDiarios', 'rendimiento', 'cantidadPersonas'])
+      return keys.hasOnly(['cuadros', 'cuadroIds', 'cuadroIdsFinalizados', 'cuadroFinalizaciones', 'rendimientosDiarios', 'rendimiento', 'cantidadPersonas'])
         && request.resource.data.cuadros is list
         && request.resource.data.cuadroIds is list
         && (!keys.hasAny(['cuadroIdsFinalizados']) || request.resource.data.cuadroIdsFinalizados is list)
@@ -155,7 +157,7 @@ service cloud.firestore {
 
     function validActualizacionDashboard() {
       let keys = request.resource.data.diff(resource.data).affectedKeys();
-      return (keys.hasOnly(['cuadroIdsFinalizados'])
+      return (keys.hasOnly(['cuadroIdsFinalizados', 'cuadroFinalizaciones'])
           && resource.data.estado == 'en_progreso'
           && request.resource.data.estado == 'en_progreso'
           && request.resource.data.cuadroIdsFinalizados is list)

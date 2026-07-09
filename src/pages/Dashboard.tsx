@@ -3,15 +3,18 @@ import MetricDetailModal from '../components/dashboard/MetricDetailModal'
 import DashboardContentModal from '../components/dashboard/DashboardContentModal'
 import EnProgresoContent from '../components/dashboard/EnProgresoContent'
 import PartesLaboresContent from '../components/dashboard/PartesLaboresContent'
+import AnalyticsContent from '../components/dashboard/AnalyticsContent'
+import SafetyContent from '../components/dashboard/SafetyContent'
 import DashboardMapLayer from '../components/dashboard/DashboardMapLayer'
 import DashboardSidebar from '../components/dashboard/DashboardSidebar'
 import DashboardSidebarToggle from '../components/dashboard/DashboardSidebarToggle'
 import { METRIC_ACCENTS } from '../components/dashboard/dashboardConstants'
 import { useDashboardTareas } from '../hooks/useDashboardTareas'
 import { usePartesLabores } from '../hooks/usePartesLabores'
+import { useInformesAccidente } from '../hooks/useInformesAccidente'
 import { applyPartesDashboardFilters } from '../utils/dashboardFilters'
 
-type ContentModalKey = 'en_progreso' | 'partes_labores'
+type ContentModalKey = 'en_progreso' | 'partes_labores' | 'analytics' | 'seguridad'
 
 export default function Dashboard() {
   const {
@@ -56,6 +59,13 @@ export default function Dashboard() {
     parseWarning: partesLaboresParseWarning,
   } = usePartesLabores()
 
+  const {
+    informes: informesAccidente,
+    loading: informesLoading,
+    error: informesError,
+    fincasDisponibles: informesFincas,
+  } = useInformesAccidente()
+
   const [contentModal, setContentModal] = useState<ContentModalKey | null>(null)
   const [enProgresoFiltroFinca, setEnProgresoFiltroFinca] = useState('todas')
   const [enProgresoFiltroTarea, setEnProgresoFiltroTarea] = useState('todas')
@@ -89,10 +99,13 @@ export default function Dashboard() {
         onTogglePanel={togglePanel}
         stats={stats}
         partesCount={partesGlobales.length}
+        accidentCount={informesAccidente.length}
         metricsNote={metricsNote}
         onSelectMetric={setSelectedMetric}
         onOpenEnProgreso={() => setContentModal('en_progreso')}
         onOpenPartesLabores={() => setContentModal('partes_labores')}
+        onOpenAnalytics={() => setContentModal('analytics')}
+        onOpenSeguridad={() => setContentModal('seguridad')}
         filtroFinca={filtroFinca}
         filtroTipo={filtroTipo}
         filtroEstado={filtroEstado}
@@ -159,6 +172,32 @@ export default function Dashboard() {
           filtroOperador={partesFiltroOperador}
           onFiltroFincaChange={setPartesFiltroFinca}
           onFiltroOperadorChange={setPartesFiltroOperador}
+        />
+      </DashboardContentModal>
+
+      <DashboardContentModal
+        open={contentModal === 'analytics'}
+        title="Indicadores de productividad"
+        accentColor="#8b5cf6"
+        onClose={() => setContentModal(null)}
+      >
+        <AnalyticsContent
+          tareas={tareasFiltradas}
+          partes={partesGlobales}
+        />
+      </DashboardContentModal>
+
+      <DashboardContentModal
+        open={contentModal === 'seguridad'}
+        title={`Seguridad — Accidentes (${informesAccidente.length})`}
+        accentColor="#ef4444"
+        onClose={() => setContentModal(null)}
+      >
+        <SafetyContent
+          informes={informesAccidente}
+          loading={informesLoading}
+          error={informesError}
+          fincasDisponibles={informesFincas}
         />
       </DashboardContentModal>
     </div>
