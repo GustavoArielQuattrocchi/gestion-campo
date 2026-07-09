@@ -1,10 +1,7 @@
-import { useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { Clock } from 'lucide-react'
 import MetricDetailModal from '../components/dashboard/MetricDetailModal'
 import DashboardContentModal from '../components/dashboard/DashboardContentModal'
-import EnProgresoContent from '../components/dashboard/EnProgresoContent'
-import PartesLaboresContent from '../components/dashboard/PartesLaboresContent'
-import AnalyticsContent from '../components/dashboard/AnalyticsContent'
-import SafetyContent from '../components/dashboard/SafetyContent'
 import DashboardMapLayer from '../components/dashboard/DashboardMapLayer'
 import DashboardSidebar from '../components/dashboard/DashboardSidebar'
 import DashboardSidebarToggle from '../components/dashboard/DashboardSidebarToggle'
@@ -14,7 +11,21 @@ import { usePartesLabores } from '../hooks/usePartesLabores'
 import { useInformesAccidente } from '../hooks/useInformesAccidente'
 import { applyPartesDashboardFilters } from '../utils/dashboardFilters'
 
+const EnProgresoContent = lazy(() => import('../components/dashboard/EnProgresoContent'))
+const PartesLaboresContent = lazy(() => import('../components/dashboard/PartesLaboresContent'))
+const AnalyticsContent = lazy(() => import('../components/dashboard/AnalyticsContent'))
+const SafetyContent = lazy(() => import('../components/dashboard/SafetyContent'))
+
 type ContentModalKey = 'en_progreso' | 'partes_labores' | 'analytics' | 'seguridad'
+
+function ModalLoading() {
+  return (
+    <div style={{ padding: 32, textAlign: 'center', color: '#6b7280' }}>
+      <Clock size={22} style={{ marginBottom: 8, opacity: 0.6 }} />
+      <p style={{ margin: 0 }}>Cargando contenido...</p>
+    </div>
+  )
+}
 
 export default function Dashboard() {
   const {
@@ -60,14 +71,27 @@ export default function Dashboard() {
     partesForStaffing,
   } = useDashboardTareas(partesLabores)
 
+  const [contentModal, setContentModal] = useState<ContentModalKey | null>(null)
+
+  const [loadInformes, setLoadInformes] = useState(false)
+  useEffect(() => {
+    if (loading) return
+    const enable = () => setLoadInformes(true)
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(enable, { timeout: 2000 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const timer = window.setTimeout(enable, 400)
+    return () => window.clearTimeout(timer)
+  }, [loading])
+
   const {
     informes: informesAccidente,
     loading: informesLoading,
     error: informesError,
     fincasDisponibles: informesFincas,
-  } = useInformesAccidente()
+  } = useInformesAccidente(loadInformes || contentModal === 'seguridad')
 
-  const [contentModal, setContentModal] = useState<ContentModalKey | null>(null)
   const [enProgresoFiltroFinca, setEnProgresoFiltroFinca] = useState('todas')
   const [enProgresoFiltroTarea, setEnProgresoFiltroTarea] = useState('todas')
   const [partesFiltroFinca, setPartesFiltroFinca] = useState('todas')
@@ -135,73 +159,89 @@ export default function Dashboard() {
         onClose={() => setSelectedMetric(null)}
       />
 
-      <DashboardContentModal
-        open={contentModal === 'en_progreso'}
-        title={`Trabajos en progreso (${enProgresoCount})`}
-        accentColor={METRIC_ACCENTS.en_progreso}
-        onClose={() => setContentModal(null)}
-      >
-        <EnProgresoContent
-          tareas={tareasFiltradas}
-          filtroFinca={enProgresoFiltroFinca}
-          filtroTarea={enProgresoFiltroTarea}
-          duplicadosCount={duplicadosCount}
-          onFiltroFincaChange={setEnProgresoFiltroFinca}
-          onFiltroTareaChange={setEnProgresoFiltroTarea}
-          onFinalizarCuadro={finalizarCuadro}
-          onDeshacerFinalizacionCuadro={deshacerFinalizacionCuadro}
-          onFinalizarTarea={finalizarTarea}
-          onReabrirTarea={reabrirTarea}
-          onEliminarTarea={eliminarTarea}
-          onConsolidarDuplicados={consolidarDuplicados}
-        />
-      </DashboardContentModal>
+      {contentModal === 'en_progreso' && (
+        <DashboardContentModal
+          open
+          title={`Trabajos en progreso (${enProgresoCount})`}
+          accentColor={METRIC_ACCENTS.en_progreso}
+          onClose={() => setContentModal(null)}
+        >
+          <Suspense fallback={<ModalLoading />}>
+            <EnProgresoContent
+              tareas={tareasFiltradas}
+              filtroFinca={enProgresoFiltroFinca}
+              filtroTarea={enProgresoFiltroTarea}
+              duplicadosCount={duplicadosCount}
+              onFiltroFincaChange={setEnProgresoFiltroFinca}
+              onFiltroTareaChange={setEnProgresoFiltroTarea}
+              onFinalizarCuadro={finalizarCuadro}
+              onDeshacerFinalizacionCuadro={deshacerFinalizacionCuadro}
+              onFinalizarTarea={finalizarTarea}
+              onReabrirTarea={reabrirTarea}
+              onEliminarTarea={eliminarTarea}
+              onConsolidarDuplicados={consolidarDuplicados}
+            />
+          </Suspense>
+        </DashboardContentModal>
+      )}
 
-      <DashboardContentModal
-        open={contentModal === 'partes_labores'}
-        title={`Partes de labores (${partesGlobales.length})`}
-        accentColor="#059669"
-        onClose={() => setContentModal(null)}
-      >
-        <PartesLaboresContent
-          partes={partesGlobales}
-          loading={partesLaboresLoading}
-          error={partesLaboresError}
-          parseWarning={partesLaboresParseWarning}
-          fincasDisponibles={partesFincas}
-          filtroFinca={partesFiltroFinca}
-          filtroOperador={partesFiltroOperador}
-          onFiltroFincaChange={setPartesFiltroFinca}
-          onFiltroOperadorChange={setPartesFiltroOperador}
-        />
-      </DashboardContentModal>
+      {contentModal === 'partes_labores' && (
+        <DashboardContentModal
+          open
+          title={`Partes de labores (${partesGlobales.length})`}
+          accentColor="#059669"
+          onClose={() => setContentModal(null)}
+        >
+          <Suspense fallback={<ModalLoading />}>
+            <PartesLaboresContent
+              partes={partesGlobales}
+              loading={partesLaboresLoading}
+              error={partesLaboresError}
+              parseWarning={partesLaboresParseWarning}
+              fincasDisponibles={partesFincas}
+              filtroFinca={partesFiltroFinca}
+              filtroOperador={partesFiltroOperador}
+              onFiltroFincaChange={setPartesFiltroFinca}
+              onFiltroOperadorChange={setPartesFiltroOperador}
+            />
+          </Suspense>
+        </DashboardContentModal>
+      )}
 
-      <DashboardContentModal
-        open={contentModal === 'analytics'}
-        title="Indicadores de productividad"
-        accentColor="#8b5cf6"
-        onClose={() => setContentModal(null)}
-      >
-        <AnalyticsContent
-          tareas={tareasFiltradas}
-          partes={partesGlobales}
-          partesStaffing={partesForStaffing}
-        />
-      </DashboardContentModal>
+      {contentModal === 'analytics' && (
+        <DashboardContentModal
+          open
+          title="Indicadores de productividad"
+          accentColor="#8b5cf6"
+          onClose={() => setContentModal(null)}
+        >
+          <Suspense fallback={<ModalLoading />}>
+            <AnalyticsContent
+              tareas={tareasFiltradas}
+              partes={partesGlobales}
+              partesStaffing={partesForStaffing}
+            />
+          </Suspense>
+        </DashboardContentModal>
+      )}
 
-      <DashboardContentModal
-        open={contentModal === 'seguridad'}
-        title={`Seguridad — Accidentes (${informesAccidente.length})`}
-        accentColor="#ef4444"
-        onClose={() => setContentModal(null)}
-      >
-        <SafetyContent
-          informes={informesAccidente}
-          loading={informesLoading}
-          error={informesError}
-          fincasDisponibles={informesFincas}
-        />
-      </DashboardContentModal>
+      {contentModal === 'seguridad' && (
+        <DashboardContentModal
+          open
+          title={`Seguridad — Accidentes (${informesAccidente.length})`}
+          accentColor="#ef4444"
+          onClose={() => setContentModal(null)}
+        >
+          <Suspense fallback={<ModalLoading />}>
+            <SafetyContent
+              informes={informesAccidente}
+              loading={informesLoading}
+              error={informesError}
+              fincasDisponibles={informesFincas}
+            />
+          </Suspense>
+        </DashboardContentModal>
+      )}
     </div>
   )
 }

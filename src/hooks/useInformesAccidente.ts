@@ -35,12 +35,18 @@ function parseInforme(id: string, raw: Record<string, unknown>): InformeAccident
   }
 }
 
-export function useInformesAccidente() {
+export function useInformesAccidente(enabled = true) {
   const [informes, setInformes] = useState<InformeAccidente[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(enabled)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
     const unsubscribe = onSnapshot(
       collection(db, 'informes_accidente'),
       snapshot => {
@@ -62,7 +68,7 @@ export function useInformesAccidente() {
     )
 
     return unsubscribe
-  }, [])
+  }, [enabled])
 
   const fincasDisponibles = useMemo(() => {
     const set = new Set(informes.map(i => i.fincaNombre))
