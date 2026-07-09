@@ -52,7 +52,7 @@ import {
 } from '../hooks/useOnlineStatus'
 import { buildParteAbiertoPayload, buildParteCierreUpdate } from '../utils/buildParteDeLaboresPayload'
 import { parsePartesFromSnapshot } from '../utils/parseParteDeLabores'
-import { tieneParteAbierto } from '../utils/parteEstado'
+import { tieneParteAbierto, resolveCerradoEn } from '../utils/parteEstado'
 
 function initialSessionState() {
   const session = loadMobileSession()
@@ -501,7 +501,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     submittingRef.current = true
     try {
       await registerOperador(operadorNombre)
-      const cerradoEn = Timestamp.now()
+      const cerradoEn = Timestamp.fromDate(resolveCerradoEn(parteAbierto))
       const batch = writeBatch(db)
       const entry: Record<string, unknown> = {
         fecha: cerradoEn,

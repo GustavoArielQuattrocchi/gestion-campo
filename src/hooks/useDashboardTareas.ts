@@ -24,7 +24,7 @@ import {
   readFilterParam,
 } from '../utils/dashboardState'
 
-export type DashboardPanelKey = 'resumen' | 'clima' | 'filtros' | 'tareas' | 'qr_cuadros'
+export type DashboardPanelKey = 'resumen' | 'filtros' | 'tareas' | 'qr_cuadros'
 
 export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -48,7 +48,6 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [panelsOpen, setPanelsOpen] = useState<Record<DashboardPanelKey, boolean>>({
     resumen: true,
-    clima: true,
     filtros: true,
     tareas: false,
     qr_cuadros: false,

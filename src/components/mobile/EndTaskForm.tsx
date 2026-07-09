@@ -1,12 +1,14 @@
 import { useState, useMemo } from 'react'
-import { ChevronLeft, Save } from 'lucide-react'
-import type { RendimientoUnidad, Tarea } from '../../types'
+import { ChevronLeft, Save, History } from 'lucide-react'
+import type { ParteDeLabores, RendimientoUnidad, Tarea } from '../../types'
 import { RENDIMIENTO_UNIDADES } from '../../types'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 import { getDefaultUnit } from '../../data/laborUnits'
+import { formatParteAbiertoDia, isParteAbiertoVencido } from '../../utils/parteEstado'
 
 interface Props {
   tarea: Tarea
+  parteAbierto: ParteDeLabores
   onSubmit: (
     cantidad: number,
     unidad: RendimientoUnidad,
@@ -19,7 +21,7 @@ interface Props {
   onBack: () => void
 }
 
-export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
+export default function EndTaskForm({ tarea, parteAbierto, onSubmit, onBack }: Props) {
   const [cantidad, setCantidad] = useState('')
   const [unidad, setUnidad] = useState<RendimientoUnidad | ''>(() => getDefaultUnit(tarea.tarea) || '')
   const [saving, setSaving] = useState(false)
@@ -28,6 +30,7 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
   const [observaciones, setObservaciones] = useState('')
 
   const progress = useMemo(() => computeTareaProgress(tarea), [tarea])
+  const esVencido = useMemo(() => isParteAbiertoVencido(parteAbierto), [parteAbierto])
 
   const cantidadNum = Number(cantidad)
   const cantidadValida = cantidad.trim() !== '' && Number.isFinite(cantidadNum) && cantidadNum > 0
@@ -53,9 +56,25 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
         <button className="nav-back" onClick={onBack} disabled={saving}>
           <ChevronLeft size={18} /> Volver
         </button>
-        <h1>Cierre del día</h1>
-        <p>Registrar rendimiento y cerrar el parte de labores</p>
+        <h1>{esVencido ? 'Cierre pendiente' : 'Cierre del día'}</h1>
+        <p>
+          {esVencido
+            ? 'Registrar rendimiento con la fecha del día en que se abrió el parte'
+            : 'Registrar rendimiento y cerrar el parte de labores'}
+        </p>
       </div>
+
+      {esVencido && (
+        <div className="card continue-task-banner continue-task-banner--warn">
+          <History size={16} />
+          <div>
+            <strong>Cierre de jornada anterior</strong>
+            <small>
+              Este cierre quedará registrado el {formatParteAbiertoDia(parteAbierto)}, no con la fecha de hoy.
+            </small>
+          </div>
+        </div>
+      )}
 
       <div className="card">
         <div className="card-title">Resumen de la tarea</div>

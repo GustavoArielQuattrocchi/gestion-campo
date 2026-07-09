@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { Users, Cog, Pencil, Trash2, Check, X, Clock, History } from 'lucide-react'
+import { Users, Cog, Pencil, Trash2, Check, X, Clock, History, AlertTriangle } from 'lucide-react'
 import type { ParteDeLabores, RendimientoUnidad, Tarea } from '../../types'
 import { RENDIMIENTO_UNIDADES } from '../../types'
 import { formatTimestamp } from '../../utils/formatTimestamp'
 import { deleteParte, updateParteRendimiento } from '../../utils/partesLaboresMutations'
-import { groupPartesForDashboard, historicoPorDia } from '../../utils/parteEstado'
+import { groupPartesForDashboard, historicoPorDia, isParteAbiertoVencido, formatParteAbiertoDia } from '../../utils/parteEstado'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 import TaskProgressBar from './TaskProgressBar'
 import ParteWeather from './ParteWeather'
@@ -65,9 +65,10 @@ function ParteCard({
 }) {
   const progress = tarea ? computeTareaProgress(tarea) : null
   const abierto = parte.estado === 'abierto'
+  const vencido = abierto && isParteAbiertoVencido(parte)
 
   return (
-    <li className={`parte-labores-item ${abierto ? 'parte-labores-item--abierto' : ''}`}>
+    <li className={`parte-labores-item ${abierto ? (vencido ? 'parte-labores-item--vencido' : 'parte-labores-item--abierto') : ''}`}>
       <div className="parte-labores-item-header">
         <div>
           <strong>{parte.tarea}</strong>
@@ -80,8 +81,12 @@ function ParteCard({
                 : ''}
           </span>
         </div>
-        <span className={`badge ${abierto ? 'badge-orange' : parte.tipo === 'manual' ? 'badge-green' : 'badge-blue'}`}>
-          {abierto ? (
+        <span className={`badge ${vencido ? 'badge-red' : abierto ? 'badge-orange' : parte.tipo === 'manual' ? 'badge-green' : 'badge-blue'}`}>
+          {vencido ? (
+            <>
+              <AlertTriangle size={10} /> Pendiente
+            </>
+          ) : abierto ? (
             <>
               <Clock size={10} /> En ejecución
             </>
@@ -99,6 +104,11 @@ function ParteCard({
       <p className="parte-labores-operador">
         Operador: <strong>{parte.operador}</strong>
       </p>
+      {vencido && (
+        <p className="parte-labores-vencido-note">
+          Abierto el {formatParteAbiertoDia(parte)} — sin cierre de jornada
+        </p>
+      )}
       <p className="parte-labores-detalle">{resumenParte(parte)}</p>
       <p className="parte-labores-cuadros">
         Cuadros: {(parte.cuadros ?? []).join(', ') || '—'}
@@ -235,7 +245,7 @@ export default function PartesLaboresContent({
     })
   }, [partes, filtroFinca, filtroOperador])
 
-  const { enEjecucion, cerradosHoy, historico } = useMemo(
+  const { enEjecucionHoy, enEjecucionVencidos, cerradosHoy, historico } = useMemo(
     () => groupPartesForDashboard(partesFiltradas),
     [partesFiltradas],
   )
@@ -358,13 +368,31 @@ export default function PartesLaboresContent({
         </p>
       ) : (
         <>
-          {enEjecucion.length > 0 && (
+          {enEjecucionVencidos.length > 0 && (
             <section className="partes-labores-section">
-              <h3 className="partes-labores-section-title">
-                <Clock size={16} /> En ejecución hoy ({enEjecucion.length})
+              <h3 className="partes-labores-section-title partes-labores-section-title--warn">
+                <AlertTriangle size={16} /> Pendientes de días anteriores ({enEjecucionVencidos.length})
               </h3>
               <ul className="partes-labores-list">
-                {enEjecucion.map(parte => (
+                {enEjecucionVencidos.map(parte => (
+                  <ParteCard
+                    key={parte.id}
+                    parte={parte}
+                    tarea={tareasById.get(parte.tareaId)}
+                    {...cardProps}
+                  />
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {enEjecucionHoy.length > 0 && (
+            <section className="partes-labores-section">
+              <h3 className="partes-labores-section-title">
+                <Clock size={16} /> En ejecución hoy ({enEjecucionHoy.length})
+              </h3>
+              <ul className="partes-labores-list">
+                {enEjecucionHoy.map(parte => (
                   <ParteCard
                     key={parte.id}
                     parte={parte}

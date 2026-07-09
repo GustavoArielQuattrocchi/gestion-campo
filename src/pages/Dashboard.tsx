@@ -5,11 +5,14 @@ import DashboardContentModal from '../components/dashboard/DashboardContentModal
 import DashboardMapLayer from '../components/dashboard/DashboardMapLayer'
 import DashboardSidebar from '../components/dashboard/DashboardSidebar'
 import DashboardSidebarToggle from '../components/dashboard/DashboardSidebarToggle'
+import DashboardWeatherFloat from '../components/dashboard/DashboardWeatherFloat'
+import DashboardPendingPartesAlert from '../components/dashboard/DashboardPendingPartesAlert'
 import { METRIC_ACCENTS } from '../components/dashboard/dashboardConstants'
 import { useDashboardTareas } from '../hooks/useDashboardTareas'
 import { usePartesLabores } from '../hooks/usePartesLabores'
 import { useInformesAccidente } from '../hooks/useInformesAccidente'
 import { applyPartesDashboardFilters } from '../utils/dashboardFilters'
+import { countPartesAbiertosVencidos } from '../utils/parteEstado'
 
 const EnProgresoContent = lazy(() => import('../components/dashboard/EnProgresoContent'))
 const PartesLaboresContent = lazy(() => import('../components/dashboard/PartesLaboresContent'))
@@ -109,9 +112,38 @@ export default function Dashboard() {
 
   const enProgresoCount = stats.enProgreso
 
+  const partesVencidosCount = useMemo(
+    () => countPartesAbiertosVencidos(partesGlobales),
+    [partesGlobales],
+  )
+
+  const [pendingAlertDismissed, setPendingAlertDismissed] = useState(
+    () => sessionStorage.getItem('escritorio-vencidos-alert-dismissed') === '1',
+  )
+
+  useEffect(() => {
+    if (partesVencidosCount === 0) {
+      sessionStorage.removeItem('escritorio-vencidos-alert-dismissed')
+      setPendingAlertDismissed(false)
+    }
+  }, [partesVencidosCount])
+
   return (
     <div className={`dashboard-layout fade-in ${sidebarOpen ? 'sidebar-open' : ''}`}>
       <DashboardMapLayer tareas={tareasFiltradas} filtroFinca={filtroFinca} />
+
+      <DashboardWeatherFloat filtroFinca={filtroFinca} />
+
+      {!pendingAlertDismissed && partesVencidosCount > 0 && (
+        <DashboardPendingPartesAlert
+          count={partesVencidosCount}
+          onViewPartes={() => setContentModal('partes_labores')}
+          onDismiss={() => {
+            sessionStorage.setItem('escritorio-vencidos-alert-dismissed', '1')
+            setPendingAlertDismissed(true)
+          }}
+        />
+      )}
 
       <DashboardSidebar
         open={sidebarOpen}

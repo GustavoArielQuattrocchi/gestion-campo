@@ -1,21 +1,32 @@
 import { ChevronLeft, ChevronRight, Inbox } from 'lucide-react'
-import type { Tarea } from '../../types'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
+import type { ParteDeLabores, Tarea } from '../../types'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
+import { findParteAbierto } from '../../utils/parteEstado'
 
 interface Props {
   tareas: Tarea[]
+  partesAbiertos: ParteDeLabores[]
   onSelectTarea: (tarea: Tarea) => void
   onBack: () => void
   fincaNombre: string
+  title?: string
+  subtitle?: string
   emptyMessage?: string
+  showFechaApertura?: boolean
 }
 
 export default function EndTaskList({
   tareas,
+  partesAbiertos,
   onSelectTarea,
   onBack,
   fincaNombre,
+  title = 'Cierre del día',
+  subtitle,
   emptyMessage = 'No hay tareas en progreso',
+  showFechaApertura = false,
 }: Props) {
   return (
     <div className="container fade-in">
@@ -23,8 +34,8 @@ export default function EndTaskList({
         <button className="nav-back" onClick={onBack}>
           <ChevronLeft size={18} /> Volver
         </button>
-        <h1>Cierre del día</h1>
-        <p>{fincaNombre} — Partes abiertos pendientes de cierre</p>
+        <h1>{title}</h1>
+        <p>{subtitle ?? `${fincaNombre} — Partes abiertos pendientes de cierre`}</p>
       </div>
 
       {tareas.length === 0 ? (
@@ -34,6 +45,7 @@ export default function EndTaskList({
         </div>
       ) : (
         tareas.map(tarea => {
+          const parte = findParteAbierto(partesAbiertos, tarea.id)
           const progress = computeTareaProgress(tarea)
           const ejecutor =
             tarea.tipo === 'manual'
@@ -54,6 +66,11 @@ export default function EndTaskList({
               <div className="task-info">
                 <h4>{tarea.tarea}</h4>
                 <p className="task-list-ejecutor">{ejecutor}</p>
+                {showFechaApertura && parte && (
+                  <p className="task-list-fecha-apertura">
+                    Abierto el {format(parte.abiertoEn.toDate(), "EEEE d 'de' MMMM", { locale: es })}
+                  </p>
+                )}
                 <div className="task-list-progress-row">
                   <div className="jornada-progress-bar">
                     <div

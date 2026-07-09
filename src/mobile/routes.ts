@@ -9,6 +9,7 @@ export const MOBILE_ROUTES = {
   tareaManual: '/campo/tarea/manual',
   tareaMecanica: '/campo/tarea/mecanica',
   finalizar: '/campo/finalizar',
+  finalizarVencidos: '/campo/finalizar/vencidos',
   finalizarDetalle: (tareaId: string) => `/campo/finalizar/${tareaId}`,
   informe: '/campo/informe',
   exito: '/campo/exito',

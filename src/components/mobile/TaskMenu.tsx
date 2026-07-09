@@ -1,15 +1,21 @@
-import { ChevronLeft, Play, Square, AlertTriangle, Clock, ChevronRight } from 'lucide-react'
+import { ChevronLeft, Play, Square, AlertTriangle, Clock, ChevronRight, History } from 'lucide-react'
 import type { ParteDeLabores, Tarea } from '../../types'
-import { tieneParteAbierto } from '../../utils/parteEstado'
+import {
+  findParteAbierto,
+  isParteAbiertoHoy,
+  isParteAbiertoVencido,
+} from '../../utils/parteEstado'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 
 interface Props {
   fincaNombre: string
   tareasActivas: Tarea[]
   partesAbiertos: ParteDeLabores[]
-  pendientesCierreCount: number
+  pendientesHoyCount: number
+  pendientesVencidosCount: number
   onSelectInicio: () => void
   onSelectFin: () => void
+  onSelectFinVencidos: () => void
   onSelectAccidente: () => void
   onCerrarTarea: (tareaId: string) => void
   onBack: () => void
@@ -19,9 +25,11 @@ export default function TaskMenu({
   fincaNombre,
   tareasActivas,
   partesAbiertos,
-  pendientesCierreCount,
+  pendientesHoyCount,
+  pendientesVencidosCount,
   onSelectInicio,
   onSelectFin,
+  onSelectFinVencidos,
   onSelectAccidente,
   onCerrarTarea,
   onBack,
@@ -41,7 +49,9 @@ export default function TaskMenu({
           <div className="card-title">Tareas activas</div>
           <ul className="jornada-list">
             {tareasActivas.map(tarea => {
-              const enJornada = tieneParteAbierto(partesAbiertos, tarea.id)
+              const parte = findParteAbierto(partesAbiertos, tarea.id)
+              const enJornadaHoy = parte ? isParteAbiertoHoy(parte) : false
+              const enJornadaVencida = parte ? isParteAbiertoVencido(parte) : false
               const progress = computeTareaProgress(tarea)
               const ejecutor =
                 tarea.tipo === 'manual'
@@ -68,12 +78,17 @@ export default function TaskMenu({
                     </div>
                   </div>
                   <div className="jornada-item-actions">
-                    {enJornada && (
+                    {enJornadaHoy && (
                       <span className="jornada-badge-jornada">
                         <Clock size={14} /> En jornada
                       </span>
                     )}
-                    {enJornada && (
+                    {enJornadaVencida && (
+                      <span className="jornada-badge-vencido">
+                        <History size={14} /> Pendiente día anterior
+                      </span>
+                    )}
+                    {enJornadaHoy && (
                       <button
                         type="button"
                         className="jornada-btn-cerrar"
@@ -107,10 +122,23 @@ export default function TaskMenu({
           </div>
           <div className="option-card-content">
             <h3>Cierre del día</h3>
-            <p>Cerrar parte abierto con el rendimiento del día</p>
+            <p>Cerrar partes abiertos hoy con el rendimiento</p>
           </div>
-          {pendientesCierreCount > 0 && (
-            <span className="option-card-badge">{pendientesCierreCount}</span>
+          {pendientesHoyCount > 0 && (
+            <span className="option-card-badge">{pendientesHoyCount}</span>
+          )}
+        </button>
+
+        <button type="button" className="option-card option-card--warn" onClick={onSelectFinVencidos}>
+          <div className="option-card-icon amber">
+            <History size={24} />
+          </div>
+          <div className="option-card-content">
+            <h3>Cierres pendientes</h3>
+            <p>Partes de días anteriores sin cerrar</p>
+          </div>
+          {pendientesVencidosCount > 0 && (
+            <span className="option-card-badge option-card-badge--warn">{pendientesVencidosCount}</span>
           )}
         </button>
 
