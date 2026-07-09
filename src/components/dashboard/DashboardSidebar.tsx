@@ -5,6 +5,7 @@ import type { MetricKey } from '../../utils/getMetricDetail'
 import type { DashboardPanelKey } from '../../hooks/useDashboardTareas'
 import DashboardSidebarHeader from './DashboardSidebarHeader'
 import DashboardStatsPanel from './DashboardStatsPanel'
+import DashboardWeatherPanel from './DashboardWeatherPanel'
 import DashboardFiltersPanel from './DashboardFiltersPanel'
 import DashboardTasksPanel from './DashboardTasksPanel'
 import DashboardQrPanel from './qr/DashboardQrPanel'
@@ -127,6 +128,12 @@ export default function DashboardSidebar({
               onOpenPartesLabores={onOpenPartesLabores}
               onOpenAnalytics={onOpenAnalytics}
               onOpenSeguridad={onOpenSeguridad}
+            />
+
+            <DashboardWeatherPanel
+              open={panelsOpen.clima}
+              onToggle={() => onTogglePanel('clima')}
+              filtroFinca={filtroFinca}
             />
 
             <DashboardFiltersPanel

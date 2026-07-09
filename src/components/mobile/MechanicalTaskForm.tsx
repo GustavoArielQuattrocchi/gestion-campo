@@ -1,15 +1,16 @@
 import { useState, useMemo } from 'react'
-import { ChevronLeft, Save, RefreshCw } from 'lucide-react'
+import { ChevronLeft, Save } from 'lucide-react'
 import { getMaquinariasPorFinca, tareasMecanicas } from '../../data/catalog'
-import { emptyCuadroSelection, type CuadroSelection, type Tarea } from '../../types'
+import { emptyCuadroSelection, type CuadroSelection, type ParteDeLabores, type Tarea } from '../../types'
 import { findTareaContinuableMecanica } from '../../utils/findTareaContinuable'
-import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 import CuadroSelector from './CuadroSelector'
+import ContinueTaskBanner from './ContinueTaskBanner'
 
 interface Props {
   fincaId: string
   fincaNombre: string
   tareasActivas: Tarea[]
+  partesAbiertos: ParteDeLabores[]
   onSubmit: (data: {
     tarea: string
     persona: string
@@ -24,7 +25,7 @@ interface Props {
   onBack: () => void
 }
 
-export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas, onSubmit, onContinue, onBack }: Props) {
+export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas, partesAbiertos, onSubmit, onContinue, onBack }: Props) {
   const [tarea, setTarea] = useState('')
   const [persona, setPersona] = useState('')
   const [maquinariaId, setMaquinariaId] = useState('')
@@ -149,21 +150,9 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
         )}
       </div>
 
-      {tareaContinuable && (() => {
-        const progress = computeTareaProgress(tareaContinuable)
-        return (
-          <div className="card continue-task-banner">
-            <RefreshCw size={16} />
-            <div>
-              <strong>Ya existe esta tarea en progreso</strong>
-              <small>
-                {formatProgressLabel(progress)} · {(tareaContinuable.cuadros ?? []).join(', ')}
-              </small>
-              <small>Los cuadros nuevos se agregarán a la tarea existente.</small>
-            </div>
-          </div>
-        )
-      })()}
+      {tareaContinuable && (
+        <ContinueTaskBanner tarea={tareaContinuable} partesAbiertos={partesAbiertos} />
+      )}
 
       <button
         className="btn btn-primary"
@@ -176,7 +165,7 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
           ? 'Guardando...'
           : tareaContinuable
             ? 'Agregar cuadros a tarea existente'
-            : 'Iniciar Tarea'}
+            : 'Abrir parte de labores'}
       </button>
     </div>
   )

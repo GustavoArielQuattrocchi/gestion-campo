@@ -37,14 +37,13 @@ export function filterPartesForStaffing(
   })
 }
 
-/** Partes de labores respetan finca y tipo globales; solo visibles si el estado global no es solo "en progreso". */
+/** Partes de labores respetan finca y tipo globales (independiente del filtro de estado de tareas). */
 export function applyPartesDashboardFilters(
   partes: ParteDeLabores[],
   filtroFinca: string,
   filtroTipo: string,
-  filtroEstado: string,
+  _filtroEstado: string,
 ): ParteDeLabores[] {
-  if (filtroEstado === 'en_progreso') return []
   return partes.filter(p => {
     if (filtroFinca !== 'todas' && p.fincaNombre !== filtroFinca) return false
     if (filtroTipo !== 'todos' && p.tipo !== filtroTipo) return false

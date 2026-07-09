@@ -4,7 +4,8 @@ import { Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from
 import { useMobileAppContext } from '../../contexts/MobileAppContext'
 import { MOBILE_ROUTES } from '../../mobile/routes'
 import { loadMobileSession } from '../../utils/mobileSession'
-import { filterTareasPendientesParteLabores, tieneParteLaboresHoy } from '../../utils/parteLabores'
+import { filterTareasPendientesParteLabores } from '../../utils/parteLabores'
+import { tieneParteAbierto } from '../../utils/parteEstado'
 import StartScreen from './StartScreen'
 import OperatorNameScreen from './OperatorNameScreen'
 import WelcomeScreen from './WelcomeScreen'
@@ -47,22 +48,22 @@ function FincaRoute() {
 function FinalizarDetalleRoute() {
   const { tareaId } = useParams<{ tareaId: string }>()
   const navigate = useNavigate()
-  const { getTareaActiva, handleRegisterRendimiento } = useMobileAppContext()
+  const { getTareaActiva, partesAbiertos, handleRegisterRendimiento } = useMobileAppContext()
 
   if (!tareaId) {
     return <Navigate to={MOBILE_ROUTES.finalizar} replace />
   }
 
   const tarea = getTareaActiva(tareaId)
-  if (!tarea || tieneParteLaboresHoy(tarea)) {
+  if (!tarea || !tieneParteAbierto(partesAbiertos, tareaId)) {
     return <Navigate to={MOBILE_ROUTES.finalizar} replace />
   }
 
   return (
     <EndTaskForm
       tarea={tarea}
-      onSubmit={(cantidad, unidad, finalizarTarea, cuadrosFinalizadosHoy, extras) =>
-        handleRegisterRendimiento(tareaId, cantidad, unidad, finalizarTarea, cuadrosFinalizadosHoy, extras)
+      onSubmit={(cantidad, unidad, extras) =>
+        handleRegisterRendimiento(tareaId, cantidad, unidad, extras)
       }
       onBack={() => navigate(MOBILE_ROUTES.finalizar)}
     />
@@ -72,17 +73,22 @@ function FinalizarDetalleRoute() {
 function ExitoRoute() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { successMsg, lastCreatedTareaId, tareasActivas } = useMobileAppContext()
+  const { successMsg, lastCreatedTareaId, tareasActivas, partesAbiertos } = useMobileAppContext()
   const motivo = searchParams.get('motivo')
 
   const pendientesCierre = useMemo(
-    () => filterTareasPendientesParteLabores(tareasActivas),
-    [tareasActivas],
+    () => filterTareasPendientesParteLabores(tareasActivas, partesAbiertos),
+    [tareasActivas, partesAbiertos],
   )
 
   if (!motivo || !successMsg.message) {
     return <Navigate to={MOBILE_ROUTES.menu} replace />
   }
+
+  const puedeCerrarParte =
+    motivo === 'inicio' &&
+    !!lastCreatedTareaId &&
+    tieneParteAbierto(partesAbiertos, lastCreatedTareaId)
 
   return (
     <SuccessScreen
@@ -90,7 +96,7 @@ function ExitoRoute() {
       detail={successMsg.detail}
       motivo={motivo}
       pendientesCierreCount={pendientesCierre.length}
-      lastCreatedTareaId={lastCreatedTareaId}
+      lastCreatedTareaId={puedeCerrarParte ? lastCreatedTareaId : null}
       onContinue={() => navigate(MOBILE_ROUTES.menu)}
       onCerrarParte={tareaId => navigate(MOBILE_ROUTES.finalizarDetalle(tareaId))}
       onCargarOtra={() => navigate(MOBILE_ROUTES.tareaTipo)}
@@ -129,6 +135,7 @@ export default function MobileRoutes() {
     fincaId,
     fincaNombre,
     tareasActivas,
+    partesAbiertos,
     handleOperatorSubmit,
     handleStartManualTask,
     handleStartMechanicalTask,
@@ -136,13 +143,13 @@ export default function MobileRoutes() {
   } = useMobileAppContext()
 
   const tareasPendientesCierre = useMemo(
-    () => filterTareasPendientesParteLabores(tareasActivas),
-    [tareasActivas],
+    () => filterTareasPendientesParteLabores(tareasActivas, partesAbiertos),
+    [tareasActivas, partesAbiertos],
   )
 
   const mensajeSinTareasCierre =
-    tareasActivas.length > 0 && tareasPendientesCierre.length === 0
-      ? 'Ya cerraste el parte de labores de todas las tareas en progreso hoy.'
+    tareasActivas.length > 0
+      ? 'No hay partes de labores abiertos para cerrar.'
       : 'No hay tareas en progreso'
 
   return (
@@ -163,6 +170,7 @@ export default function MobileRoutes() {
             <TaskMenu
               fincaNombre={fincaNombre}
               tareasActivas={tareasActivas}
+              partesAbiertos={partesAbiertos}
               pendientesCierreCount={tareasPendientesCierre.length}
               onSelectInicio={() => navigate(MOBILE_ROUTES.tareaTipo)}
               onSelectFin={() => navigate(MOBILE_ROUTES.finalizar)}
@@ -188,6 +196,7 @@ export default function MobileRoutes() {
             <ManualTaskForm
               fincaNombre={fincaNombre}
               tareasActivas={tareasActivas}
+              partesAbiertos={partesAbiertos}
               onSubmit={handleStartManualTask}
               onContinue={handleContinueTask}
               onBack={() => navigate(MOBILE_ROUTES.tareaTipo)}
@@ -201,6 +210,7 @@ export default function MobileRoutes() {
               fincaId={fincaId}
               fincaNombre={fincaNombre}
               tareasActivas={tareasActivas}
+              partesAbiertos={partesAbiertos}
               onSubmit={handleStartMechanicalTask}
               onContinue={(tareaId, cuadros, cuadroIds) => handleContinueTask(tareaId, cuadros, cuadroIds)}
               onBack={() => navigate(MOBILE_ROUTES.tareaTipo)}

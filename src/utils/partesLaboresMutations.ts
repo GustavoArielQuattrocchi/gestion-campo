@@ -14,7 +14,7 @@ function readEntries(data: Record<string, unknown> | undefined): RendimientoDiar
 }
 
 function matchFromParte(parte: ParteDeLabores): RendimientoMatch {
-  return { parteId: parte.id, operador: parte.operador, texto: parte.rendimiento }
+  return { parteId: parte.id, operador: parte.operador, texto: parte.rendimiento ?? '' }
 }
 
 /** Edita el rendimiento de un parte y sincroniza el historial de la tarea. */

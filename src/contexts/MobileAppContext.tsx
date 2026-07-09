@@ -23,7 +23,7 @@ import {
   writeBatch,
 } from 'firebase/firestore'
 import { auth, db } from '../firebase'
-import type { RendimientoUnidad, Tarea, WeatherSnapshot } from '../types'
+import type { ParteDeLabores, RendimientoUnidad, Tarea, WeatherSnapshot } from '../types'
 import { formatRendimiento } from '../utils/rendimiento'
 import { MOBILE_ROUTES } from '../mobile/routes'
 import { parseTareasFromSnapshot } from '../utils/parseTarea'
@@ -50,7 +50,9 @@ import {
   OFFLINE_WRITE_TOAST,
   useOnlineStatus,
 } from '../hooks/useOnlineStatus'
-import { buildParteDeLaboresPayload } from '../utils/buildParteDeLaboresPayload'
+import { buildParteAbiertoPayload, buildParteCierreUpdate } from '../utils/buildParteDeLaboresPayload'
+import { parsePartesFromSnapshot } from '../utils/parseParteDeLabores'
+import { tieneParteAbierto } from '../utils/parteEstado'
 
 function initialSessionState() {
   const session = loadMobileSession()
@@ -66,6 +68,7 @@ interface MobileAppContextValue {
   fincaId: string
   fincaNombre: string
   tareasActivas: Tarea[]
+  partesAbiertos: ParteDeLabores[]
   successMsg: { message: string; detail: string }
   lastCreatedTareaId: string | null
   firestoreError: string | null
@@ -101,13 +104,10 @@ interface MobileAppContextValue {
     tareaId: string,
     cantidad: number,
     unidad: RendimientoUnidad,
-    finalizarTarea?: boolean,
-    cuadrosFinalizadosHoy?: string[],
     extras?: {
       horaInicio?: string
       horaFin?: string
       observaciones?: string
-      rendimientoPorCuadro?: Record<string, number>
       clima?: WeatherSnapshot
     },
   ) => Promise<void>
@@ -125,6 +125,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
   const [fincaId, setFincaId] = useState(sessionInit.fincaId)
   const [fincaNombre, setFincaNombre] = useState(sessionInit.fincaNombre)
   const [tareasActivas, setTareasActivas] = useState<Tarea[]>([])
+  const [partesAbiertos, setPartesAbiertos] = useState<ParteDeLabores[]>([])
   const [successMsg, setSuccessMsg] = useState({ message: '', detail: '' })
   const [lastCreatedTareaId, setLastCreatedTareaId] = useState<string | null>(null)
   const [firestoreError, setFirestoreError] = useState<string | null>(null)
@@ -151,6 +152,47 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const hasSession = hasMobileSession(operadorNombre, fincaId, fincaNombre)
+
+  const partesAbiertosRef = useRef(partesAbiertos)
+  partesAbiertosRef.current = partesAbiertos
+
+  const abrirParteDeLabores = useCallback(async (tarea: Tarea) => {
+    if (tieneParteAbierto(partesAbiertosRef.current, tarea.id)) return
+    await addDoc(
+      collection(db, 'partes_labores'),
+      buildParteAbiertoPayload(tarea, operadorNombre, Timestamp.now()),
+    )
+  }, [operadorNombre])
+
+  useEffect(() => {
+    if (!fincaId) {
+      setPartesAbiertos([])
+      return
+    }
+
+    const q = query(
+      collection(db, 'partes_labores'),
+      where('fincaId', '==', fincaId),
+      where('estado', '==', 'abierto'),
+    )
+
+    const unsubscribe = onSnapshot(
+      q,
+      snapshot => {
+        const { partes } = parsePartesFromSnapshot(
+          snapshot.docs.map(d => ({ id: d.id, data: () => d.data() as Record<string, unknown> })),
+        )
+        setPartesAbiertos(partes)
+      },
+      err => {
+        console.error('[MobileApp] Error en partes abiertos:', err)
+        if (!isOnlineRef.current) return
+        setPartesAbiertos([])
+      },
+    )
+
+    return unsubscribe
+  }, [fincaId])
 
   useEffect(() => {
     const unsubscribe = onSnapshotsInSync(db, () => {
@@ -287,10 +329,25 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     submittingRef.current = true
     try {
       const docRef = await addDoc(collection(db, 'tareas'), payload)
+      const nuevaTarea: Tarea = {
+        id: docRef.id,
+        fincaId,
+        fincaNombre,
+        tipo: 'manual',
+        tarea: validated.data.tarea,
+        cuadrilla: validated.data.cuadrilla,
+        cantidadPersonas: validated.data.cantidadPersonas,
+        cuadros: validated.data.cuadros,
+        cuadroIds: validated.data.cuadroIds,
+        estado: 'en_progreso',
+        operador: operadorNombre.trim(),
+        fechaInicio: payload.fechaInicio,
+      }
+      await abrirParteDeLabores(nuevaTarea)
       setFirestoreError(null)
       setLastCreatedTareaId(docRef.id)
       setSuccessMsg({
-        message: 'Tarea cargada correctamente',
+        message: 'Parte de labores abierto',
         detail: `${data.tarea} — ${data.cuadrilla} con ${data.cantidadPersonas} personas`,
       })
       if (!navigator.onLine) {
@@ -306,7 +363,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     } finally {
       submittingRef.current = false
     }
-  }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync, navigate])
+  }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync, navigate, abrirParteDeLabores])
 
   const handleStartMechanicalTask = useCallback(async (data: {
     tarea: string
@@ -335,10 +392,28 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     submittingRef.current = true
     try {
       const docRef = await addDoc(collection(db, 'tareas'), payload)
+      const nuevaTarea: Tarea = {
+        id: docRef.id,
+        fincaId,
+        fincaNombre,
+        tipo: 'mecanica',
+        tarea: validated.data.tarea,
+        persona: validated.data.persona,
+        maquinaria: validated.data.maquinaria,
+        ...(validated.data.maquinariaModelo ? { maquinariaModelo: validated.data.maquinariaModelo } : {}),
+        ...(validated.data.maquinariaId ? { maquinariaId: validated.data.maquinariaId } : {}),
+        ...(validated.data.ordenCuraRef ? { ordenCuraRef: validated.data.ordenCuraRef } : {}),
+        cuadros: validated.data.cuadros,
+        cuadroIds: validated.data.cuadroIds,
+        estado: 'en_progreso',
+        operador: operadorNombre.trim(),
+        fechaInicio: payload.fechaInicio,
+      }
+      await abrirParteDeLabores(nuevaTarea)
       setFirestoreError(null)
       setLastCreatedTareaId(docRef.id)
       setSuccessMsg({
-        message: 'Tarea cargada correctamente',
+        message: 'Parte de labores abierto',
         detail: `${data.tarea} — ${data.persona} con ${data.maquinaria}`,
       })
       if (!navigator.onLine) {
@@ -354,7 +429,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     } finally {
       submittingRef.current = false
     }
-  }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync, navigate])
+  }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync, navigate, abrirParteDeLabores])
 
   const handleContinueTask = useCallback(async (
     tareaId: string,
@@ -373,6 +448,18 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         updates.cantidadPersonas = cantidadPersonas
       }
       await updateDoc(doc(db, 'tareas', tareaId), updates)
+      const tarea = tareasActivas.find(t => t.id === tareaId)
+      if (tarea) {
+        const tareaActualizada: Tarea = {
+          ...tarea,
+          cuadros: [...new Set([...(tarea.cuadros ?? []), ...cuadros])],
+          cuadroIds: [...new Set([...(tarea.cuadroIds ?? []), ...cuadroIds])],
+          ...(cantidadPersonas !== undefined && tarea.tipo === 'manual'
+            ? { cantidadPersonas }
+            : {}),
+        }
+        await abrirParteDeLabores(tareaActualizada)
+      }
       setFirestoreError(null)
       setLastCreatedTareaId(tareaId)
       setSuccessMsg({
@@ -392,19 +479,21 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     } finally {
       submittingRef.current = false
     }
-  }, [showToast, markPendingSync, navigate])
+  }, [tareasActivas, abrirParteDeLabores, showToast, markPendingSync, navigate])
 
   const handleRegisterRendimiento = useCallback(async (
     tareaId: string,
     cantidad: number,
     unidad: RendimientoUnidad,
-    finalizarTarea = false,
-    cuadrosFinalizadosHoy: string[] = [],
-    extras: { horaInicio?: string; horaFin?: string; observaciones?: string; rendimientoPorCuadro?: Record<string, number>; clima?: WeatherSnapshot } = {},
+    extras: { horaInicio?: string; horaFin?: string; observaciones?: string; clima?: WeatherSnapshot } = {},
   ) => {
     if (submittingRef.current) return
     const tarea = tareasActivas.find(t => t.id === tareaId)
-    if (!tarea) return
+    const parteAbierto = partesAbiertosRef.current.find(p => p.tareaId === tareaId)
+    if (!tarea || !parteAbierto) {
+      showToast('No hay un parte de labores abierto para esta tarea.', 'error')
+      return
+    }
 
     if (!Number.isFinite(cantidad) || cantidad <= 0) return
     const texto = formatRendimiento(cantidad, unidad)
@@ -414,53 +503,25 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       await registerOperador(operadorNombre)
       const cerradoEn = Timestamp.now()
       const batch = writeBatch(db)
-      const parteRef = doc(collection(db, 'partes_labores'))
       const entry: Record<string, unknown> = {
-        fecha: Timestamp.now(),
+        fecha: cerradoEn,
         texto,
         operador: operadorNombre,
         cantidad,
         unidad,
-        parteId: parteRef.id,
+        parteId: parteAbierto.id,
       }
       if (extras.horaInicio) entry.horaInicio = extras.horaInicio
       if (extras.horaFin) entry.horaFin = extras.horaFin
       if (extras.observaciones) entry.observaciones = extras.observaciones
-      if (extras.rendimientoPorCuadro && Object.keys(extras.rendimientoPorCuadro).length > 0) {
-        entry.rendimientoPorCuadro = extras.rendimientoPorCuadro
-      }
       if (extras.clima) entry.clima = extras.clima
-      const tareaUpdate: Record<string, unknown> = {
+      batch.update(doc(db, 'tareas', tareaId), {
         rendimientosDiarios: arrayUnion(entry),
         rendimiento: texto,
-      }
-      if (cuadrosFinalizadosHoy.length > 0) {
-        tareaUpdate.cuadroIdsFinalizados = arrayUnion(...cuadrosFinalizadosHoy)
-        const ahora = Timestamp.now()
-        const finalizaciones = cuadrosFinalizadosHoy.map(cuadroId => ({
-          cuadroId,
-          fecha: ahora,
-          operador: operadorNombre,
-        }))
-        tareaUpdate.cuadroFinalizaciones = arrayUnion(...finalizaciones)
-      }
-      if (finalizarTarea) {
-        tareaUpdate.estado = 'finalizada'
-        tareaUpdate.fechaFin = Timestamp.now()
-      }
-      batch.update(doc(db, 'tareas', tareaId), tareaUpdate)
-      batch.set(
-        parteRef,
-        buildParteDeLaboresPayload(
-          tarea,
-          texto,
-          operadorNombre,
-          cerradoEn,
-          cantidad,
-          unidad,
-          finalizarTarea,
-          extras,
-        ),
+      })
+      batch.update(
+        doc(db, 'partes_labores', parteAbierto.id),
+        buildParteCierreUpdate(texto, cerradoEn, cantidad, unidad, extras),
       )
       await batch.commit()
 
@@ -470,19 +531,13 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         showToast(OFFLINE_WRITE_TOAST, 'info')
       }
       setSuccessMsg({
-        message: finalizarTarea ? 'Tarea finalizada' : 'Parte de labores cerrado',
-        detail: finalizarTarea
-          ? `${tarea.tarea} — ${texto}`
-          : `${tarea.tarea} — ${texto}`,
+        message: 'Parte de labores cerrado',
+        detail: `${tarea.tarea} — ${texto}`,
       })
       navigate(`${MOBILE_ROUTES.exito}?motivo=rendimiento`)
     } catch (err) {
       console.error('Error al cerrar parte de labores:', err)
-      setFirestoreError(
-        finalizarTarea
-          ? 'Error al guardar el parte o finalizar la tarea. Revisá la conexión y las reglas de Firestore.'
-          : 'Error al guardar el parte de labores. Revisá la conexión y las reglas de Firestore.',
-      )
+      setFirestoreError('Error al guardar el parte de labores. Revisá la conexión y las reglas de Firestore.')
     } finally {
       submittingRef.current = false
     }
@@ -507,6 +562,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       fincaId,
       fincaNombre,
       tareasActivas,
+      partesAbiertos,
       successMsg,
       lastCreatedTareaId,
       firestoreError,
@@ -533,6 +589,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       fincaId,
       fincaNombre,
       tareasActivas,
+      partesAbiertos,
       successMsg,
       lastCreatedTareaId,
       firestoreError,

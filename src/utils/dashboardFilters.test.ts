@@ -63,6 +63,7 @@ describe('sortByFechaInicio', () => {
 })
 
 function parte(overrides: Partial<ParteDeLabores> & { id: string }): ParteDeLabores {
+  const cerradoEn = mockTs('2024-06-01T18:00:00') as ParteDeLabores['cerradoEn']
   return {
     tareaId: 't1',
     fincaId: 'FOA',
@@ -70,9 +71,13 @@ function parte(overrides: Partial<ParteDeLabores> & { id: string }): ParteDeLabo
     tarea: 'Poda',
     tipo: 'manual',
     operador: 'Juan',
+    estado: 'cerrado',
+    abiertoEn: cerradoEn!,
     rendimiento: '10 ha',
     cuadros: [],
-    cerradoEn: mockTs('2024-06-01T18:00:00') as ParteDeLabores['cerradoEn'],
+    cuadrilla: 'C1',
+    cantidadPersonas: 5,
+    cerradoEn,
     ...overrides,
   }
 }
@@ -83,8 +88,8 @@ describe('applyPartesDashboardFilters', () => {
     parte({ id: '2', fincaNombre: 'Finca B', tipo: 'mecanica' }),
   ]
 
-  it('oculta partes si el estado global es solo en progreso', () => {
-    assert.equal(applyPartesDashboardFilters(partes, 'todas', 'todos', 'en_progreso').length, 0)
+  it('muestra partes aunque el filtro global sea solo en progreso', () => {
+    assert.equal(applyPartesDashboardFilters(partes, 'todas', 'todos', 'en_progreso').length, 2)
   })
 
   it('filtra por finca y tipo con estado global todos', () => {

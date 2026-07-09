@@ -96,24 +96,19 @@ service cloud.firestore {
         && request.resource.data.rendimiento.size() > 0;
     }
 
-    // Cierre del día desde móvil: rendimiento + opcionalmente cuadros finalizados + opcionalmente finalizar tarea.
-    // Cualquier operador registrado puede cerrar el día (no solo el creador).
+    // Cierre del día desde móvil: solo rendimiento en la tarea (sin finalizar cuadros ni tarea).
     function esCierreDelDiaMobile() {
       let keys = request.resource.data.diff(resource.data).affectedKeys();
-      return keys.hasOnly(['rendimientosDiarios', 'rendimiento', 'cuadroIdsFinalizados', 'cuadroFinalizaciones', 'estado', 'fechaFin'])
+      return keys.hasOnly(['rendimientosDiarios', 'rendimiento'])
         && resource.data.estado == 'en_progreso';
     }
 
     function validCierreDelDiaMobile() {
       let d = request.resource.data;
-      let keys = d.diff(resource.data).affectedKeys();
       return d.rendimientosDiarios is list
         && d.rendimientosDiarios.size() > 0
         && d.rendimiento is string
-        && d.rendimiento.size() > 0
-        && (!keys.hasAny(['cuadroIdsFinalizados']) || d.cuadroIdsFinalizados is list)
-        && (!keys.hasAny(['cuadroFinalizaciones']) || d.cuadroFinalizaciones is list)
-        && (!keys.hasAny(['estado']) || (d.estado == 'finalizada' && d.fechaFin is timestamp));
+        && d.rendimiento.size() > 0;
     }
 
     // Continuar tarea existente: añadir cuadros sin cambiar estado.
@@ -129,6 +124,7 @@ service cloud.firestore {
     function esActualizacionDashboard() {
       let keys = request.resource.data.diff(resource.data).affectedKeys();
       return keys.hasOnly(['cuadroIdsFinalizados'])
+        || keys.hasOnly(['cuadroIdsFinalizados', 'cuadroFinalizaciones'])
         || keys.hasOnly(['estado', 'fechaFin']);
     }
 
@@ -216,7 +212,7 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    function validParteDeLaboresBase() {
+    function validParteCamposComunes() {
       let d = request.resource.data;
       return d.tareaId is string
         && d.tareaId.size() > 0
@@ -229,17 +225,44 @@ service cloud.firestore {
         && d.tipo in ['manual', 'mecanica']
         && d.operador is string
         && d.operador.size() > 0
+        && d.cuadros is list
+        && (d.get('cuadroIds', null) == null || d.cuadroIds is list)
+        && validParteManual()
+        && validParteMecanica();
+    }
+
+    function validParteAbiertoCreate() {
+      let d = request.resource.data;
+      return d.estado == 'abierto'
+        && d.abiertoEn is timestamp
+        && validParteCamposComunes();
+    }
+
+    function validParteCerradoLegacyCreate() {
+      let d = request.resource.data;
+      return (d.get('estado', null) == null || d.estado == 'cerrado')
+        && d.rendimiento is string
+        && d.rendimiento.size() > 0
+        && d.cerradoEn is timestamp
+        && validParteCamposComunes();
+    }
+
+    function esCierreParteMobile() {
+      let keys = request.resource.data.diff(resource.data).affectedKeys();
+      return resource.data.estado == 'abierto'
+        && request.resource.data.estado == 'cerrado'
+        && keys.hasOnly(['estado', 'cerradoEn', 'rendimiento', 'rendimientoCantidad', 'rendimientoUnidad', 'horaInicio', 'horaFin', 'observaciones', 'clima']);
+    }
+
+    function validCierreParteMobile() {
+      let d = request.resource.data;
+      return d.estado == 'cerrado'
+        && d.cerradoEn is timestamp
         && d.rendimiento is string
         && d.rendimiento.size() > 0
         && (d.get('rendimientoCantidad', null) == null || d.rendimientoCantidad is number)
         && (d.get('rendimientoUnidad', null) == null
-          || d.rendimientoUnidad in ['jornal', 'hileras', 'claros', 'plantas'])
-        && (d.get('finalizoTarea', null) == null || d.finalizoTarea is bool)
-        && d.cuadros is list
-        && (d.get('cuadroIds', null) == null || d.cuadroIds is list)
-        && d.cerradoEn is timestamp
-        && validParteManual()
-        && validParteMecanica();
+          || d.rendimientoUnidad in ['jornal', 'hileras', 'claros', 'plantas']);
     }
 
     function esEdicionRendimientoParte() {
@@ -275,8 +298,12 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow create: if operadorRegistrado()
         && request.resource.data.operador == nombreOperadorAutenticado()
-        && validParteDeLaboresBase();
-      allow update: if esAdmin() && (
+        && (validParteAbiertoCreate() || validParteCerradoLegacyCreate());
+      allow update: if (
+        operadorRegistrado()
+        && esCierreParteMobile()
+        && validCierreParteMobile()
+      ) || esAdmin() && (
         esEdicionRendimientoParte()
         || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tareaId'])
       );

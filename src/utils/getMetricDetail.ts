@@ -178,10 +178,11 @@ export function getMetricDetail(
             { key: 'finca', label: 'Finca' },
           ],
           rows: manualPartes
+            .filter(p => p.cerradoEn?.toDate)
             .slice()
-            .sort((a, b) => b.cerradoEn.toDate().getTime() - a.cerradoEn.toDate().getTime())
+            .sort((a, b) => b.cerradoEn!.toDate().getTime() - a.cerradoEn!.toDate().getTime())
             .map(p => ({
-              fecha: formatTimestamp(p.cerradoEn),
+              fecha: formatTimestamp(p.cerradoEn!),
               tarea: p.tarea,
               cuadrilla: p.cuadrilla ?? '—',
               personas: String(p.cantidadPersonas ?? 0),

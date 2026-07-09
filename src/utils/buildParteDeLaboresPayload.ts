@@ -3,37 +3,37 @@ import type { ParteDeLabores, RendimientoUnidad, Tarea, WeatherSnapshot } from '
 
 export type ParteDeLaboresFirestorePayload = Omit<ParteDeLabores, 'id'>
 
-export function buildParteDeLaboresPayload(
-  tarea: Tarea,
-  rendimiento: string,
-  operador: string,
-  cerradoEn: Timestamp,
-  rendimientoCantidad?: number,
-  rendimientoUnidad?: RendimientoUnidad,
-  finalizoTarea?: boolean,
-  extras: { horaInicio?: string; horaFin?: string; observaciones?: string; rendimientoPorCuadro?: Record<string, number>; clima?: WeatherSnapshot } = {},
-): ParteDeLaboresFirestorePayload {
-  const base = {
+type ParteExtras = {
+  horaInicio?: string
+  horaFin?: string
+  observaciones?: string
+  rendimientoPorCuadro?: Record<string, number>
+  clima?: WeatherSnapshot
+}
+
+function parteBaseFields(tarea: Tarea, operador: string) {
+  return {
     tareaId: tarea.id,
     fincaId: tarea.fincaId,
     fincaNombre: tarea.fincaNombre,
     tarea: tarea.tarea,
     tipo: tarea.tipo,
     operador: operador.trim(),
-    rendimiento: rendimiento.trim(),
-    ...(typeof rendimientoCantidad === 'number' ? { rendimientoCantidad } : {}),
-    ...(rendimientoUnidad ? { rendimientoUnidad } : {}),
-    ...(finalizoTarea ? { finalizoTarea: true } : {}),
     cuadros: tarea.cuadros ?? [],
     ...(tarea.cuadroIds?.length ? { cuadroIds: tarea.cuadroIds } : {}),
-    ...(extras.horaInicio ? { horaInicio: extras.horaInicio } : {}),
-    ...(extras.horaFin ? { horaFin: extras.horaFin } : {}),
-    ...(extras.observaciones ? { observaciones: extras.observaciones } : {}),
-    ...(extras.rendimientoPorCuadro && Object.keys(extras.rendimientoPorCuadro).length > 0
-      ? { rendimientoPorCuadro: extras.rendimientoPorCuadro }
-      : {}),
-    ...(extras.clima ? { clima: extras.clima } : {}),
-    cerradoEn,
+  }
+}
+
+/** Apertura de jornada: parte abierto sin rendimiento (al cargar tarea en campo). */
+export function buildParteAbiertoPayload(
+  tarea: Tarea,
+  operador: string,
+  abiertoEn: Timestamp,
+): ParteDeLaboresFirestorePayload {
+  const base = {
+    ...parteBaseFields(tarea, operador),
+    estado: 'abierto' as const,
+    abiertoEn,
   }
 
   if (tarea.tipo === 'manual') {
@@ -50,5 +50,56 @@ export function buildParteDeLaboresPayload(
     maquinaria: tarea.maquinaria,
     ...(tarea.maquinariaModelo ? { maquinariaModelo: tarea.maquinariaModelo } : {}),
     ...(tarea.maquinariaId ? { maquinariaId: tarea.maquinariaId } : {}),
+  }
+}
+
+/** Cierre de jornada: actualización del parte abierto con rendimiento. */
+export function buildParteCierreUpdate(
+  rendimiento: string,
+  cerradoEn: Timestamp,
+  rendimientoCantidad?: number,
+  rendimientoUnidad?: RendimientoUnidad,
+  extras: ParteExtras = {},
+): Record<string, unknown> {
+  return {
+    estado: 'cerrado',
+    cerradoEn,
+    rendimiento: rendimiento.trim(),
+    ...(typeof rendimientoCantidad === 'number' ? { rendimientoCantidad } : {}),
+    ...(rendimientoUnidad ? { rendimientoUnidad } : {}),
+    ...(extras.horaInicio ? { horaInicio: extras.horaInicio } : {}),
+    ...(extras.horaFin ? { horaFin: extras.horaFin } : {}),
+    ...(extras.observaciones ? { observaciones: extras.observaciones } : {}),
+    ...(extras.clima ? { clima: extras.clima } : {}),
+  }
+}
+
+/** Documento cerrado completo (legacy / tests). */
+export function buildParteDeLaboresPayload(
+  tarea: Tarea,
+  rendimiento: string,
+  operador: string,
+  cerradoEn: Timestamp,
+  rendimientoCantidad?: number,
+  rendimientoUnidad?: RendimientoUnidad,
+  _finalizoTarea?: boolean,
+  extras: ParteExtras = {},
+): ParteDeLaboresFirestorePayload {
+  const abierto = buildParteAbiertoPayload(tarea, operador, cerradoEn)
+  return {
+    ...abierto,
+    estado: 'cerrado',
+    abiertoEn: cerradoEn,
+    cerradoEn,
+    rendimiento: rendimiento.trim(),
+    ...(typeof rendimientoCantidad === 'number' ? { rendimientoCantidad } : {}),
+    ...(rendimientoUnidad ? { rendimientoUnidad } : {}),
+    ...(extras.horaInicio ? { horaInicio: extras.horaInicio } : {}),
+    ...(extras.horaFin ? { horaFin: extras.horaFin } : {}),
+    ...(extras.observaciones ? { observaciones: extras.observaciones } : {}),
+    ...(extras.rendimientoPorCuadro && Object.keys(extras.rendimientoPorCuadro).length > 0
+      ? { rendimientoPorCuadro: extras.rendimientoPorCuadro }
+      : {}),
+    ...(extras.clima ? { clima: extras.clima } : {}),
   }
 }

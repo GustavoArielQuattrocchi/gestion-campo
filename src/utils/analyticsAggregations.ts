@@ -219,7 +219,11 @@ export function computeAnalyticsKPIs(tareas: Tarea[], partes: ParteDeLabores[]):
   const operadoresActivos = operadores.size
 
   // --- partesPorDia ---
-  const diasDistintos = new Set(partes.map(p => toDateKey(p.cerradoEn.toDate())))
+  const diasDistintos = new Set(
+    partes
+      .filter(p => p.cerradoEn?.toDate)
+      .map(p => toDateKey(p.cerradoEn!.toDate())),
+  )
   const partesPorDia = diasDistintos.size > 0
     ? Math.round((partes.length / diasDistintos.size) * 10) / 10
     : 0

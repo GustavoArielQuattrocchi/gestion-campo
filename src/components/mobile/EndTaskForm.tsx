@@ -1,25 +1,19 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { ChevronLeft, Save } from 'lucide-react'
 import type { RendimientoUnidad, Tarea } from '../../types'
 import { RENDIMIENTO_UNIDADES } from '../../types'
-import { resolveTaskCuadroIds, computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
-import { getNombreCuadro } from '../../data/fincaData'
+import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 import { getDefaultUnit } from '../../data/laborUnits'
-import { fetchTodayWeather, weatherCodeToLabel, getWeatherEmoji, type WeatherData } from '../../utils/weatherService'
 
 interface Props {
   tarea: Tarea
   onSubmit: (
     cantidad: number,
     unidad: RendimientoUnidad,
-    finalizarTarea: boolean,
-    cuadrosFinalizadosHoy: string[],
     extras: {
       horaInicio?: string
       horaFin?: string
       observaciones?: string
-      rendimientoPorCuadro?: Record<string, number>
-      clima?: WeatherData
     },
   ) => Promise<void>
   onBack: () => void
@@ -28,47 +22,12 @@ interface Props {
 export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
   const [cantidad, setCantidad] = useState('')
   const [unidad, setUnidad] = useState<RendimientoUnidad | ''>(() => getDefaultUnit(tarea.tarea) || '')
-  const [tareaTerminada, setTareaTerminada] = useState(false)
-  const [cuadrosFinalizadosHoy, setCuadrosFinalizadosHoy] = useState<string[]>([])
-  const [rendimientoPorCuadro, setRendimientoPorCuadro] = useState<Record<string, number>>({})
   const [saving, setSaving] = useState(false)
   const [horaInicio, setHoraInicio] = useState('')
   const [horaFin, setHoraFin] = useState('')
   const [observaciones, setObservaciones] = useState('')
-  const [weather, setWeather] = useState<WeatherData | null>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    fetchTodayWeather(tarea.fincaId).then(data => {
-      if (!cancelled) setWeather(data)
-    })
-    return () => { cancelled = true }
-  }, [tarea.fincaId])
 
   const progress = useMemo(() => computeTareaProgress(tarea), [tarea])
-  const cuadrosPendientes = useMemo(() => {
-    const allIds = resolveTaskCuadroIds(tarea)
-    const finalizadosSet = new Set(tarea.cuadroIdsFinalizados ?? [])
-    return allIds.filter(id => !finalizadosSet.has(id))
-  }, [tarea])
-
-  const todosFinalizados = useMemo(() => {
-    const pendientesRestantes = cuadrosPendientes.filter(id => !cuadrosFinalizadosHoy.includes(id))
-    return pendientesRestantes.length === 0 && (cuadrosPendientes.length > 0 || (tarea.cuadroIdsFinalizados?.length ?? 0) > 0)
-  }, [cuadrosPendientes, cuadrosFinalizadosHoy, tarea.cuadroIdsFinalizados])
-
-  const toggleCuadro = (cuadroId: string) => {
-    setCuadrosFinalizadosHoy(prev => {
-      if (prev.includes(cuadroId)) {
-        setRendimientoPorCuadro(r => {
-          const { [cuadroId]: _, ...rest } = r
-          return rest
-        })
-        return prev.filter(id => id !== cuadroId)
-      }
-      return [...prev, cuadroId]
-    })
-  }
 
   const cantidadNum = Number(cantidad)
   const cantidadValida = cantidad.trim() !== '' && Number.isFinite(cantidadNum) && cantidadNum > 0
@@ -78,13 +37,11 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
     if (!formValido || saving) return
     setSaving(true)
     try {
-      const extras: { horaInicio?: string; horaFin?: string; observaciones?: string; rendimientoPorCuadro?: Record<string, number>; clima?: WeatherData } = {}
+      const extras: { horaInicio?: string; horaFin?: string; observaciones?: string } = {}
       if (horaInicio) extras.horaInicio = horaInicio
       if (horaFin) extras.horaFin = horaFin
       if (observaciones.trim()) extras.observaciones = observaciones.trim()
-      if (Object.keys(rendimientoPorCuadro).length > 0) extras.rendimientoPorCuadro = rendimientoPorCuadro
-      if (weather) extras.clima = weather
-      await onSubmit(cantidadNum, unidad as RendimientoUnidad, tareaTerminada, cuadrosFinalizadosHoy, extras)
+      await onSubmit(cantidadNum, unidad as RendimientoUnidad, extras)
     } finally {
       setSaving(false)
     }
@@ -97,7 +54,7 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
           <ChevronLeft size={18} /> Volver
         </button>
         <h1>Cierre del día</h1>
-        <p>Cerrar parte de labores con el rendimiento del día</p>
+        <p>Registrar rendimiento y cerrar el parte de labores</p>
       </div>
 
       <div className="card">
@@ -149,24 +106,16 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
             <span className="label">Finca</span>
             <span className="value">{tarea.fincaNombre}</span>
           </div>
+          <div className="task-summary-row">
+            <span className="label">Avance de tarea</span>
+            <span className="value">{formatProgressLabel(progress)}</span>
+          </div>
         </div>
       </div>
 
-      {weather && (
-        <div className="card weather-card">
-          <div className="weather-card-content">
-            <span className="weather-icon">{getWeatherEmoji(weather.weatherCode)}</span>
-            <div>
-              <strong>{weatherCodeToLabel(weather.weatherCode)}</strong>
-              <span>{weather.temperatureMin}° / {weather.temperatureMax}° · {weather.precipitation} mm</span>
-            </div>
-          </div>
-        </div>
-      )}
-
       {tarea.rendimientosDiarios && tarea.rendimientosDiarios.length > 0 && (
         <div className="card">
-          <div className="card-title">Registros anteriores</div>
+          <div className="card-title">Cierres anteriores</div>
           <ul className="rendimiento-history">
             {[...tarea.rendimientosDiarios].reverse().slice(0, 3).map((r) => (
               <li key={`${r.fecha.seconds}-${r.operador}`}>{r.texto}</li>
@@ -239,60 +188,6 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
         </div>
       </div>
 
-      {cuadrosPendientes.length > 0 && (
-        <div className="card">
-          <div className="card-title">Cuadros terminados hoy</div>
-          <p style={{ fontSize: 12, color: 'var(--gray-500)', margin: '0 0 10px' }}>
-            Marcá los cuadros que se completaron durante el día.
-          </p>
-          <ul className="cuadros-checklist">
-            {cuadrosPendientes.map(cuadroId => {
-              const isChecked = cuadrosFinalizadosHoy.includes(cuadroId)
-              return (
-                <li key={cuadroId}>
-                  <label className="cuadro-check-label">
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={() => toggleCuadro(cuadroId)}
-                      disabled={saving}
-                    />
-                    <span>{getNombreCuadro(tarea.fincaId, cuadroId)}</span>
-                  </label>
-                  {isChecked && (
-                    <div className="cuadro-check-rendimiento">
-                      <input
-                        type="number"
-                        inputMode="decimal"
-                        min="0"
-                        step="any"
-                        placeholder="Rend."
-                        value={rendimientoPorCuadro[cuadroId] ?? ''}
-                        onChange={e => {
-                          const val = e.target.value
-                          setRendimientoPorCuadro(prev => {
-                            if (val === '') {
-                              const { [cuadroId]: _, ...rest } = prev
-                              return rest
-                            }
-                            return { ...prev, [cuadroId]: Number(val) }
-                          })
-                        }}
-                        disabled={saving}
-                      />
-                      <span>opcional</span>
-                    </div>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-          <div style={{ marginTop: 8, fontSize: 12, color: 'var(--gray-500)' }}>
-            Avance actual: {formatProgressLabel(progress)}
-          </div>
-        </div>
-      )}
-
       <div className="card">
         <div className="card-title">Observaciones (opcional)</div>
         <div className="observaciones-field">
@@ -307,25 +202,6 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
         </div>
       </div>
 
-      <label className="end-task-finalizar">
-        <input
-          type="checkbox"
-          checked={tareaTerminada}
-          onChange={e => setTareaTerminada(e.target.checked)}
-          disabled={saving || !todosFinalizados}
-        />
-        <span>
-          <strong>La tarea quedó terminada</strong>
-          <small>
-            {!todosFinalizados
-              ? 'Finalizá todos los cuadros para poder terminar la tarea.'
-              : tareaTerminada
-                ? 'Se guardará el parte y la tarea no volverá a aparecer en la app.'
-                : 'Si el trabajo sigue mañana, dejalo desmarcado para cerrar solo el día.'}
-          </small>
-        </span>
-      </label>
-
       <button
         className="btn btn-primary"
         onClick={handleSubmit}
@@ -333,11 +209,7 @@ export default function EndTaskForm({ tarea, onSubmit, onBack }: Props) {
         style={{ opacity: formValido && !saving ? 1 : 0.5, marginBottom: 24 }}
       >
         <Save size={18} />
-        {saving
-          ? 'Guardando...'
-          : tareaTerminada
-            ? 'Cerrar parte y terminar tarea'
-            : 'Cerrar parte de labores'}
+        {saving ? 'Guardando...' : 'Cerrar parte de labores'}
       </button>
     </div>
   )

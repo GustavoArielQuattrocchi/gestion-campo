@@ -40,13 +40,13 @@ export function aggregateManualStaffingFromPartes(partes: ParteDeLabores[]): Dai
   const byDate = new Map<string, { personas: number; tareas: number }>()
 
   for (const p of partes) {
-    if (p.tipo !== 'manual' || !p.cerradoEn?.toDate) continue
-    const personas = p.cantidadPersonas ?? 0
-    if (personas < 1) continue
-    const dayKey = format(p.cerradoEn.toDate(), 'yyyy-MM-dd')
+    if (p.tipo !== 'manual' || !p.cantidadPersonas || p.cantidadPersonas < 1) continue
+    const refTs = p.estado === 'abierto' ? p.abiertoEn : (p.cerradoEn ?? p.abiertoEn)
+    if (!refTs?.toDate) continue
+    const dayKey = format(refTs.toDate(), 'yyyy-MM-dd')
     const prev = byDate.get(dayKey) ?? { personas: 0, tareas: 0 }
     byDate.set(dayKey, {
-      personas: prev.personas + personas,
+      personas: prev.personas + p.cantidadPersonas,
       tareas: prev.tareas + 1,
     })
   }

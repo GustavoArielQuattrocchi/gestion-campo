@@ -1,14 +1,15 @@
 import { useState, useMemo } from 'react'
-import { ChevronLeft, Save, RefreshCw } from 'lucide-react'
+import { ChevronLeft, Save } from 'lucide-react'
 import { cuadrillas, tareasManuales } from '../../data/catalog'
-import { emptyCuadroSelection, type CuadroSelection, type Tarea } from '../../types'
+import { emptyCuadroSelection, type CuadroSelection, type ParteDeLabores, type Tarea } from '../../types'
 import { findTareaContinuableManual } from '../../utils/findTareaContinuable'
-import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 import CuadroSelector from './CuadroSelector'
+import ContinueTaskBanner from './ContinueTaskBanner'
 
 interface Props {
   fincaNombre: string
   tareasActivas: Tarea[]
+  partesAbiertos: ParteDeLabores[]
   onSubmit: (data: {
     cuadrilla: string
     tarea: string
@@ -20,7 +21,7 @@ interface Props {
   onBack: () => void
 }
 
-export default function ManualTaskForm({ fincaNombre, tareasActivas, onSubmit, onContinue, onBack }: Props) {
+export default function ManualTaskForm({ fincaNombre, tareasActivas, partesAbiertos, onSubmit, onContinue, onBack }: Props) {
   const [cuadrilla, setCuadrilla] = useState('')
   const [tarea, setTarea] = useState('')
   const [cantidadPersonas, setCantidadPersonas] = useState('')
@@ -120,21 +121,9 @@ export default function ManualTaskForm({ fincaNombre, tareasActivas, onSubmit, o
         </div>
       </div>
 
-      {tareaContinuable && (() => {
-        const progress = computeTareaProgress(tareaContinuable)
-        return (
-          <div className="card continue-task-banner">
-            <RefreshCw size={16} />
-            <div>
-              <strong>Ya existe esta tarea en progreso</strong>
-              <small>
-                {formatProgressLabel(progress)} · {(tareaContinuable.cuadros ?? []).join(', ')}
-              </small>
-              <small>Los cuadros nuevos se agregarán a la tarea existente.</small>
-            </div>
-          </div>
-        )
-      })()}
+      {tareaContinuable && (
+        <ContinueTaskBanner tarea={tareaContinuable} partesAbiertos={partesAbiertos} />
+      )}
 
       <button
         className="btn btn-primary"
@@ -147,7 +136,7 @@ export default function ManualTaskForm({ fincaNombre, tareasActivas, onSubmit, o
           ? 'Guardando...'
           : tareaContinuable
             ? 'Agregar cuadros a tarea existente'
-            : 'Iniciar Tarea'}
+            : 'Abrir parte de labores'}
       </button>
     </div>
   )

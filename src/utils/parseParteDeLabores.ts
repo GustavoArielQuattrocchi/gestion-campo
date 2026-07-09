@@ -1,6 +1,7 @@
 import type { Timestamp } from 'firebase/firestore'
-import type { ParteDeLabores, TareaTipo } from '../types'
+import type { ParteDeLabores, ParteEstado, TareaTipo, WeatherSnapshot } from '../types'
 import { isRendimientoUnidad } from './rendimiento'
+import { parteSortKey } from './parteEstado'
 
 function isTimestamp(value: unknown): value is Timestamp {
   return (
@@ -9,6 +10,26 @@ function isTimestamp(value: unknown): value is Timestamp {
     'toDate' in value &&
     typeof (value as Timestamp).toDate === 'function'
   )
+}
+
+function parseClima(raw: unknown): WeatherSnapshot | undefined {
+  if (!raw || typeof raw !== 'object') return undefined
+  const o = raw as Record<string, unknown>
+  const nums = ['temperatureMax', 'temperatureMin', 'precipitation', 'windSpeedMax', 'weatherCode'] as const
+  if (!nums.every(k => typeof o[k] === 'number' && Number.isFinite(o[k]))) return undefined
+  return {
+    temperatureMax: o.temperatureMax as number,
+    temperatureMin: o.temperatureMin as number,
+    precipitation: o.precipitation as number,
+    windSpeedMax: o.windSpeedMax as number,
+    weatherCode: o.weatherCode as number,
+  }
+}
+
+function parseEstado(raw: Record<string, unknown>): ParteEstado | null {
+  if (raw.estado === 'abierto' || raw.estado === 'cerrado') return raw.estado
+  if (isTimestamp(raw.cerradoEn)) return 'cerrado'
+  return null
 }
 
 export function parseParteDeLabores(
@@ -20,12 +41,22 @@ export function parseParteDeLabores(
   const tareaId = typeof raw.tareaId === 'string' ? raw.tareaId.trim() : ''
   const tarea = typeof raw.tarea === 'string' ? raw.tarea.trim() : ''
   const operador = typeof raw.operador === 'string' ? raw.operador.trim() : ''
-  const rendimiento = typeof raw.rendimiento === 'string' ? raw.rendimiento.trim() : ''
   const tipo = raw.tipo as TareaTipo
+  const estado = parseEstado(raw)
 
-  if (!fincaId || !fincaNombre || !tareaId || !tarea || !operador || !rendimiento) return null
+  if (!fincaId || !fincaNombre || !tareaId || !tarea || !operador || !estado) return null
   if (tipo !== 'manual' && tipo !== 'mecanica') return null
-  if (!isTimestamp(raw.cerradoEn)) return null
+
+  const rendimiento = typeof raw.rendimiento === 'string' ? raw.rendimiento.trim() : undefined
+  const cerradoEn = isTimestamp(raw.cerradoEn) ? raw.cerradoEn : undefined
+  const abiertoEn = isTimestamp(raw.abiertoEn)
+    ? raw.abiertoEn
+    : estado === 'cerrado' && cerradoEn
+      ? cerradoEn
+      : undefined
+
+  if (!abiertoEn) return null
+  if (estado === 'cerrado' && (!cerradoEn || !rendimiento)) return null
 
   const cuadros = Array.isArray(raw.cuadros)
     ? raw.cuadros.filter((c): c is string => typeof c === 'string' && c.trim().length > 0)
@@ -43,7 +74,7 @@ export function parseParteDeLabores(
     ? raw.rendimientoUnidad
     : undefined
 
-  const finalizoTarea = raw.finalizoTarea === true ? true : undefined
+  const clima = parseClima(raw.clima)
 
   const base: ParteDeLabores = {
     id,
@@ -53,13 +84,20 @@ export function parseParteDeLabores(
     tarea,
     tipo,
     operador,
-    rendimiento,
+    estado,
+    abiertoEn,
+    ...(cerradoEn ? { cerradoEn } : {}),
+    ...(rendimiento ? { rendimiento } : {}),
     ...(rendimientoCantidad !== undefined ? { rendimientoCantidad } : {}),
     ...(rendimientoUnidad ? { rendimientoUnidad } : {}),
-    ...(finalizoTarea ? { finalizoTarea } : {}),
     cuadros,
     ...(cuadroIds?.length ? { cuadroIds } : {}),
-    cerradoEn: raw.cerradoEn,
+    ...(typeof raw.horaInicio === 'string' && raw.horaInicio ? { horaInicio: raw.horaInicio } : {}),
+    ...(typeof raw.horaFin === 'string' && raw.horaFin ? { horaFin: raw.horaFin } : {}),
+    ...(typeof raw.observaciones === 'string' && raw.observaciones
+      ? { observaciones: raw.observaciones }
+      : {}),
+    ...(clima ? { clima } : {}),
   }
 
   if (tipo === 'manual') {
@@ -101,6 +139,6 @@ export function parsePartesFromSnapshot(
     }
   }
 
-  partes.sort((a, b) => b.cerradoEn.seconds - a.cerradoEn.seconds)
+  partes.sort((a, b) => parteSortKey(b) - parteSortKey(a))
   return { partes, invalid }
 }

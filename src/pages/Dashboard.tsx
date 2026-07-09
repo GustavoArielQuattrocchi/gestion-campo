@@ -195,6 +195,7 @@ export default function Dashboard() {
           <Suspense fallback={<ModalLoading />}>
             <PartesLaboresContent
               partes={partesGlobales}
+              tareas={tareasFiltradas}
               loading={partesLaboresLoading}
               error={partesLaboresError}
               parseWarning={partesLaboresParseWarning}

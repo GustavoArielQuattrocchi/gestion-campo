@@ -24,7 +24,7 @@ import {
   readFilterParam,
 } from '../utils/dashboardState'
 
-export type DashboardPanelKey = 'resumen' | 'filtros' | 'tareas' | 'qr_cuadros'
+export type DashboardPanelKey = 'resumen' | 'clima' | 'filtros' | 'tareas' | 'qr_cuadros'
 
 export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -48,6 +48,7 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [panelsOpen, setPanelsOpen] = useState<Record<DashboardPanelKey, boolean>>({
     resumen: true,
+    clima: true,
     filtros: true,
     tareas: false,
     qr_cuadros: false,
@@ -66,9 +67,20 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
   }, [filtroFinca, filtroTipo, filtroEstado])
 
   useEffect(() => {
+    const loadingTimeout = window.setTimeout(() => {
+      setLoading(current => {
+        if (!current) return current
+        setError(
+          'Firebase tardó en cargar las tareas. Probá recargar la página (Ctrl+Shift+R).',
+        )
+        return false
+      })
+    }, 30_000)
+
     const unsubscribe = onSnapshot(
       collection(db, 'tareas'),
       snapshot => {
+        window.clearTimeout(loadingTimeout)
         const { tareas: data, invalid } = parseTareasFromSnapshot(
           snapshot.docs.map(d => ({ id: d.id, data: () => d.data() as Record<string, unknown> })),
         )
@@ -79,6 +91,7 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
         setIndexCreateUrl(null)
       },
       err => {
+        window.clearTimeout(loadingTimeout)
         console.error('[Dashboard] Error en onSnapshot:', err)
         const parsed = parseFirestoreError(err.message ?? 'Error desconocido al leer tareas')
         setError(parsed.message)
@@ -89,7 +102,10 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
       },
     )
 
-    return unsubscribe
+    return () => {
+      window.clearTimeout(loadingTimeout)
+      unsubscribe()
+    }
   }, [])
 
   const tareasFiltradas = useMemo(

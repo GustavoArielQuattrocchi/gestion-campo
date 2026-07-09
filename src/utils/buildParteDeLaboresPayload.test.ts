@@ -1,6 +1,10 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { buildParteDeLaboresPayload } from './buildParteDeLaboresPayload.ts'
+import {
+  buildParteAbiertoPayload,
+  buildParteCierreUpdate,
+  buildParteDeLaboresPayload,
+} from './buildParteDeLaboresPayload.ts'
 import type { TareaMecanica, TareaManual } from '../types.ts'
 
 const mockTs = { toDate: () => new Date('2026-06-25T12:00:00Z') } as import('firebase/firestore').Timestamp
@@ -37,9 +41,31 @@ const mecanica: TareaMecanica = {
   maquinariaId: 'FOA-2',
 }
 
+describe('buildParteAbiertoPayload', () => {
+  it('arma parte abierto sin rendimiento', () => {
+    const payload = buildParteAbiertoPayload(manual, 'María', mockTs)
+    assert.equal(payload.estado, 'abierto')
+    assert.equal(payload.abiertoEn, mockTs)
+    assert.equal('rendimiento' in payload, false)
+    assert.equal('cerradoEn' in payload, false)
+    assert.equal(payload.operador, 'María')
+  })
+})
+
+describe('buildParteCierreUpdate', () => {
+  it('marca cerrado con rendimiento', () => {
+    const update = buildParteCierreUpdate('12 jornal', mockTs, 12, 'jornal')
+    assert.equal(update.estado, 'cerrado')
+    assert.equal(update.rendimiento, '12 jornal')
+    assert.equal(update.rendimientoCantidad, 12)
+    assert.equal(update.rendimientoUnidad, 'jornal')
+  })
+})
+
 describe('buildParteDeLaboresPayload', () => {
-  it('arma parte manual con operador del cierre', () => {
+  it('arma parte manual cerrado con operador del cierre', () => {
     const payload = buildParteDeLaboresPayload(manual, ' 3 ha podadas ', 'María', mockTs)
+    assert.equal(payload.estado, 'cerrado')
     assert.equal(payload.operador, 'María')
     assert.equal(payload.rendimiento, '3 ha podadas')
     assert.equal(payload.cuadrilla, 'Cuadrilla Propia')
@@ -60,21 +86,5 @@ describe('buildParteDeLaboresPayload', () => {
     assert.equal(payload.rendimiento, '12 jornal')
     assert.equal(payload.rendimientoCantidad, 12)
     assert.equal(payload.rendimientoUnidad, 'jornal')
-  })
-
-  it('omite cantidad y unidad si no se proveen (legacy)', () => {
-    const payload = buildParteDeLaboresPayload(manual, '3 ha', 'María', mockTs)
-    assert.equal('rendimientoCantidad' in payload, false)
-    assert.equal('rendimientoUnidad' in payload, false)
-  })
-
-  it('marca finalizoTarea cuando el cierre finaliza la tarea', () => {
-    const payload = buildParteDeLaboresPayload(manual, '12 jornal', 'María', mockTs, 12, 'jornal', true)
-    assert.equal(payload.finalizoTarea, true)
-  })
-
-  it('omite finalizoTarea en un cierre de día normal', () => {
-    const payload = buildParteDeLaboresPayload(manual, '12 jornal', 'María', mockTs, 12, 'jornal', false)
-    assert.equal('finalizoTarea' in payload, false)
   })
 })

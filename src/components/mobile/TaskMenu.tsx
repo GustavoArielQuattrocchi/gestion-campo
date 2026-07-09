@@ -1,11 +1,12 @@
-import { ChevronLeft, Play, Square, AlertTriangle, CheckCircle2, ChevronRight } from 'lucide-react'
-import type { Tarea } from '../../types'
-import { tieneParteLaboresHoy } from '../../utils/parteLabores'
+import { ChevronLeft, Play, Square, AlertTriangle, Clock, ChevronRight } from 'lucide-react'
+import type { ParteDeLabores, Tarea } from '../../types'
+import { tieneParteAbierto } from '../../utils/parteEstado'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 
 interface Props {
   fincaNombre: string
   tareasActivas: Tarea[]
+  partesAbiertos: ParteDeLabores[]
   pendientesCierreCount: number
   onSelectInicio: () => void
   onSelectFin: () => void
@@ -17,6 +18,7 @@ interface Props {
 export default function TaskMenu({
   fincaNombre,
   tareasActivas,
+  partesAbiertos,
   pendientesCierreCount,
   onSelectInicio,
   onSelectFin,
@@ -39,7 +41,7 @@ export default function TaskMenu({
           <div className="card-title">Tareas activas</div>
           <ul className="jornada-list">
             {tareasActivas.map(tarea => {
-              const cerradoHoy = tieneParteLaboresHoy(tarea)
+              const enJornada = tieneParteAbierto(partesAbiertos, tarea.id)
               const progress = computeTareaProgress(tarea)
               const ejecutor =
                 tarea.tipo === 'manual'
@@ -49,7 +51,7 @@ export default function TaskMenu({
                     : `${tarea.persona} · ${tarea.maquinaria}`
 
               return (
-                <li key={tarea.id} className={`jornada-item ${cerradoHoy ? 'jornada-item--done' : ''}`}>
+                <li key={tarea.id} className="jornada-item">
                   <div className="jornada-item-info">
                     <strong>{tarea.tarea}</strong>
                     <span className="jornada-item-meta">{ejecutor}</span>
@@ -65,19 +67,22 @@ export default function TaskMenu({
                       </span>
                     </div>
                   </div>
-                  {cerradoHoy ? (
-                    <span className="jornada-badge-done">
-                      <CheckCircle2 size={14} /> Cerrado
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      className="jornada-btn-cerrar"
-                      onClick={() => onCerrarTarea(tarea.id)}
-                    >
-                      Cerrar parte <ChevronRight size={14} />
-                    </button>
-                  )}
+                  <div className="jornada-item-actions">
+                    {enJornada && (
+                      <span className="jornada-badge-jornada">
+                        <Clock size={14} /> En jornada
+                      </span>
+                    )}
+                    {enJornada && (
+                      <button
+                        type="button"
+                        className="jornada-btn-cerrar"
+                        onClick={() => onCerrarTarea(tarea.id)}
+                      >
+                        Cerrar jornada <ChevronRight size={14} />
+                      </button>
+                    )}
+                  </div>
                 </li>
               )
             })}
@@ -91,8 +96,8 @@ export default function TaskMenu({
             <Play size={24} />
           </div>
           <div className="option-card-content">
-            <h3>Cargar tarea</h3>
-            <p>Registrar una nueva tarea en campo</p>
+            <h3>Abrir parte de labores</h3>
+            <p>Iniciar jornada y registrar tarea en campo</p>
           </div>
         </button>
 
@@ -102,7 +107,7 @@ export default function TaskMenu({
           </div>
           <div className="option-card-content">
             <h3>Cierre del día</h3>
-            <p>Registrar rendimiento y cerrar parte de labores</p>
+            <p>Cerrar parte abierto con el rendimiento del día</p>
           </div>
           {pendientesCierreCount > 0 && (
             <span className="option-card-badge">{pendientesCierreCount}</span>

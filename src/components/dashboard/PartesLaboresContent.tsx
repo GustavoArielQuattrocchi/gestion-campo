@@ -1,12 +1,19 @@
 import { useMemo, useState } from 'react'
-import { Users, Cog, Pencil, Trash2, Check, X } from 'lucide-react'
-import type { ParteDeLabores, RendimientoUnidad } from '../../types'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
+import { Users, Cog, Pencil, Trash2, Check, X, Clock, History } from 'lucide-react'
+import type { ParteDeLabores, RendimientoUnidad, Tarea } from '../../types'
 import { RENDIMIENTO_UNIDADES } from '../../types'
 import { formatTimestamp } from '../../utils/formatTimestamp'
 import { deleteParte, updateParteRendimiento } from '../../utils/partesLaboresMutations'
+import { groupPartesForDashboard, historicoPorDia } from '../../utils/parteEstado'
+import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
+import TaskProgressBar from './TaskProgressBar'
+import ParteWeather from './ParteWeather'
 
 interface Props {
   partes: ParteDeLabores[]
+  tareas: Tarea[]
   loading: boolean
   error: string | null
   parseWarning: string | null
@@ -27,8 +34,177 @@ function resumenParte(parte: ParteDeLabores): string {
   return `${parte.persona} · ${parte.maquinaria}`
 }
 
+function ParteCard({
+  parte,
+  tarea,
+  editingId,
+  editCantidad,
+  editUnidad,
+  busyId,
+  editValido,
+  onStartEdit,
+  onCancelEdit,
+  onSaveEdit,
+  onDelete,
+  onEditCantidad,
+  onEditUnidad,
+}: {
+  parte: ParteDeLabores
+  tarea?: Tarea
+  editingId: string | null
+  editCantidad: string
+  editUnidad: RendimientoUnidad | ''
+  busyId: string | null
+  editValido: boolean
+  onStartEdit: (parte: ParteDeLabores) => void
+  onCancelEdit: () => void
+  onSaveEdit: (parte: ParteDeLabores) => void
+  onDelete: (parte: ParteDeLabores) => void
+  onEditCantidad: (value: string) => void
+  onEditUnidad: (value: RendimientoUnidad | '') => void
+}) {
+  const progress = tarea ? computeTareaProgress(tarea) : null
+  const abierto = parte.estado === 'abierto'
+
+  return (
+    <li className={`parte-labores-item ${abierto ? 'parte-labores-item--abierto' : ''}`}>
+      <div className="parte-labores-item-header">
+        <div>
+          <strong>{parte.tarea}</strong>
+          <span className="parte-labores-meta">
+            {parte.fincaNombre}
+            {abierto
+              ? ` · Abierto ${formatTimestamp(parte.abiertoEn, 'dd/MM/yyyy HH:mm')}`
+              : parte.cerradoEn
+                ? ` · Cerrado ${formatTimestamp(parte.cerradoEn, 'dd/MM/yyyy HH:mm')}`
+                : ''}
+          </span>
+        </div>
+        <span className={`badge ${abierto ? 'badge-orange' : parte.tipo === 'manual' ? 'badge-green' : 'badge-blue'}`}>
+          {abierto ? (
+            <>
+              <Clock size={10} /> En ejecución
+            </>
+          ) : parte.tipo === 'manual' ? (
+            <>
+              <Users size={10} /> Manual
+            </>
+          ) : (
+            <>
+              <Cog size={10} /> Mec.
+            </>
+          )}
+        </span>
+      </div>
+      <p className="parte-labores-operador">
+        Operador: <strong>{parte.operador}</strong>
+      </p>
+      <p className="parte-labores-detalle">{resumenParte(parte)}</p>
+      <p className="parte-labores-cuadros">
+        Cuadros: {(parte.cuadros ?? []).join(', ') || '—'}
+      </p>
+
+      <ParteWeather parte={parte} />
+
+      {progress && (
+        <div className="parte-labores-progress">
+          <span className="parte-labores-progress-label">Avance de tarea</span>
+          <TaskProgressBar value={progress.porcentaje} label={formatProgressLabel(progress)} />
+        </div>
+      )}
+
+      {!abierto && editingId === parte.id ? (
+        <div className="parte-labores-edit">
+          <div className="parte-labores-edit-fields">
+            <input
+              type="number"
+              min="0"
+              step="any"
+              className="form-input"
+              placeholder="Cantidad"
+              value={editCantidad}
+              onChange={e => onEditCantidad(e.target.value)}
+              disabled={busyId === parte.id}
+            />
+            <select
+              className="form-input"
+              value={editUnidad}
+              onChange={e => onEditUnidad(e.target.value as RendimientoUnidad | '')}
+              disabled={busyId === parte.id}
+            >
+              <option value="" disabled>
+                Unidad…
+              </option>
+              {RENDIMIENTO_UNIDADES.map(u => (
+                <option key={u} value={u}>
+                  {u}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="parte-labores-edit-actions">
+            <button
+              type="button"
+              className="btn-icon btn-icon--confirm"
+              onClick={() => onSaveEdit(parte)}
+              disabled={!editValido || busyId === parte.id}
+              title="Guardar"
+            >
+              <Check size={16} /> Guardar
+            </button>
+            <button
+              type="button"
+              className="btn-icon"
+              onClick={onCancelEdit}
+              disabled={busyId === parte.id}
+              title="Cancelar"
+            >
+              <X size={16} /> Cancelar
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="parte-labores-footer">
+          {parte.rendimiento ? (
+            <p className="parte-labores-rendimiento">
+              <span>Rendimiento:</span> {parte.rendimiento}
+            </p>
+          ) : (
+            <p className="parte-labores-rendimiento parte-labores-rendimiento--pending">
+              Pendiente de cierre con rendimiento desde campo
+            </p>
+          )}
+          {!abierto && (
+            <div className="parte-labores-actions">
+              <button
+                type="button"
+                className="btn-icon"
+                onClick={() => onStartEdit(parte)}
+                disabled={busyId === parte.id}
+                title="Editar rendimiento"
+              >
+                <Pencil size={16} /> Editar
+              </button>
+              <button
+                type="button"
+                className="btn-icon btn-icon--danger"
+                onClick={() => onDelete(parte)}
+                disabled={busyId === parte.id}
+                title="Eliminar parte"
+              >
+                <Trash2 size={16} /> Eliminar
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </li>
+  )
+}
+
 export default function PartesLaboresContent({
   partes,
+  tareas,
   loading,
   error,
   parseWarning,
@@ -38,6 +214,8 @@ export default function PartesLaboresContent({
   onFiltroFincaChange,
   onFiltroOperadorChange,
 }: Props) {
+  const tareasById = useMemo(() => new Map(tareas.map(t => [t.id, t])), [tareas])
+
   const operadoresDisponibles = useMemo(() => {
     const set = new Set(partes.map(p => p.operador))
     return [...set].sort()
@@ -48,6 +226,21 @@ export default function PartesLaboresContent({
   const [editUnidad, setEditUnidad] = useState<RendimientoUnidad | ''>('')
   const [busyId, setBusyId] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+
+  const partesFiltradas = useMemo(() => {
+    return partes.filter(p => {
+      if (filtroFinca !== 'todas' && p.fincaNombre !== filtroFinca) return false
+      if (filtroOperador !== 'todos' && p.operador !== filtroOperador) return false
+      return true
+    })
+  }, [partes, filtroFinca, filtroOperador])
+
+  const { enEjecucion, cerradosHoy, historico } = useMemo(
+    () => groupPartesForDashboard(partesFiltradas),
+    [partesFiltradas],
+  )
+
+  const historicoAgrupado = useMemo(() => historicoPorDia(historico), [historico])
 
   const startEdit = (parte: ParteDeLabores) => {
     setActionError(null)
@@ -105,13 +298,19 @@ export default function PartesLaboresContent({
     }
   }
 
-  const partesFiltradas = useMemo(() => {
-    return partes.filter(p => {
-      if (filtroFinca !== 'todas' && p.fincaNombre !== filtroFinca) return false
-      if (filtroOperador !== 'todos' && p.operador !== filtroOperador) return false
-      return true
-    })
-  }, [partes, filtroFinca, filtroOperador])
+  const cardProps = {
+    editingId,
+    editCantidad,
+    editUnidad,
+    busyId,
+    editValido,
+    onStartEdit: startEdit,
+    onCancelEdit: cancelEdit,
+    onSaveEdit: saveEdit,
+    onDelete: confirmDelete,
+    onEditCantidad: setEditCantidad,
+    onEditUnidad: setEditUnidad,
+  }
 
   if (loading) {
     return <p className="dashboard-panel-empty">Cargando partes de labores...</p>
@@ -123,10 +322,7 @@ export default function PartesLaboresContent({
 
   return (
     <>
-      {parseWarning && (
-        <p className="dashboard-panel-warning">{parseWarning}</p>
-      )}
-
+      {parseWarning && <p className="dashboard-panel-warning">{parseWarning}</p>}
       {actionError && (
         <p className="dashboard-panel-empty dashboard-panel-empty--error">{actionError}</p>
       )}
@@ -157,122 +353,72 @@ export default function PartesLaboresContent({
       {partesFiltradas.length === 0 ? (
         <p className="dashboard-panel-empty">
           {partes.length === 0
-            ? 'Aún no hay partes de labores cerrados desde campo.'
+            ? 'Aún no hay partes de labores registrados desde campo.'
             : 'Ningún parte coincide con los filtros seleccionados.'}
         </p>
       ) : (
-        <ul className="partes-labores-list">
-          {partesFiltradas.map(parte => (
-            <li key={parte.id} className="parte-labores-item">
-              <div className="parte-labores-item-header">
-                <div>
-                  <strong>{parte.tarea}</strong>
-                  <span className="parte-labores-meta">
-                    {parte.fincaNombre} · {formatTimestamp(parte.cerradoEn, 'dd/MM/yyyy HH:mm')}
-                  </span>
-                </div>
-                <span
-                  className={`badge ${parte.tipo === 'manual' ? 'badge-green' : 'badge-blue'}`}
-                >
-                  {parte.tipo === 'manual' ? (
-                    <>
-                      <Users size={10} /> Manual
-                    </>
-                  ) : (
-                    <>
-                      <Cog size={10} /> Mec.
-                    </>
-                  )}
-                </span>
-              </div>
-              <p className="parte-labores-operador">
-                Operador: <strong>{parte.operador}</strong>
-              </p>
-              <p className="parte-labores-detalle">{resumenParte(parte)}</p>
-              <p className="parte-labores-cuadros">
-                Cuadros: {(parte.cuadros ?? []).join(', ') || '—'}
-              </p>
+        <>
+          {enEjecucion.length > 0 && (
+            <section className="partes-labores-section">
+              <h3 className="partes-labores-section-title">
+                <Clock size={16} /> En ejecución hoy ({enEjecucion.length})
+              </h3>
+              <ul className="partes-labores-list">
+                {enEjecucion.map(parte => (
+                  <ParteCard
+                    key={parte.id}
+                    parte={parte}
+                    tarea={tareasById.get(parte.tareaId)}
+                    {...cardProps}
+                  />
+                ))}
+              </ul>
+            </section>
+          )}
 
-              {editingId === parte.id ? (
-                <div className="parte-labores-edit">
-                  <div className="parte-labores-edit-fields">
-                    <input
-                      type="number"
-                      min="0"
-                      step="any"
-                      className="form-input"
-                      placeholder="Cantidad"
-                      value={editCantidad}
-                      onChange={e => setEditCantidad(e.target.value)}
-                      disabled={busyId === parte.id}
-                    />
-                    <select
-                      className="form-input"
-                      value={editUnidad}
-                      onChange={e => setEditUnidad(e.target.value as RendimientoUnidad | '')}
-                      disabled={busyId === parte.id}
-                    >
-                      <option value="" disabled>
-                        Unidad…
-                      </option>
-                      {RENDIMIENTO_UNIDADES.map(u => (
-                        <option key={u} value={u}>
-                          {u}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="parte-labores-edit-actions">
-                    <button
-                      type="button"
-                      className="btn-icon btn-icon--confirm"
-                      onClick={() => saveEdit(parte)}
-                      disabled={!editValido || busyId === parte.id}
-                      title="Guardar"
-                    >
-                      <Check size={16} /> Guardar
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-icon"
-                      onClick={cancelEdit}
-                      disabled={busyId === parte.id}
-                      title="Cancelar"
-                    >
-                      <X size={16} /> Cancelar
-                    </button>
-                  </div>
+          {cerradosHoy.length > 0 && (
+            <section className="partes-labores-section">
+              <h3 className="partes-labores-section-title">
+                Cerrados hoy ({cerradosHoy.length})
+              </h3>
+              <ul className="partes-labores-list">
+                {cerradosHoy.map(parte => (
+                  <ParteCard
+                    key={parte.id}
+                    parte={parte}
+                    tarea={tareasById.get(parte.tareaId)}
+                    {...cardProps}
+                  />
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {historico.length > 0 && (
+            <section className="partes-labores-section">
+              <h3 className="partes-labores-section-title">
+                <History size={16} /> Días anteriores ({historico.length})
+              </h3>
+              {[...historicoAgrupado.entries()].map(([dia, items]) => (
+                <div key={dia} className="partes-labores-dia-grupo">
+                  <h4 className="partes-labores-dia-titulo">
+                    {format(new Date(`${dia}T12:00:00`), "EEEE d 'de' MMMM", { locale: es })}
+                  </h4>
+                  <ul className="partes-labores-list">
+                    {items.map(parte => (
+                      <ParteCard
+                        key={parte.id}
+                        parte={parte}
+                        tarea={tareasById.get(parte.tareaId)}
+                        {...cardProps}
+                      />
+                    ))}
+                  </ul>
                 </div>
-              ) : (
-                <div className="parte-labores-footer">
-                  <p className="parte-labores-rendimiento">
-                    <span>Rendimiento:</span> {parte.rendimiento}
-                  </p>
-                  <div className="parte-labores-actions">
-                    <button
-                      type="button"
-                      className="btn-icon"
-                      onClick={() => startEdit(parte)}
-                      disabled={busyId === parte.id}
-                      title="Editar rendimiento"
-                    >
-                      <Pencil size={16} /> Editar
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-icon btn-icon--danger"
-                      onClick={() => confirmDelete(parte)}
-                      disabled={busyId === parte.id}
-                      title="Eliminar parte"
-                    >
-                      <Trash2 size={16} /> Eliminar
-                    </button>
-                  </div>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
+              ))}
+            </section>
+          )}
+        </>
       )}
     </>
   )

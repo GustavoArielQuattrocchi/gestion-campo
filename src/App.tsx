@@ -1,11 +1,12 @@
-import { lazy, Suspense } from 'react'
+import { Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import AdminGate from './components/auth/AdminGate'
+import { lazyWithRetry } from './utils/lazyWithRetry'
 
-const MobileApp = lazy(() => import('./pages/MobileApp'))
-const Dashboard = lazy(() => import('./pages/Dashboard'))
-const OrdenesCuraPage = lazy(() => import('./modules/ordenesCura/OrdenesCuraPage'))
-const CuadroPublicPage = lazy(() => import('./pages/CuadroPublicPage'))
+const MobileApp = lazyWithRetry(() => import('./pages/MobileApp'), 'mobile')
+const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'), 'dashboard')
+const OrdenesCuraPage = lazyWithRetry(() => import('./modules/ordenesCura/OrdenesCuraPage'), 'ordenes-cura')
+const CuadroPublicPage = lazyWithRetry(() => import('./pages/CuadroPublicPage'), 'cuadro-public')
 
 function RouteFallback() {
   return (

@@ -24,7 +24,7 @@ export default function EndTaskList({
           <ChevronLeft size={18} /> Volver
         </button>
         <h1>Cierre del día</h1>
-        <p>{fincaNombre} — Tareas pendientes de cierre</p>
+        <p>{fincaNombre} — Partes abiertos pendientes de cierre</p>
       </div>
 
       {tareas.length === 0 ? (

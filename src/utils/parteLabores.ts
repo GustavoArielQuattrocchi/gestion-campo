@@ -1,19 +1,12 @@
-import { isSameDay } from 'date-fns'
-import type { Tarea } from '../types'
+import type { ParteDeLabores, Tarea } from '../types'
+import { filterTareasConParteAbierto, tieneParteAbierto } from './parteEstado'
 
-/** True si la tarea ya tiene un cierre de parte de labores registrado hoy. */
-export function tieneParteLaboresHoy(tarea: Tarea, referenceDate = new Date()): boolean {
-  if (!tarea.rendimientosDiarios?.length) return false
+export { filterTareasConParteAbierto, tieneParteAbierto }
 
-  return tarea.rendimientosDiarios.some(r => {
-    if (!r.fecha?.toDate) return false
-    return isSameDay(r.fecha.toDate(), referenceDate)
-  })
-}
-
+/** Tareas con parte abierto pendiente de cierre de jornada. */
 export function filterTareasPendientesParteLabores(
   tareas: Tarea[],
-  referenceDate = new Date(),
+  partesAbiertos: ParteDeLabores[],
 ): Tarea[] {
-  return tareas.filter(t => !tieneParteLaboresHoy(t, referenceDate))
+  return filterTareasConParteAbierto(tareas, partesAbiertos)
 }

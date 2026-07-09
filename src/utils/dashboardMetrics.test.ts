@@ -32,6 +32,7 @@ function manual(
 }
 
 function parteManual(overrides: Partial<ParteDeLabores> & { id: string }): ParteDeLabores {
+  const cerradoEn = mockTs('2024-07-01T18:00:00')
   return {
     tareaId: '1',
     fincaId: 'foa',
@@ -39,11 +40,13 @@ function parteManual(overrides: Partial<ParteDeLabores> & { id: string }): Parte
     tarea: 'Poda',
     tipo: 'manual',
     operador: 'Juan',
+    estado: 'cerrado',
+    abiertoEn: cerradoEn,
     rendimiento: '10 hileras',
     cuadros: [],
     cuadrilla: 'C1',
     cantidadPersonas: 8,
-    cerradoEn: mockTs('2024-07-01T18:00:00'),
+    cerradoEn,
     ...overrides,
   }
 }

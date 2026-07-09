@@ -27,6 +27,13 @@ export function isAdminUser(user: User | null): boolean {
   )
 }
 
+function isAdminRoute(): boolean {
+  const path = window.location.pathname
+  return path.startsWith('/escritorio') || path.startsWith('/ordenes-de-cura')
+}
+
+const AUTH_INIT_TIMEOUT_MS = 12_000
+
 interface AuthContextValue {
   user: User | null
   ready: boolean
@@ -57,7 +64,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   useEffect(() => {
+    let settled = false
+
+    const timeout = window.setTimeout(() => {
+      if (settled) return
+      setState(current =>
+        current.ready
+          ? current
+          : {
+              user: null,
+              ready: true,
+              error:
+                'Firebase tardó demasiado en responder. Revisá tu conexión o recargá con Ctrl+Shift+R para limpiar la caché.',
+            },
+      )
+    }, AUTH_INIT_TIMEOUT_MS)
+
     const unsubscribe = onAuthStateChanged(auth, async user => {
+      settled = true
+      window.clearTimeout(timeout)
+
       if (user) {
         setState({ user, ready: true, error: null })
         return
@@ -70,6 +96,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           error:
             'Sin conexión. Abrí la app con internet al menos una vez para activarla en este dispositivo.',
         })
+        return
+      }
+
+      if (isAdminRoute()) {
+        setState({ user: null, ready: true, error: null })
         return
       }
 
@@ -86,7 +117,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     })
 
-    return unsubscribe
+    return () => {
+      window.clearTimeout(timeout)
+      unsubscribe()
+    }
   }, [])
 
   const loginAdmin = useCallback(async (email: string, password: string) => {

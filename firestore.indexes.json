@@ -60,6 +60,22 @@
         { "fieldPath": "estado", "order": "ASCENDING" },
         { "fieldPath": "fechaInicio", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "tareas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fincaId", "order": "ASCENDING" },
+        { "fieldPath": "estado", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "partes_labores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fincaId", "order": "ASCENDING" },
+        { "fieldPath": "estado", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

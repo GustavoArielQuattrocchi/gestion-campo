@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import type { TareaManual } from '../types.ts'
-import { filterTareasPendientesParteLabores, tieneParteLaboresHoy } from './parteLabores.ts'
+import { filterTareasPendientesParteLabores } from './parteLabores.ts'
+import type { ParteDeLabores } from '../types.ts'
 
 const mockTs = (iso: string) =>
-  ({ toDate: () => new Date(iso) }) as import('firebase/firestore').Timestamp
+  ({ toDate: () => new Date(iso), seconds: Math.floor(new Date(iso).getTime() / 1000) }) as import('firebase/firestore').Timestamp
 
 const baseTarea: TareaManual = {
   id: 't1',
@@ -20,48 +21,34 @@ const baseTarea: TareaManual = {
   cantidadPersonas: 4,
 }
 
-describe('tieneParteLaboresHoy', () => {
-  it('devuelve false sin rendimientos diarios', () => {
-    assert.equal(tieneParteLaboresHoy(baseTarea, new Date('2026-06-25T15:00:00Z')), false)
-  })
-
-  it('detecta parte cerrado hoy', () => {
-    const tarea = {
-      ...baseTarea,
-      rendimientosDiarios: [
-        { fecha: mockTs('2026-06-24T12:00:00Z'), texto: 'ayer', operador: 'Juan' },
-        { fecha: mockTs('2026-06-25T14:00:00Z'), texto: 'hoy', operador: 'Juan' },
-      ],
-    }
-    assert.equal(tieneParteLaboresHoy(tarea, new Date('2026-06-25T20:00:00Z')), true)
-  })
-
-  it('permite cierre si el último parte fue otro día', () => {
-    const tarea = {
-      ...baseTarea,
-      rendimientosDiarios: [
-        { fecha: mockTs('2026-06-24T12:00:00Z'), texto: 'ayer', operador: 'Juan' },
-      ],
-    }
-    assert.equal(tieneParteLaboresHoy(tarea, new Date('2026-06-25T10:00:00Z')), false)
-  })
-})
+function parteAbierto(tareaId: string): ParteDeLabores {
+  return {
+    id: 'p1',
+    tareaId,
+    fincaId: 'FOA',
+    fincaNombre: 'FOA',
+    tarea: 'Poda',
+    tipo: 'manual',
+    operador: 'Juan',
+    estado: 'abierto',
+    abiertoEn: mockTs('2026-06-25T08:00:00Z'),
+    cuadros: [],
+    cuadrilla: 'Cuadrilla Propia',
+    cantidadPersonas: 4,
+  }
+}
 
 describe('filterTareasPendientesParteLabores', () => {
-  it('excluye tareas con parte cerrado hoy', () => {
-    const hoy = new Date('2026-06-25T12:00:00Z')
-    const tareas = [
-      baseTarea,
-      {
-        ...baseTarea,
-        id: 't2',
-        rendimientosDiarios: [
-          { fecha: mockTs('2026-06-25T09:00:00Z'), texto: 'ok', operador: 'Juan' },
-        ],
-      },
-    ]
-    const pendientes = filterTareasPendientesParteLabores(tareas, hoy)
+  it('incluye solo tareas con parte abierto', () => {
+    const tareas = [baseTarea, { ...baseTarea, id: 't2' }]
+    const partes = [parteAbierto('t1')]
+    const pendientes = filterTareasPendientesParteLabores(tareas, partes)
     assert.equal(pendientes.length, 1)
     assert.equal(pendientes[0].id, 't1')
+  })
+
+  it('excluye tareas sin parte abierto', () => {
+    const pendientes = filterTareasPendientesParteLabores([baseTarea], [])
+    assert.equal(pendientes.length, 0)
   })
 })

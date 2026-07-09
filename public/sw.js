@@ -1,5 +1,5 @@
-const SHELL_CACHE = 'gestion-campo-shell-v2'
-const RUNTIME_CACHE = 'gestion-campo-runtime-v2'
+const SHELL_CACHE = 'gestion-campo-shell-v3'
+const RUNTIME_CACHE = 'gestion-campo-runtime-v3'
 const SHELL = ['/', '/index.html', '/favicon.svg', '/manifest.webmanifest', '/campo']
 
 function isSameOrigin(request) {
@@ -61,13 +61,10 @@ self.addEventListener('fetch', (event) => {
 
   if (!isCacheableAsset(url)) return
 
+  // Network-first: tras un deploy, index.html pide chunks nuevos; cache-first rompía el escritorio.
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const network = fetch(event.request)
-        .then((response) => cacheResponse(RUNTIME_CACHE, event.request, response))
-        .catch(() => cached)
-
-      return cached || network
-    }),
+    fetch(event.request)
+      .then((response) => cacheResponse(RUNTIME_CACHE, event.request, response))
+      .catch(() => caches.match(event.request)),
   )
 })

@@ -127,7 +127,9 @@ export interface TareaMecanica extends TareaBase {
 
 export type Tarea = TareaManual | TareaMecanica
 
-/** Parte de labores cerrado desde campo al registrar el cierre del día. */
+export type ParteEstado = 'abierto' | 'cerrado'
+
+/** Parte de labores: se abre al iniciar jornada en campo y se cierra con rendimiento al finalizar. */
 export interface ParteDeLabores {
   id: string
   tareaId: string
@@ -136,7 +138,13 @@ export interface ParteDeLabores {
   tarea: string
   tipo: TareaTipo
   operador: string
-  rendimiento: string
+  estado: ParteEstado
+  /** Inicio de jornada (apertura del parte en campo). */
+  abiertoEn: Timestamp
+  /** Cierre con rendimiento (fin de jornada o día siguiente). */
+  cerradoEn?: Timestamp
+  /** Texto de rendimiento; obligatorio cuando estado es cerrado. */
+  rendimiento?: string
   /** Valor numérico del rendimiento (documentos nuevos). */
   rendimientoCantidad?: number
   /** Unidad de medida del rendimiento (documentos nuevos). */
@@ -157,5 +165,4 @@ export interface ParteDeLabores {
   /** Rendimiento por cuadro individual (opcional). Clave = cuadroId, valor = cantidad. */
   rendimientoPorCuadro?: Record<string, number>
   clima?: WeatherSnapshot
-  cerradoEn: Timestamp
 }
