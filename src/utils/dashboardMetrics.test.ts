@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
+import { format } from 'date-fns'
 import type { ParteDeLabores, Tarea } from '../types'
 import {
   aggregateManualStaffingFromPartes,
@@ -151,19 +152,18 @@ describe('computeDashboardStats', () => {
     assert.equal(stats.finalizadas, 2)
     assert.equal(stats.enProgreso, 1)
     assert.equal(stats.rendimientoPorTarea, 1)
-    assert.equal(stats.personasDias, 12)
-    assert.equal(stats.personasPorDia, '12.0')
+    assert.equal(stats.dotacionHoy, 0)
     assert.equal(getManuales(tareas).length, 2)
   })
 
-  it('usa partes de labores para personas-día', () => {
+  it('usa partes de labores para dotación de hoy', () => {
+    const hoy = format(new Date(), 'yyyy-MM-dd')
     const tareas: Tarea[] = [manual({ id: '1', cantidadPersonas: 5 })]
     const partes = [
-      parteManual({ id: 'p1', cantidadPersonas: 12, cerradoEn: mockTs('2024-07-09T10:00:00') }),
-      parteManual({ id: 'p2', cantidadPersonas: 12, cerradoEn: mockTs('2024-07-10T10:00:00') }),
+      parteManual({ id: 'p1', cantidadPersonas: 12, abiertoEn: mockTs(`${hoy}T10:00:00`) }),
+      parteManual({ id: 'p2', cantidadPersonas: 8, abiertoEn: mockTs('2024-07-10T10:00:00') }),
     ]
     const stats = computeDashboardStats(tareas, partes)
-    assert.equal(stats.personasDias, 24)
-    assert.equal(stats.personasPorDia, '12.0')
+    assert.equal(stats.dotacionHoy, 12)
   })
 })

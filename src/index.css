@@ -1493,6 +1493,58 @@ button.task-list-item {
   margin-bottom: 12px;
 }
 
+.dotacion-resumen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dotacion-resumen-card {
+  padding: 12px 14px;
+  border: 1px solid var(--gray-100);
+  border-radius: var(--radius-sm);
+  background: var(--gray-50);
+}
+
+.dotacion-resumen-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-600);
+  margin-bottom: 4px;
+}
+
+.dotacion-resumen-value {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gray-900);
+  line-height: 1.1;
+}
+
+.dotacion-resumen-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--gray-500);
+}
+
+.dotacion-resumen-fincas {
+  margin: 0;
+  font-size: 13px;
+  color: var(--gray-700);
+  line-height: 1.4;
+}
+
+.dotacion-filters {
+  margin-bottom: 16px;
+}
+
+.dotacion-fecha-input {
+  width: 100%;
+}
+
 .partes-labores-filter {
   display: flex;
   flex-direction: column;

@@ -1,14 +1,14 @@
 import { format } from 'date-fns'
 import type { ParteDeLabores, Tarea } from '../types'
+import { computeDotacionHoy } from './dotacion'
 
 export interface DashboardStats {
   total: number
   finalizadas: number
   enProgreso: number
-  personasPorDia: string
+  /** Dotación relevada hoy desde campo (manual + mecánica). */
+  dotacionHoy: number
   rendimientoPorTarea: number
-  /** Suma acumulada de personas-día (cada cierre manual desde campo). */
-  personasDias: number
 }
 
 export function getFinalizadas(tareas: Tarea[]): Tarea[] {
@@ -136,15 +136,12 @@ export function computeDashboardStats(
 ): DashboardStats {
   const finalizadas = getFinalizadas(tareas)
   const enProgreso = getEnProgreso(tareas)
-  const manuales = getManuales(tareas)
-  const { personasDias, promedio } = computePersonasPorDia(manuales, partes)
 
   return {
     total: tareas.length,
     finalizadas: finalizadas.length,
     enProgreso: enProgreso.length,
-    personasPorDia: promedio,
+    dotacionHoy: computeDotacionHoy(partes),
     rendimientoPorTarea: getConRendimiento(tareas).length,
-    personasDias,
   }
 }

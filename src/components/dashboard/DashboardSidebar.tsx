@@ -25,6 +25,7 @@ interface Props {
   onSelectMetric: (key: MetricKey) => void
   onOpenEnProgreso: () => void
   onOpenPartesLabores: () => void
+  onOpenDotacion: () => void
   onOpenAnalytics: () => void
   onOpenSeguridad: () => void
   filtroFinca: string
@@ -55,6 +56,7 @@ export default function DashboardSidebar({
   onSelectMetric,
   onOpenEnProgreso,
   onOpenPartesLabores,
+  onOpenDotacion,
   onOpenAnalytics,
   onOpenSeguridad,
   filtroFinca,
@@ -125,6 +127,7 @@ export default function DashboardSidebar({
               onSelectMetric={onSelectMetric}
               onOpenEnProgreso={onOpenEnProgreso}
               onOpenPartesLabores={onOpenPartesLabores}
+              onOpenDotacion={onOpenDotacion}
               onOpenAnalytics={onOpenAnalytics}
               onOpenSeguridad={onOpenSeguridad}
             />

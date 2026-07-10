@@ -1,4 +1,5 @@
 import type { Tarea, ParteDeLabores } from '../types'
+import { isParteValidoDotacion } from './dotacion'
 
 export function sortByFechaInicio(tareas: Tarea[]): Tarea[] {
   return [...tareas].sort((a, b) => {
@@ -22,16 +23,16 @@ export function applyDashboardFilters(
   })
 }
 
-/** Partes manuales para métricas de dotación (ignora filtro de estado: cada cierre cuenta). */
+/** Partes para dotación (manual + mecánica; ignora filtro de estado de tareas). */
 export function filterPartesForStaffing(
   partes: ParteDeLabores[],
   filtroFinca: string,
   filtroTipo: string,
 ): ParteDeLabores[] {
-  if (filtroTipo === 'mecanica') return []
   return partes.filter(p => {
-    if (p.tipo !== 'manual') return false
-    if ((p.cantidadPersonas ?? 0) < 1) return false
+    if (!isParteValidoDotacion(p)) return false
+    if (filtroTipo === 'manual' && p.tipo !== 'manual') return false
+    if (filtroTipo === 'mecanica' && p.tipo !== 'mecanica') return false
     if (filtroFinca !== 'todas' && p.fincaNombre !== filtroFinca) return false
     return true
   })

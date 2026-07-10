@@ -4,7 +4,6 @@ import {
   CheckCircle,
   Clock,
   TrendingUp,
-  CalendarDays,
   ClipboardList,
   LineChart,
   ShieldAlert,
@@ -23,6 +22,7 @@ interface Props {
   onSelectMetric: (key: MetricKey) => void
   onOpenEnProgreso: () => void
   onOpenPartesLabores: () => void
+  onOpenDotacion: () => void
   onOpenAnalytics: () => void
   onOpenSeguridad: () => void
 }
@@ -37,6 +37,7 @@ export default function DashboardStatsPanel({
   onSelectMetric,
   onOpenEnProgreso,
   onOpenPartesLabores,
+  onOpenDotacion,
   onOpenAnalytics,
   onOpenSeguridad,
 }: Props) {
@@ -103,14 +104,14 @@ export default function DashboardStatsPanel({
         <button
           type="button"
           className="stat-card stat-card--interactive"
-          onClick={() => onSelectMetric('personas_dia')}
-          aria-label="Ver detalle: Personas por día"
+          onClick={onOpenDotacion}
+          aria-label="Ver dotación de hoy"
         >
           <div className="stat-icon" style={{ background: '#fef3c7', color: '#d97706' }}>
             <Users size={18} />
           </div>
-          <div className="stat-value">{stats.personasPorDia}</div>
-          <div className="stat-label">Personas / día</div>
+          <div className="stat-value">{stats.dotacionHoy}</div>
+          <div className="stat-label">Dotación</div>
         </button>
 
         <button
@@ -124,19 +125,6 @@ export default function DashboardStatsPanel({
           </div>
           <div className="stat-value">{stats.rendimientoPorTarea}</div>
           <div className="stat-label">Rend. / tarea</div>
-        </button>
-
-        <button
-          type="button"
-          className="stat-card stat-card--interactive"
-          onClick={() => onSelectMetric('total_personas')}
-          aria-label="Ver detalle: Personas-día"
-        >
-          <div className="stat-icon" style={{ background: '#fce7f3', color: '#db2777' }}>
-            <CalendarDays size={18} />
-          </div>
-          <div className="stat-value">{stats.personasDias}</div>
-          <div className="stat-label">Personas-día</div>
         </button>
 
         <button

@@ -59,21 +59,9 @@ describe('getMetricDetail', () => {
     assert.equal(detail.rows[0].tipo, 'Mecánica')
   })
 
-  it('resume personas por día solo con manuales', () => {
-    const detail = getMetricDetail('personas_dia', tareas)
-    assert.match(detail.summary ?? '', /personas-día/)
-    assert.equal(detail.rows.some(r => r.personas === '8'), true)
-  })
-
   it('lista rendimiento registrado', () => {
     const detail = getMetricDetail('rendimiento', tareas)
     assert.equal(detail.rows.length, 1)
     assert.match(detail.summary ?? '', /1 tarea/)
-  })
-
-  it('total personas-día solo manuales', () => {
-    const detail = getMetricDetail('total_personas', tareas)
-    assert.equal(detail.rows.length, 1)
-    assert.match(detail.summary ?? '', /personas-día/)
   })
 })

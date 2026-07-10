@@ -7,6 +7,7 @@ import { join } from 'node:path'
 const testFiles = [
   'src/utils/parseTarea.test.ts',
   'src/utils/dashboardMetrics.test.ts',
+  'src/utils/dotacion.test.ts',
   'src/utils/getMetricDetail.test.ts',
   'src/utils/dashboardFilters.test.ts',
   'src/utils/cuadroQr.test.ts',

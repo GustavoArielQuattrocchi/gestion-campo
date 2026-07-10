@@ -7,7 +7,7 @@ import DashboardSidebar from '../components/dashboard/DashboardSidebar'
 import DashboardSidebarToggle from '../components/dashboard/DashboardSidebarToggle'
 import DashboardWeatherFloat from '../components/dashboard/DashboardWeatherFloat'
 import DashboardPendingPartesAlert from '../components/dashboard/DashboardPendingPartesAlert'
-import { METRIC_ACCENTS } from '../components/dashboard/dashboardConstants'
+import { METRIC_ACCENTS, DOTACION_ACCENT } from '../components/dashboard/dashboardConstants'
 import { useDashboardTareas } from '../hooks/useDashboardTareas'
 import { usePartesLabores } from '../hooks/usePartesLabores'
 import { useInformesAccidente } from '../hooks/useInformesAccidente'
@@ -16,10 +16,11 @@ import { countPartesAbiertosVencidos } from '../utils/parteEstado'
 
 const EnProgresoContent = lazy(() => import('../components/dashboard/EnProgresoContent'))
 const PartesLaboresContent = lazy(() => import('../components/dashboard/PartesLaboresContent'))
+const DotacionContent = lazy(() => import('../components/dashboard/DotacionContent'))
 const AnalyticsContent = lazy(() => import('../components/dashboard/AnalyticsContent'))
 const SafetyContent = lazy(() => import('../components/dashboard/SafetyContent'))
 
-type ContentModalKey = 'en_progreso' | 'partes_labores' | 'analytics' | 'seguridad'
+type ContentModalKey = 'en_progreso' | 'partes_labores' | 'dotacion' | 'analytics' | 'seguridad'
 
 function ModalLoading() {
   return (
@@ -161,6 +162,7 @@ export default function Dashboard() {
         onSelectMetric={setSelectedMetric}
         onOpenEnProgreso={() => setContentModal('en_progreso')}
         onOpenPartesLabores={() => setContentModal('partes_labores')}
+        onOpenDotacion={() => setContentModal('dotacion')}
         onOpenAnalytics={() => setContentModal('analytics')}
         onOpenSeguridad={() => setContentModal('seguridad')}
         filtroFinca={filtroFinca}
@@ -237,6 +239,19 @@ export default function Dashboard() {
               onFiltroFincaChange={setPartesFiltroFinca}
               onFiltroOperadorChange={setPartesFiltroOperador}
             />
+          </Suspense>
+        </DashboardContentModal>
+      )}
+
+      {contentModal === 'dotacion' && (
+        <DashboardContentModal
+          open
+          title={`Dotación (${stats.dotacionHoy} hoy)`}
+          accentColor={DOTACION_ACCENT}
+          onClose={() => setContentModal(null)}
+        >
+          <Suspense fallback={<ModalLoading />}>
+            <DotacionContent partes={partesForStaffing} />
           </Suspense>
         </DashboardContentModal>
       )}

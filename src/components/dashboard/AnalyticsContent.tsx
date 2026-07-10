@@ -6,7 +6,7 @@ import {
   computeCumulativeProgress,
   computeAnalyticsKPIs,
 } from '../../utils/analyticsAggregations'
-import { aggregateManualStaffingFromPartes } from '../../utils/dashboardMetrics'
+import { aggregateStaffingFromPartes } from '../../utils/dotacion'
 import { computeTareaProgress } from '../../utils/tareaProgress'
 import BarChart from './charts/BarChart'
 import LineChart from './charts/LineChart'
@@ -35,7 +35,7 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
   const dailyProd = useMemo(() => computeDailyProductivity(tareas), [tareas])
   const dailyStaff = useMemo(() => {
     const staffingPartes = partesStaffing ?? partes
-    const fromPartes = aggregateManualStaffingFromPartes(staffingPartes)
+    const fromPartes = aggregateStaffingFromPartes(staffingPartes)
     if (fromPartes.length > 0) {
       return fromPartes.map(d => ({
         fecha: d.fecha,
