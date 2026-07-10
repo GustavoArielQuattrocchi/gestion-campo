@@ -17,10 +17,17 @@ export interface DotacionFincaResumen {
   personas: number
 }
 
+export type DotacionFechaModo = 'dia' | 'rango' | 'todas'
+
 export interface DotacionFilters {
   finca: string
-  fecha: string
   tarea: string
+  fechaModo: DotacionFechaModo
+  /** yyyy-MM-dd cuando fechaModo === 'dia' */
+  fecha?: string
+  /** yyyy-MM-dd cuando fechaModo === 'rango' */
+  fechaDesde?: string
+  fechaHasta?: string
 }
 
 /** Personas que aporta un parte a la dotación (manual: cuadrilla; mecánica: 1 por parte). */
@@ -66,16 +73,37 @@ export function buildDotacionRows(partes: ParteDeLabores[]): DotacionRow[] {
     .sort((a, b) => b.fecha.localeCompare(a.fecha) || a.finca.localeCompare(b.finca))
 }
 
+function rowMatchesFechaModo(row: DotacionRow, filters: DotacionFilters): boolean {
+  if (filters.fechaModo === 'todas') return true
+  if (filters.fechaModo === 'dia') {
+    return !!filters.fecha && row.fecha === filters.fecha
+  }
+  const desde = filters.fechaDesde ?? ''
+  const hasta = filters.fechaHasta ?? ''
+  if (!desde && !hasta) return true
+  if (desde && row.fecha < desde) return false
+  if (hasta && row.fecha > hasta) return false
+  return true
+}
+
 export function filterDotacionRows(
   rows: DotacionRow[],
   filters: DotacionFilters,
 ): DotacionRow[] {
   return rows.filter(row => {
     if (filters.finca !== 'todas' && row.finca !== filters.finca) return false
-    if (filters.fecha && row.fecha !== filters.fecha) return false
+    if (!rowMatchesFechaModo(row, filters)) return false
     if (filters.tarea !== 'todas' && row.tarea !== filters.tarea) return false
     return true
   })
+}
+
+/** Filtra solo por fecha (sin finca ni tarea), para resúmenes. */
+export function filterDotacionRowsByFecha(
+  rows: DotacionRow[],
+  filters: Pick<DotacionFilters, 'fechaModo' | 'fecha' | 'fechaDesde' | 'fechaHasta'>,
+): DotacionRow[] {
+  return rows.filter(row => rowMatchesFechaModo(row, filters as DotacionFilters))
 }
 
 export function listDotacionFincas(partes: ParteDeLabores[]): string[] {
@@ -98,19 +126,25 @@ export function computeDotacionHoy(
   return computeDotacionTotal(buildDotacionRows(partes).filter(r => r.fecha === hoy))
 }
 
+/** Suma de personas por finca (orden descendente para barras). */
+export function computeDotacionPorFincaFromRows(rows: DotacionRow[]): DotacionFincaResumen[] {
+  const byFinca = new Map<string, number>()
+  for (const row of rows) {
+    byFinca.set(row.finca, (byFinca.get(row.finca) ?? 0) + row.personas)
+  }
+  return [...byFinca.entries()]
+    .map(([finca, personas]) => ({ finca, personas }))
+    .sort((a, b) => b.personas - a.personas || a.finca.localeCompare(b.finca))
+}
+
 /** Suma de personas por finca para una fecha. */
 export function computeDotacionPorFinca(
   partes: ParteDeLabores[],
   fecha: string,
 ): DotacionFincaResumen[] {
-  const byFinca = new Map<string, number>()
-  for (const row of buildDotacionRows(partes)) {
-    if (row.fecha !== fecha) continue
-    byFinca.set(row.finca, (byFinca.get(row.finca) ?? 0) + row.personas)
-  }
-  return [...byFinca.entries()]
-    .map(([finca, personas]) => ({ finca, personas }))
-    .sort((a, b) => a.finca.localeCompare(b.finca))
+  return computeDotacionPorFincaFromRows(
+    buildDotacionRows(partes).filter(r => r.fecha === fecha),
+  )
 }
 
 /** Promedio de personas por día con actividad (todas las fechas). */
@@ -142,9 +176,35 @@ export function aggregateStaffingFromPartes(
     .map(([fecha, v]) => ({ fecha, ...v }))
 }
 
-export function formatDotacionFincaResumen(resumen: DotacionFincaResumen[]): string {
-  if (resumen.length === 0) return 'Sin dotación registrada para esta fecha'
-  return resumen.map(r => `${r.finca}: ${r.personas}`).join(' · ')
+export function dotacionTipoLabel(tipo: 'manual' | 'mecanica'): string {
+  return tipo === 'manual' ? 'Manual' : 'Mecánica'
+}
+
+export function listDotacionFechas(partes: ParteDeLabores[]): string[] {
+  return [...new Set(buildDotacionRows(partes).map(r => r.fecha))].sort()
+}
+
+export function formatDotacionPeriodoLabel(
+  filters: Pick<DotacionFilters, 'fechaModo' | 'fecha' | 'fechaDesde' | 'fechaHasta'>,
+  referenceDate = new Date(),
+): string {
+  if (filters.fechaModo === 'todas') return 'histórico completo'
+  if (filters.fechaModo === 'dia' && filters.fecha) {
+    return formatDotacionFechaLabel(filters.fecha, referenceDate)
+  }
+  if (filters.fechaModo === 'rango') {
+    const desde = filters.fechaDesde
+    const hasta = filters.fechaHasta
+    if (desde && hasta) {
+      const d1 = format(new Date(`${desde}T12:00:00`), 'dd/MM/yyyy', { locale: es })
+      const d2 = format(new Date(`${hasta}T12:00:00`), 'dd/MM/yyyy', { locale: es })
+      return `${d1} – ${d2}`
+    }
+    if (desde) return `desde ${format(new Date(`${desde}T12:00:00`), 'dd/MM/yyyy', { locale: es })}`
+    if (hasta) return `hasta ${format(new Date(`${hasta}T12:00:00`), 'dd/MM/yyyy', { locale: es })}`
+    return 'rango de fechas'
+  }
+  return ''
 }
 
 export function isDotacionFechaHoy(fecha: string, referenceDate = new Date()): boolean {
