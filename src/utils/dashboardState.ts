@@ -15,11 +15,13 @@ export function buildFilterSearchParams(
   filtroFinca: string,
   filtroTipo: string,
   filtroEstado: string,
+  filtroTareaMapa = 'todas',
 ): URLSearchParams {
   const params = new URLSearchParams()
   if (filtroFinca !== 'todas') params.set('finca', filtroFinca)
   if (filtroTipo !== 'todos') params.set('tipo', filtroTipo)
   if (filtroEstado !== 'todos') params.set('estado', filtroEstado)
+  if (filtroTareaMapa !== 'todas') params.set('tarea', filtroTareaMapa)
   return params
 }
 

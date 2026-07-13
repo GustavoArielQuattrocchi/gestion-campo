@@ -6,6 +6,7 @@ import DashboardMapLayer from '../components/dashboard/DashboardMapLayer'
 import DashboardSidebar from '../components/dashboard/DashboardSidebar'
 import DashboardSidebarToggle from '../components/dashboard/DashboardSidebarToggle'
 import DashboardWeatherFloat from '../components/dashboard/DashboardWeatherFloat'
+import DashboardMapTaskFilter from '../components/dashboard/DashboardMapTaskFilter'
 import DashboardPendingPartesAlert from '../components/dashboard/DashboardPendingPartesAlert'
 import { METRIC_ACCENTS, DOTACION_ACCENT } from '../components/dashboard/dashboardConstants'
 import { useDashboardTareas } from '../hooks/useDashboardTareas'
@@ -54,6 +55,9 @@ export default function Dashboard() {
     setFiltroTipo,
     filtroEstado,
     setFiltroEstado,
+    filtroTareaMapa,
+    setFiltroTareaMapa,
+    mapTareasDisponibles,
     fincasFiltro,
     tareasFiltradas,
     tareasEnTabla,
@@ -131,9 +135,20 @@ export default function Dashboard() {
 
   return (
     <div className={`dashboard-layout fade-in ${sidebarOpen ? 'sidebar-open' : ''}`}>
-      <DashboardMapLayer tareas={tareasFiltradas} filtroFinca={filtroFinca} />
+      <DashboardMapLayer
+        tareas={tareasFiltradas}
+        filtroFinca={filtroFinca}
+        filtroTarea={filtroTareaMapa}
+      />
 
       <DashboardWeatherFloat filtroFinca={filtroFinca} />
+
+      <DashboardMapTaskFilter
+        filtroTarea={filtroTareaMapa}
+        tareasDisponibles={mapTareasDisponibles}
+        filtroFinca={filtroFinca}
+        onTareaChange={setFiltroTareaMapa}
+      />
 
       {!pendingAlertDismissed && partesVencidosCount > 0 && (
         <DashboardPendingPartesAlert

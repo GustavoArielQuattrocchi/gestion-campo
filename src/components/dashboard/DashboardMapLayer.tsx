@@ -7,6 +7,7 @@ const VineyardMap = lazy(() => import('./VineyardMap'))
 interface Props {
   tareas: Tarea[]
   filtroFinca: string
+  filtroTarea?: string
 }
 
 function MapPlaceholder() {
@@ -27,7 +28,7 @@ function MapPlaceholder() {
   )
 }
 
-export default function DashboardMapLayer({ tareas, filtroFinca }: Props) {
+export default function DashboardMapLayer({ tareas, filtroFinca, filtroTarea = 'todas' }: Props) {
   const [mapReady, setMapReady] = useState(false)
 
   useEffect(() => {
@@ -46,7 +47,12 @@ export default function DashboardMapLayer({ tareas, filtroFinca }: Props) {
         <MapPlaceholder />
       ) : (
         <Suspense fallback={<MapPlaceholder />}>
-          <VineyardMap tareas={tareas} filtroFinca={filtroFinca} fullHeight />
+          <VineyardMap
+            tareas={tareas}
+            filtroFinca={filtroFinca}
+            filtroTarea={filtroTarea}
+            fullHeight
+          />
         </Suspense>
       )}
     </div>

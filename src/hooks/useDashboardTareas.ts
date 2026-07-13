@@ -23,6 +23,7 @@ import {
   paginateTareas,
   readFilterParam,
 } from '../utils/dashboardState'
+import { listMapTareasDisponibles, normalizeMapTareaParam } from '../utils/mapTaskFilter'
 
 export type DashboardPanelKey = 'resumen' | 'filtros' | 'tareas' | 'qr_cuadros'
 
@@ -45,6 +46,7 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
   const [filtroEstado, setFiltroEstado] = useState(() =>
     readFilterParam(searchParams, 'estado', 'todos', new Set(['todos', 'en_progreso', 'finalizada'])),
   )
+  const [filtroTareaMapa, setFiltroTareaMapa] = useState(() => searchParams.get('tarea') ?? 'todas')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [panelsOpen, setPanelsOpen] = useState<Record<DashboardPanelKey, boolean>>({
     resumen: true,
@@ -57,9 +59,9 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
   const [actionError, setActionError] = useState<string | null>(null)
 
   useEffect(() => {
-    const params = buildFilterSearchParams(filtroFinca, filtroTipo, filtroEstado)
+    const params = buildFilterSearchParams(filtroFinca, filtroTipo, filtroEstado, filtroTareaMapa)
     setSearchParams(params, { replace: true })
-  }, [filtroFinca, filtroTipo, filtroEstado, setSearchParams])
+  }, [filtroFinca, filtroTipo, filtroEstado, filtroTareaMapa, setSearchParams])
 
   useEffect(() => {
     setVisibleCount(TAREAS_PAGE_SIZE)
@@ -111,6 +113,16 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
     () => applyDashboardFilters(allTareas, filtroFinca, filtroTipo, filtroEstado),
     [allTareas, filtroFinca, filtroTipo, filtroEstado],
   )
+
+  const mapTareasDisponibles = useMemo(
+    () => listMapTareasDisponibles(tareasFiltradas),
+    [tareasFiltradas],
+  )
+
+  useEffect(() => {
+    const normalized = normalizeMapTareaParam(filtroTareaMapa, mapTareasDisponibles)
+    if (normalized !== filtroTareaMapa) setFiltroTareaMapa(normalized)
+  }, [filtroTareaMapa, mapTareasDisponibles, filtroFinca])
 
   const tareasEnTabla = useMemo(
     () => paginateTareas(tareasFiltradas, visibleCount),
@@ -248,6 +260,9 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
     setFiltroTipo,
     filtroEstado,
     setFiltroEstado,
+    filtroTareaMapa,
+    setFiltroTareaMapa,
+    mapTareasDisponibles,
     fincasFiltro,
     tareasFiltradas,
     tareasEnTabla,

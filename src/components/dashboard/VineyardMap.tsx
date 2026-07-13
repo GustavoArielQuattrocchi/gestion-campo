@@ -19,12 +19,15 @@ import { getCuadroDetalleById } from '../../data/fincaData'
 import { formatHectareas } from '../../utils/cuadroQr'
 import CuadroCatalogoResumen from '../cuadro/CuadroCatalogoResumen'
 import { formatTareaMapLabel } from '../../utils/vineyardMapLabels'
+import { filterTareasForMap } from '../../utils/mapTaskFilter'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 import TaskProgressBar from './TaskProgressBar'
 
 interface Props {
   tareas: Tarea[]
   filtroFinca: string
+  /** Labor visible en el mapa; no afecta datos globales del escritorio. */
+  filtroTarea?: string
   /** Ocupa el 100% del contenedor padre (dashboard fullscreen). */
   fullHeight?: boolean
 }
@@ -72,16 +75,21 @@ function FitBoundsOnFinca({ bounds }: { bounds: LatLngBoundsExpression | null })
 
 type MapViewMode = 'estado' | 'rendimiento'
 
-export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }: Props) {
+export default function VineyardMap({ tareas, filtroFinca, filtroTarea = 'todas', fullHeight = false }: Props) {
   const [seleccionado, setSeleccionado] = useState<CuadroFeature | null>(null)
   const [viewMode, setViewMode] = useState<MapViewMode>('estado')
+
+  const tareasMapa = useMemo(
+    () => filterTareasForMap(tareas, filtroTarea),
+    [tareas, filtroTarea],
+  )
 
   // Set de IDs (ej "FOA-5") con tareas en progreso o finalizadas.
   const estadoPorCuadro = useMemo(() => {
     const map = new Map<string, CuadroEstado>()
     const mappersPorFinca = new Map<string, Map<string, string>>()
 
-    for (const tarea of tareas) {
+    for (const tarea of tareasMapa) {
       const fincaNombre = tarea.fincaNombre
       if (!fincaNombre) continue
 
@@ -126,12 +134,12 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
       }
     }
     return map
-  }, [tareas])
+  }, [tareasMapa])
 
   // Agregación de rendimiento por cuadro para heat map.
   const rendimientoHeatData = useMemo(() => {
     const totals = new Map<string, number>()
-    for (const tarea of tareas) {
+    for (const tarea of tareasMapa) {
       for (const rd of tarea.rendimientosDiarios ?? []) {
         const rpc = rd.rendimientoPorCuadro
         if (!rpc) continue
@@ -152,7 +160,7 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
       if (valor > maxVal) maxVal = valor
     }
     return { perHa, maxVal }
-  }, [tareas])
+  }, [tareasMapa])
 
   // Filtra features según finca seleccionada.
   const features = useMemo(() => {
@@ -309,8 +317,8 @@ export default function VineyardMap({ tareas, filtroFinca, fullHeight = false }:
       .map(([k, v]) => `${k}:${v.pendiente ? 'p' : ''}${v.cuadroFinalizado ? 'f' : ''}`)
       .sort()
       .join(',')
-    return `${filtroFinca}|${features.length}|${marcados}|${viewMode}`
-  }, [filtroFinca, features, estadoPorCuadro, viewMode])
+    return `${filtroFinca}|${filtroTarea}|${features.length}|${marcados}|${viewMode}`
+  }, [filtroFinca, filtroTarea, features, estadoPorCuadro, viewMode])
 
   const detallesSeleccion = useMemo(() => {
     if (!seleccionado) return null

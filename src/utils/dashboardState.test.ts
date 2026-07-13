@@ -35,6 +35,12 @@ describe('buildFilterSearchParams', () => {
     assert.equal(params.get('tipo'), 'manual')
     assert.equal(params.get('estado'), 'en_progreso')
   })
+
+  it('incluye filtro de labor del mapa', () => {
+    const params = buildFilterSearchParams('todas', 'todos', 'todos', 'Poda')
+    assert.equal(params.get('tarea'), 'Poda')
+    assert.equal(params.get('finca'), null)
+  })
 })
 
 describe('paginación dashboard', () => {
