@@ -244,6 +244,7 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
   }, [allTareas])
 
   return {
+    allTareas,
     loading,
     hasMore,
     loadMore,

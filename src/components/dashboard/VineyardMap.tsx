@@ -6,7 +6,6 @@ import 'leaflet/dist/leaflet.css'
 import type { Feature, FeatureCollection } from 'geojson'
 import type { Tarea } from '../../types'
 import {
-  buildNombreToIdMap,
   getAllVineyardFeatures,
   getFeaturesByFinca,
   getFincaBounds,
@@ -19,9 +18,14 @@ import { getCuadroDetalleById } from '../../data/fincaData'
 import { formatHectareas } from '../../utils/cuadroQr'
 import CuadroCatalogoResumen from '../cuadro/CuadroCatalogoResumen'
 import { formatTareaMapLabel } from '../../utils/vineyardMapLabels'
-import { filterTareasForMap } from '../../utils/mapTaskFilter'
+import { filterTareasForMap, MAP_TAREA_TODAS } from '../../utils/mapTaskFilter'
+import { buildEstadoPorCuadro, collectCuadroIdsFromTareas } from '../../utils/vineyardMapState'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 import TaskProgressBar from './TaskProgressBar'
+// map-relevamiento: imports de la feature (ver src/features/mapRelevamiento/config.ts)
+import { isMapRelevamientoEnabled } from '../../features/mapRelevamiento'
+import type { MapRelevamientoActions } from '../../features/mapRelevamiento'
+import MapRelevamientoPanel from '../../features/mapRelevamiento/components/MapRelevamientoPanel'
 
 interface Props {
   tareas: Tarea[]
@@ -30,15 +34,11 @@ interface Props {
   filtroTarea?: string
   /** Ocupa el 100% del contenedor padre (dashboard fullscreen). */
   fullHeight?: boolean
-}
-
-interface CuadroEstado {
-  tareasEnProgreso: Tarea[]
-  tareasCerradas: Tarea[]
-  /** Cuadro con tarea activa aún no marcada como finalizada. */
-  pendiente: boolean
-  /** Cuadro finalizado en dashboard o tarea cerrada. */
-  cuadroFinalizado: boolean
+  /** map-relevamiento: tareas sin filtrar para asignación / conflictos. */
+  allTareas?: Tarea[]
+  mapRelevamiento?: MapRelevamientoActions | null
+  /** Tras asignar labor desde el mapa, alinear filtro de labor para ver el cambio. */
+  onLaborAsignada?: (labor: string) => void
 }
 
 const DEFAULT_CENTER: [number, number] = [-33.505, -69.21]
@@ -75,66 +75,39 @@ function FitBoundsOnFinca({ bounds }: { bounds: LatLngBoundsExpression | null })
 
 type MapViewMode = 'estado' | 'rendimiento'
 
-export default function VineyardMap({ tareas, filtroFinca, filtroTarea = 'todas', fullHeight = false }: Props) {
+export default function VineyardMap({
+  tareas,
+  filtroFinca,
+  filtroTarea = 'todas',
+  fullHeight = false,
+  allTareas,
+  mapRelevamiento = null,
+  onLaborAsignada,
+}: Props) {
   const [seleccionado, setSeleccionado] = useState<CuadroFeature | null>(null)
   const [viewMode, setViewMode] = useState<MapViewMode>('estado')
 
+  const tareasParaEstado = useMemo(() => {
+    const source = allTareas ?? tareas
+    if (!allTareas) return tareas
+    if (filtroFinca === 'todas') return source
+    return source.filter(
+      t => t.fincaNombre === filtroFinca || t.fincaId === filtroFinca,
+    )
+  }, [allTareas, tareas, filtroFinca])
+
   const tareasMapa = useMemo(
-    () => filterTareasForMap(tareas, filtroTarea),
-    [tareas, filtroTarea],
+    () => filterTareasForMap(tareasParaEstado, filtroTarea),
+    [tareasParaEstado, filtroTarea],
   )
 
-  // Set de IDs (ej "FOA-5") con tareas en progreso o finalizadas.
-  const estadoPorCuadro = useMemo(() => {
-    const map = new Map<string, CuadroEstado>()
-    const mappersPorFinca = new Map<string, Map<string, string>>()
+  // Estado real del cuadro (todas las labores). El filtro de labor solo acota el resaltado.
+  const estadoPorCuadro = useMemo(() => buildEstadoPorCuadro(tareasParaEstado), [tareasParaEstado])
 
-    for (const tarea of tareasMapa) {
-      const fincaNombre = tarea.fincaNombre
-      if (!fincaNombre) continue
-
-      const cuadroIds = new Set<string>()
-      for (const id of tarea.cuadroIds ?? []) {
-        if (id) cuadroIds.add(id)
-      }
-
-      if ((tarea.cuadros ?? []).length > 0) {
-        if (!mappersPorFinca.has(fincaNombre)) {
-          mappersPorFinca.set(fincaNombre, buildNombreToIdMap(fincaNombre))
-        }
-        const mapper = mappersPorFinca.get(fincaNombre)!
-        for (const cuadroNombre of tarea.cuadros ?? []) {
-          const cuadroId = mapper.get(cuadroNombre)
-          if (cuadroId) cuadroIds.add(cuadroId)
-        }
-      }
-
-      for (const cuadroId of cuadroIds) {
-        if (!map.has(cuadroId)) {
-          map.set(cuadroId, {
-            tareasEnProgreso: [],
-            tareasCerradas: [],
-            pendiente: false,
-            cuadroFinalizado: false,
-          })
-        }
-        const entry = map.get(cuadroId)!
-        if (tarea.estado === 'en_progreso') {
-          entry.tareasEnProgreso.push(tarea)
-          const finalizados = new Set(tarea.cuadroIdsFinalizados ?? [])
-          if (finalizados.has(cuadroId)) {
-            entry.cuadroFinalizado = true
-          } else {
-            entry.pendiente = true
-          }
-        } else {
-          entry.tareasCerradas.push(tarea)
-          entry.cuadroFinalizado = true
-        }
-      }
-    }
-    return map
-  }, [tareasMapa])
+  const cuadrosConLaborFiltro = useMemo(
+    () => (filtroTarea === MAP_TAREA_TODAS ? null : collectCuadroIdsFromTareas(tareasMapa)),
+    [filtroTarea, tareasMapa],
+  )
 
   // Agregación de rendimiento por cuadro para heat map.
   const rendimientoHeatData = useMemo(() => {
@@ -219,7 +192,19 @@ export default function VineyardMap({ tareas, filtroFinca, filtroTarea = 'todas'
         }
       } else {
         const estado = estadoPorCuadro.get(props.name)
-        if (estado?.pendiente) {
+        const visibleConFiltroLabor =
+          cuadrosConLaborFiltro === null || cuadrosConLaborFiltro.has(props.name)
+
+        if (!visibleConFiltroLabor || !estado) {
+          base = {
+            fill: true,
+            fillColor: CUADRO_FILL,
+            fillOpacity: 0.4,
+            color: CUADRO_STROKE,
+            weight: 1,
+            opacity: 0.75,
+          }
+        } else if (estado.pendiente) {
           base = {
             fill: true,
             fillColor: CUADRO_FILL,
@@ -228,7 +213,7 @@ export default function VineyardMap({ tareas, filtroFinca, filtroTarea = 'todas'
             weight: 2.5,
             opacity: 1,
           }
-        } else if (estado?.cuadroFinalizado) {
+        } else if (estado.cuadroFinalizado) {
           base = {
             fill: true,
             fillColor: '#d1d5db',
@@ -261,7 +246,7 @@ export default function VineyardMap({ tareas, filtroFinca, filtroTarea = 'todas'
         fillOpacity: Math.min((base.fillOpacity ?? 0.4) + 0.15, 0.85),
       }
     },
-    [estadoPorCuadro, viewMode, rendimientoHeatData]
+    [estadoPorCuadro, cuadrosConLaborFiltro, viewMode, rendimientoHeatData]
   )
 
   // Tooltip y click en cada feature.
@@ -442,6 +427,20 @@ export default function VineyardMap({ tareas, filtroFinca, filtroTarea = 'todas'
           ) : (
             <p className="dashboard-panel-empty">Cuadro sin datos en el catálogo.</p>
           )}
+
+          {/* map-relevamiento */}
+          {isMapRelevamientoEnabled() &&
+            mapRelevamiento &&
+            detallesSeleccion.cuadro &&
+            allTareas && (
+              <MapRelevamientoPanel
+                cuadro={detallesSeleccion.cuadro}
+                tareasEnProgreso={detallesSeleccion.estado?.tareasEnProgreso ?? []}
+                allTareas={allTareas}
+                actions={mapRelevamiento}
+                onLaborAsignada={onLaborAsignada}
+              />
+            )}
 
           {detallesSeleccion.estado && (
             <div className="map-detail-tasks">

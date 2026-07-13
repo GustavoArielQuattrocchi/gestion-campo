@@ -3,6 +3,7 @@ import { ChevronLeft, Save } from 'lucide-react'
 import { cuadrillas, tareasManuales } from '../../data/catalog'
 import { emptyCuadroSelection, type CuadroSelection, type ParteDeLabores, type Tarea } from '../../types'
 import { findTareaContinuableManual } from '../../utils/findTareaContinuable'
+import type { ContinueTaskOptions } from '../../utils/tareaEjecutor'
 import CuadroSelector from './CuadroSelector'
 import ContinueTaskBanner from './ContinueTaskBanner'
 
@@ -17,7 +18,12 @@ interface Props {
     cuadros: string[]
     cuadroIds: string[]
   }) => Promise<boolean>
-  onContinue: (tareaId: string, cuadros: string[], cuadroIds: string[], cantidadPersonas?: number) => Promise<boolean>
+  onContinue: (
+    tareaId: string,
+    cuadros: string[],
+    cuadroIds: string[],
+    options?: ContinueTaskOptions,
+  ) => Promise<boolean>
   onBack: () => void
 }
 
@@ -29,8 +35,8 @@ export default function ManualTaskForm({ fincaNombre, tareasActivas, partesAbier
   const [saving, setSaving] = useState(false)
 
   const tareaContinuable = useMemo(
-    () => findTareaContinuableManual(tareasActivas, tarea, cuadrilla),
-    [tareasActivas, tarea, cuadrilla],
+    () => findTareaContinuableManual(tareasActivas, tarea),
+    [tareasActivas, tarea],
   )
 
   const isValid = cuadrilla && tarea && cantidadPersonas && cuadroSelection.cuadroIds.length > 0
@@ -43,7 +49,10 @@ export default function ManualTaskForm({ fincaNombre, tareasActivas, partesAbier
     setSaving(true)
     try {
       if (tareaContinuable) {
-        await onContinue(tareaContinuable.id, cuadroSelection.cuadros, cuadroSelection.cuadroIds, n)
+        await onContinue(tareaContinuable.id, cuadroSelection.cuadros, cuadroSelection.cuadroIds, {
+          cantidadPersonas: n,
+          cuadrilla,
+        })
       } else {
         await onSubmit({
           cuadrilla,
@@ -122,7 +131,11 @@ export default function ManualTaskForm({ fincaNombre, tareasActivas, partesAbier
       </div>
 
       {tareaContinuable && (
-        <ContinueTaskBanner tarea={tareaContinuable} partesAbiertos={partesAbiertos} />
+        <ContinueTaskBanner
+          tarea={tareaContinuable}
+          partesAbiertos={partesAbiertos}
+          ejecutorActual={cuadrilla}
+        />
       )}
 
       <button

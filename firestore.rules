@@ -77,6 +77,30 @@ service cloud.firestore {
       return request.resource.data.operador == nombreOperadorAutenticado();
     }
 
+    // relevamiento escritorio: tareas creadas desde el mapa del dashboard (sin parte de labores).
+    function operadorEscritorioValido() {
+      return request.resource.data.operador == 'escritorio';
+    }
+
+    function esAltaEscritorioAdmin() {
+      return esAdmin()
+        && operadorEscritorioValido()
+        && validTareaBase()
+        && validManual()
+        && validMecanica()
+        && request.resource.data.estado == 'en_progreso';
+    }
+
+    function esContinuacionEscritorio() {
+      let keys = request.resource.data.diff(resource.data).affectedKeys();
+      return keys.hasOnly(['cuadros', 'cuadroIds', 'cantidadPersonas', 'ejecutorPorCuadro'])
+        && resource.data.estado == 'en_progreso'
+        && request.resource.data.estado == 'en_progreso'
+        && request.resource.data.cuadros is list
+        && request.resource.data.cuadroIds is list
+        && (!keys.hasAny(['ejecutorPorCuadro']) || request.resource.data.ejecutorPorCuadro is map);
+    }
+
     function esOperadorDeLaTarea() {
       return operadorRegistrado()
         && resource.data.operador == nombreOperadorAutenticado();
@@ -114,11 +138,12 @@ service cloud.firestore {
     // Continuar tarea existente: añadir cuadros sin cambiar estado.
     function esContinuacionTarea() {
       let keys = request.resource.data.diff(resource.data).affectedKeys();
-      return keys.hasOnly(['cuadros', 'cuadroIds', 'cantidadPersonas'])
+      return keys.hasOnly(['cuadros', 'cuadroIds', 'cantidadPersonas', 'ejecutorPorCuadro'])
         && resource.data.estado == 'en_progreso'
         && request.resource.data.estado == 'en_progreso'
         && request.resource.data.cuadros is list
-        && request.resource.data.cuadroIds is list;
+        && request.resource.data.cuadroIds is list
+        && (!keys.hasAny(['ejecutorPorCuadro']) || request.resource.data.ejecutorPorCuadro is map);
     }
 
     function esActualizacionDashboard() {
@@ -142,13 +167,14 @@ service cloud.firestore {
     // Consolidación admin: fusionar cuadros, rendimientos y campos de tareas duplicadas.
     function esConsolidacionAdmin() {
       let keys = request.resource.data.diff(resource.data).affectedKeys();
-      return keys.hasOnly(['cuadros', 'cuadroIds', 'cuadroIdsFinalizados', 'cuadroFinalizaciones', 'rendimientosDiarios', 'rendimiento', 'cantidadPersonas'])
+      return keys.hasOnly(['cuadros', 'cuadroIds', 'cuadroIdsFinalizados', 'cuadroFinalizaciones', 'rendimientosDiarios', 'rendimiento', 'cantidadPersonas', 'ejecutorPorCuadro'])
         && request.resource.data.cuadros is list
         && request.resource.data.cuadroIds is list
         && (!keys.hasAny(['cuadroIdsFinalizados']) || request.resource.data.cuadroIdsFinalizados is list)
         && (!keys.hasAny(['rendimientosDiarios']) || request.resource.data.rendimientosDiarios is list)
         && (!keys.hasAny(['rendimiento']) || request.resource.data.rendimiento is string)
-        && (!keys.hasAny(['cantidadPersonas']) || request.resource.data.cantidadPersonas is int);
+        && (!keys.hasAny(['cantidadPersonas']) || request.resource.data.cantidadPersonas is int)
+        && (!keys.hasAny(['ejecutorPorCuadro']) || request.resource.data.ejecutorPorCuadro is map);
     }
 
     function validActualizacionDashboard() {
@@ -177,11 +203,12 @@ service cloud.firestore {
 
     match /tareas/{tareaId} {
       allow read: if isSignedIn();
-      allow create: if operadorRegistrado()
+      allow create: if (operadorRegistrado()
         && operadorCoincideEnAlta()
         && validTareaBase()
         && validManual()
-        && validMecanica();
+        && validMecanica())
+        || esAltaEscritorioAdmin();
       allow update: if isSignedIn() && (
         (esOperadorDeLaTarea()
           && esSoloRegistroRendimiento()
@@ -193,6 +220,7 @@ service cloud.firestore {
         || (esActualizacionDashboard() && validActualizacionDashboard())
         || (esAdmin() && esGestionRendimientoDashboard())
         || (esAdmin() && esConsolidacionAdmin())
+        || (esAdmin() && esContinuacionEscritorio())
       );
       allow delete: if esAdmin();
     }

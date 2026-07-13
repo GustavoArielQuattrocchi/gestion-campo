@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, Merge, RotateCcw, Trash2 } from 'lucide-react'
-import type { Tarea } from '../../types'
+import { CheckCircle2, ChevronDown, Merge, RotateCcw, Trash2 } from 'lucide-react'
+import type { ParteDeLabores, Tarea } from '../../types'
 import { getNombreCuadro } from '../../data/fincaData'
 import {
   allCuadrosTareaFinalizados,
   computeTareaProgress,
   formatProgressLabel,
 } from '../../utils/tareaProgress'
-import { formatTareaMapLabel } from '../../utils/vineyardMapLabels'
+import { hasMultipleEjecutores } from '../../utils/tareaEjecutorBreakdown'
+import EjecutorBreakdownSection from './EjecutorBreakdownSection'
 import TaskProgressBar from './TaskProgressBar'
 
 interface Props {
   tareas: Tarea[]
+  partes: ParteDeLabores[]
   filtroFinca: string
   filtroTarea: string
   duplicadosCount: number
@@ -37,6 +39,7 @@ function matchesFiltros(
 
 export default function EnProgresoContent({
   tareas,
+  partes,
   filtroFinca,
   filtroTarea,
   duplicadosCount,
@@ -152,7 +155,7 @@ export default function EnProgresoContent({
             <Merge size={16} />
             <span>
               Hay <strong>{duplicadosCount} tarea{duplicadosCount > 1 ? 's' : ''} duplicada{duplicadosCount > 1 ? 's' : ''}</strong> que
-              pueden consolidarse (misma finca + labor + cuadrilla).
+              pueden consolidarse (misma finca + labor).
             </span>
           </div>
           <button
@@ -181,6 +184,8 @@ export default function EnProgresoContent({
             const progress = computeTareaProgress(tarea)
             const expanded = expandedId === tarea.id
             const puedeCerrar = allCuadrosTareaFinalizados(tarea)
+            const tipoLabel = tarea.tipo === 'manual' ? 'Manual' : 'Mecánica'
+            const multiEjecutor = hasMultipleEjecutores(tarea)
 
             return (
               <li key={tarea.id} className="en-progreso-item">
@@ -188,14 +193,27 @@ export default function EnProgresoContent({
                   type="button"
                   className="en-progreso-item-header"
                   onClick={() => setExpandedId(expanded ? null : tarea.id)}
+                  aria-expanded={expanded}
                 >
-                  <div>
+                  <div className="en-progreso-item-title">
                     <strong>{tarea.tarea}</strong>
                     <span className="en-progreso-meta">
-                      {tarea.fincaNombre} · {formatTareaMapLabel(tarea)}
+                      {tarea.fincaNombre}
+                      <span className={`en-progreso-badge en-progreso-badge--${tarea.tipo}`}>
+                        {tipoLabel}
+                      </span>
+                      {multiEjecutor && (
+                        <span className="en-progreso-badge en-progreso-badge--multi">Varios ejecutores</span>
+                      )}
                     </span>
                   </div>
+                  <ChevronDown
+                    size={18}
+                    className={`en-progreso-chevron${expanded ? ' en-progreso-chevron--open' : ''}`}
+                  />
                 </button>
+
+                <p className="en-progreso-avance-hint">Avance general de la finca</p>
 
                 <TaskProgressBar
                   value={progress.porcentaje}
@@ -204,6 +222,7 @@ export default function EnProgresoContent({
 
                 {expanded && (
                   <div className="en-progreso-detail">
+                    <EjecutorBreakdownSection tarea={tarea} partes={partes} />
                     {progress.cuadrosPendientes.length > 0 && (
                       <div className="en-progreso-cuadros">
                         <h5>Cuadros pendientes</h5>
@@ -322,7 +341,7 @@ export default function EnProgresoContent({
                   <div>
                     <strong>{tarea.tarea}</strong>
                     <span className="en-progreso-meta">
-                      {tarea.fincaNombre} · {formatTareaMapLabel(tarea)}
+                      {tarea.fincaNombre} · {tarea.tipo === 'manual' ? 'Manual' : 'Mecánica'}
                     </span>
                   </div>
                   <div className="en-progreso-cerrada-actions">

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Clock } from 'lucide-react'
 import type { Tarea } from '../../types'
+import type { MapRelevamientoActions } from '../../features/mapRelevamiento'
 
 const VineyardMap = lazy(() => import('./VineyardMap'))
 
@@ -8,6 +9,10 @@ interface Props {
   tareas: Tarea[]
   filtroFinca: string
   filtroTarea?: string
+  /** map-relevamiento */
+  allTareas?: Tarea[]
+  mapRelevamiento?: MapRelevamientoActions | null
+  onLaborAsignada?: (labor: string) => void
 }
 
 function MapPlaceholder() {
@@ -28,7 +33,14 @@ function MapPlaceholder() {
   )
 }
 
-export default function DashboardMapLayer({ tareas, filtroFinca, filtroTarea = 'todas' }: Props) {
+export default function DashboardMapLayer({
+  tareas,
+  filtroFinca,
+  filtroTarea = 'todas',
+  allTareas,
+  mapRelevamiento,
+  onLaborAsignada,
+}: Props) {
   const [mapReady, setMapReady] = useState(false)
 
   useEffect(() => {
@@ -52,6 +64,9 @@ export default function DashboardMapLayer({ tareas, filtroFinca, filtroTarea = '
             filtroFinca={filtroFinca}
             filtroTarea={filtroTarea}
             fullHeight
+            allTareas={allTareas}
+            mapRelevamiento={mapRelevamiento}
+            onLaborAsignada={onLaborAsignada}
           />
         </Suspense>
       )}

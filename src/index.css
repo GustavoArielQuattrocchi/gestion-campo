@@ -2139,10 +2139,115 @@ button.task-list-item {
   border: none;
   background: transparent;
   padding: 0;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   text-align: left;
   cursor: pointer;
   font-family: inherit;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.en-progreso-item-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.en-progreso-chevron {
+  flex-shrink: 0;
+  color: var(--gray-500);
+  transition: transform 0.2s ease;
+  margin-top: 2px;
+}
+
+.en-progreso-chevron--open {
+  transform: rotate(180deg);
+}
+
+.en-progreso-avance-hint {
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: var(--gray-500);
+}
+
+.en-progreso-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+.en-progreso-badge--manual {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.en-progreso-badge--mecanica {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.en-progreso-badge--multi {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.en-progreso-ejecutores {
+  margin-bottom: 12px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+}
+
+.en-progreso-ejecutores h5 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--gray-700);
+}
+
+.en-progreso-ejecutores-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.en-progreso-ejecutor-row {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.en-progreso-ejecutor-row:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.en-progreso-ejecutor-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 8px;
+  margin-bottom: 4px;
+}
+
+.en-progreso-ejecutor-header strong {
+  font-size: 12px;
+}
+
+.en-progreso-ejecutor-stats {
+  font-size: 11px;
+  color: var(--gray-500);
 }
 
 .en-progreso-item-header strong {
@@ -4551,3 +4656,214 @@ button.task-list-item {
   background: var(--green-600);
   color: white;
 }
+
+/* --- map-relevamiento (feature escritorio; ver src/features/mapRelevamiento/config.ts) --- */
+
+.map-relevamiento-panel {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.map-relevamiento-title {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.map-relevamiento-desc,
+.map-relevamiento-hint {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--gray-500);
+}
+
+.map-relevamiento-btn-asignar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  justify-content: center;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+  background: #0d9488;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.map-relevamiento-btn-asignar:hover:not(:disabled) {
+  background: #0f766e;
+}
+
+.map-relevamiento-btn-asignar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.map-relevamiento-pendientes {
+  margin-top: 14px;
+}
+
+.map-relevamiento-pendientes h5 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.map-relevamiento-pendientes ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.map-relevamiento-pendientes li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 12px;
+  color: var(--gray-700);
+}
+
+.map-relevamiento-pendientes li:last-child {
+  border-bottom: none;
+}
+
+.map-relevamiento-btn-finalizar-cuadro {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #166534;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.map-relevamiento-btn-finalizar-cuadro:hover:not(:disabled) {
+  background: #bbf7d0;
+}
+
+.map-relevamiento-btn-finalizar-cuadro:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.map-relevamiento-all-done {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.map-relevamiento-error {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #b91c1c;
+  background: #fef2f2;
+  border-radius: 6px;
+}
+
+.map-relevamiento-modal {
+  max-width: 480px;
+  width: calc(100% - 32px);
+}
+
+.map-relevamiento-modal--compact {
+  max-width: 420px;
+}
+
+.map-relevamiento-modal-body {
+  padding: 0 20px 20px;
+}
+
+.map-relevamiento-tipo-toggle {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  padding: 3px;
+  background: var(--gray-100);
+  border-radius: 8px;
+}
+
+.map-relevamiento-tipo-toggle button {
+  flex: 1;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--gray-600);
+  cursor: pointer;
+}
+
+.map-relevamiento-tipo-toggle button.active {
+  background: white;
+  color: var(--gray-900);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.map-relevamiento-continue-hint {
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #0f766e;
+  background: #f0fdfa;
+  border-radius: 6px;
+}
+
+.map-relevamiento-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.map-relevamiento-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+  font-size: 13px;
+  color: var(--gray-700);
+  cursor: pointer;
+}
+
+.map-relevamiento-rendimiento-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.map-relevamiento-finalizar-summary {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--gray-800);
+}
+
+.map-relevamiento-btn-finalizar {
+  background: #16a34a;
+}
+
+.map-relevamiento-btn-finalizar:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.btn-primary.map-relevamiento-btn-finalizar {
+  border-color: #16a34a;
+}
+

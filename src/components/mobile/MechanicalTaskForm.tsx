@@ -3,6 +3,7 @@ import { ChevronLeft, Save } from 'lucide-react'
 import { getMaquinariasPorFinca, tareasMecanicas } from '../../data/catalog'
 import { emptyCuadroSelection, type CuadroSelection, type ParteDeLabores, type Tarea } from '../../types'
 import { findTareaContinuableMecanica } from '../../utils/findTareaContinuable'
+import type { ContinueTaskOptions } from '../../utils/tareaEjecutor'
 import CuadroSelector from './CuadroSelector'
 import ContinueTaskBanner from './ContinueTaskBanner'
 
@@ -21,7 +22,12 @@ interface Props {
     cuadroIds: string[]
     ordenCuraRef?: string
   }) => Promise<boolean>
-  onContinue: (tareaId: string, cuadros: string[], cuadroIds: string[]) => Promise<boolean>
+  onContinue: (
+    tareaId: string,
+    cuadros: string[],
+    cuadroIds: string[],
+    options?: ContinueTaskOptions,
+  ) => Promise<boolean>
   onBack: () => void
 }
 
@@ -36,9 +42,18 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
   const maquinariasFinca = useMemo(() => getMaquinariasPorFinca(fincaId), [fincaId])
 
   const tareaContinuable = useMemo(
-    () => findTareaContinuableMecanica(tareasActivas, tarea, persona),
-    [tareasActivas, tarea, persona],
+    () => findTareaContinuableMecanica(tareasActivas, tarea),
+    [tareasActivas, tarea],
   )
+
+  const ejecutorActualLabel = useMemo(() => {
+    if (!persona || !maquinariaId) return undefined
+    const tractor = maquinariasFinca.find(m => m.id === maquinariaId)
+    if (!tractor) return persona
+    return tractor.modelo
+      ? `${persona} · ${tractor.nombre} (${tractor.modelo})`
+      : `${persona} · ${tractor.nombre}`
+  }, [persona, maquinariaId, maquinariasFinca])
 
   const isValid = tarea && persona && maquinariaId && cuadroSelection.cuadroIds.length > 0
 
@@ -50,7 +65,12 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
     setSaving(true)
     try {
       if (tareaContinuable) {
-        await onContinue(tareaContinuable.id, cuadroSelection.cuadros, cuadroSelection.cuadroIds)
+        await onContinue(tareaContinuable.id, cuadroSelection.cuadros, cuadroSelection.cuadroIds, {
+          persona,
+          maquinaria: tractor.nombre,
+          maquinariaModelo: tractor.modelo,
+          maquinariaId: tractor.id,
+        })
       } else {
         await onSubmit({
           tarea,
@@ -151,7 +171,11 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
       </div>
 
       {tareaContinuable && (
-        <ContinueTaskBanner tarea={tareaContinuable} partesAbiertos={partesAbiertos} />
+        <ContinueTaskBanner
+          tarea={tareaContinuable}
+          partesAbiertos={partesAbiertos}
+          ejecutorActual={ejecutorActualLabel}
+        />
       )}
 
       <button

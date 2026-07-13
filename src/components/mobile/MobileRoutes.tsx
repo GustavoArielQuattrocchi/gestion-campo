@@ -264,7 +264,7 @@ export default function MobileRoutes() {
                 tareasActivas={tareasActivas}
                 partesAbiertos={partesAbiertos}
                 onSubmit={handleStartMechanicalTask}
-                onContinue={(tareaId, cuadros, cuadroIds) => handleContinueTask(tareaId, cuadros, cuadroIds)}
+                onContinue={handleContinueTask}
                 onBack={() => navigate(MOBILE_ROUTES.tareaTipo)}
               />
             }

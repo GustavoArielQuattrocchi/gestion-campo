@@ -26,6 +26,9 @@ const testFiles = [
   'src/modules/ordenesCura/utils/ocNumber.test.ts',
   'src/validation/tareaCreate.test.ts',
   'src/validation/accidentReport.test.ts',
+  'src/features/mapRelevamiento/escritorioTareaConflicts.test.ts',
+  'src/utils/vineyardMapState.test.ts',
+  'src/utils/findTareaContinuable.test.ts',
 ]
 
 const outDir = mkdtempSync(join(tmpdir(), 'gestion-campo-tests-'))

@@ -1,47 +1,32 @@
 import { collection, doc, getDocs, query, updateDoc, where, writeBatch } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Tarea, TareaManual } from '../types'
+import { findDuplicados, type GrupoDuplicado } from './consolidarTareasLogic'
+import {
+  getEjecutorLabelFromTarea,
+  inferEjecutorPorCuadroFromTarea,
+  mergeEjecutorPorCuadro,
+} from './tareaEjecutor'
 
-/** Clave que identifica tareas duplicadas (misma finca + labor + ejecutor). */
-function duplicateKey(t: Tarea): string {
-  const ejecutor = t.tipo === 'manual' ? t.cuadrilla : t.persona
-  return `${t.fincaId}|${t.tarea}|${t.tipo}|${ejecutor}`.toLowerCase()
-}
+export type { GrupoDuplicado } from './consolidarTareasLogic'
+export { findDuplicados } from './consolidarTareasLogic'
 
-export interface GrupoDuplicado {
-  key: string
-  principal: Tarea
-  duplicadas: Tarea[]
-}
-
-/** Encuentra grupos de tareas en_progreso duplicadas (misma finca+labor+ejecutor). */
-export function findDuplicados(tareas: Tarea[]): GrupoDuplicado[] {
-  const enProgreso = tareas.filter(t => t.estado === 'en_progreso')
-  const grupos = new Map<string, Tarea[]>()
-
-  for (const t of enProgreso) {
-    const key = duplicateKey(t)
-    const arr = grupos.get(key) ?? []
-    arr.push(t)
-    grupos.set(key, arr)
+function mergeEjecutorMaps(principal: Tarea, duplicadas: Tarea[]): Record<string, string> {
+  let merged = { ...(principal.ejecutorPorCuadro ?? inferEjecutorPorCuadroFromTarea(principal)) }
+  for (const dup of duplicadas) {
+    const dupMap = dup.ejecutorPorCuadro ?? inferEjecutorPorCuadroFromTarea(dup)
+    merged = mergeEjecutorPorCuadro(merged, dupMap)
+    const fallbackLabel = getEjecutorLabelFromTarea(dup)
+    for (const id of dup.cuadroIds ?? []) {
+      if (!merged[id]) merged[id] = fallbackLabel
+    }
   }
-
-  const result: GrupoDuplicado[] = []
-  for (const [key, group] of grupos) {
-    if (group.length < 2) continue
-    const sorted = [...group].sort((a, b) => {
-      const ta = a.fechaInicio?.toDate?.()?.getTime() ?? 0
-      const tb = b.fechaInicio?.toDate?.()?.getTime() ?? 0
-      return ta - tb
-    })
-    result.push({ key, principal: sorted[0], duplicadas: sorted.slice(1) })
-  }
-  return result
+  return merged
 }
 
 /**
- * Consolida tareas duplicadas: fusiona cuadros, cuadroIds, cuadroIdsFinalizados
- * y rendimientosDiarios en la tarea principal, y elimina las duplicadas
+ * Consolida tareas duplicadas: fusiona cuadros, cuadroIds, cuadroIdsFinalizados,
+ * rendimientosDiarios y ejecutorPorCuadro en la tarea principal, y elimina las duplicadas
  * (junto con sus partes de labores reasignándolos a la principal).
  */
 export async function consolidarGrupo(grupo: GrupoDuplicado): Promise<void> {
@@ -64,9 +49,12 @@ export async function consolidarGrupo(grupo: GrupoDuplicado): Promise<void> {
     }
   }
 
+  const ejecutorPorCuadro = mergeEjecutorMaps(principal, duplicadas)
+
   const updateData: Record<string, unknown> = {
     cuadros: [...allCuadros],
     cuadroIds: [...allCuadroIds],
+    ejecutorPorCuadro,
   }
 
   if (allFinalizados.size > 0) {

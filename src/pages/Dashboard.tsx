@@ -10,6 +10,8 @@ import DashboardMapTaskFilter from '../components/dashboard/DashboardMapTaskFilt
 import DashboardPendingPartesAlert from '../components/dashboard/DashboardPendingPartesAlert'
 import { METRIC_ACCENTS, DOTACION_ACCENT } from '../components/dashboard/dashboardConstants'
 import { useDashboardTareas } from '../hooks/useDashboardTareas'
+// map-relevamiento
+import { isMapRelevamientoEnabled, useMapRelevamiento } from '../features/mapRelevamiento'
 import { usePartesLabores } from '../hooks/usePartesLabores'
 import { useInformesAccidente } from '../hooks/useInformesAccidente'
 import { applyPartesDashboardFilters } from '../utils/dashboardFilters'
@@ -41,6 +43,7 @@ export default function Dashboard() {
   } = usePartesLabores()
 
   const {
+    allTareas,
     loading,
     error,
     indexCreateUrl,
@@ -78,6 +81,9 @@ export default function Dashboard() {
     consolidarDuplicados,
     partesForStaffing,
   } = useDashboardTareas(partesLabores)
+
+  // map-relevamiento: hook aislado; desactivar con MAP_RELEVAMIENTO_ENABLED
+  const mapRelevamiento = useMapRelevamiento(allTareas)
 
   const [contentModal, setContentModal] = useState<ContentModalKey | null>(null)
 
@@ -139,6 +145,9 @@ export default function Dashboard() {
         tareas={tareasFiltradas}
         filtroFinca={filtroFinca}
         filtroTarea={filtroTareaMapa}
+        allTareas={isMapRelevamientoEnabled() ? allTareas : undefined}
+        mapRelevamiento={isMapRelevamientoEnabled() ? mapRelevamiento : null}
+        onLaborAsignada={setFiltroTareaMapa}
       />
 
       <DashboardWeatherFloat filtroFinca={filtroFinca} />
@@ -218,6 +227,7 @@ export default function Dashboard() {
           <Suspense fallback={<ModalLoading />}>
             <EnProgresoContent
               tareas={tareasFiltradas}
+              partes={partesLabores}
               filtroFinca={enProgresoFiltroFinca}
               filtroTarea={enProgresoFiltroTarea}
               duplicadosCount={duplicadosCount}

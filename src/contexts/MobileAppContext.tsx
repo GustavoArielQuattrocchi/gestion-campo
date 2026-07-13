@@ -50,7 +50,13 @@ import {
   OFFLINE_WRITE_TOAST,
   useOnlineStatus,
 } from '../hooks/useOnlineStatus'
-import { buildParteAbiertoPayload, buildParteCierreUpdate } from '../utils/buildParteDeLaboresPayload'
+import { buildParteAbiertoPayload, buildParteCierreUpdate, type ParteEjecutorOverride } from '../utils/buildParteDeLaboresPayload'
+import {
+  buildEjecutorPorCuadroPatch,
+  ejecutorLabelFromContinueOptions,
+  mergeEjecutorPorCuadro,
+  type ContinueTaskOptions,
+} from '../utils/tareaEjecutor'
 import { parsePartesFromSnapshot } from '../utils/parseParteDeLabores'
 import { tieneParteAbierto, resolveCerradoEn } from '../utils/parteEstado'
 
@@ -111,7 +117,12 @@ interface MobileAppContextValue {
       clima?: WeatherSnapshot
     },
   ) => Promise<void>
-  handleContinueTask: (tareaId: string, cuadros: string[], cuadroIds: string[], cantidadPersonas?: number) => Promise<boolean>
+  handleContinueTask: (
+    tareaId: string,
+    cuadros: string[],
+    cuadroIds: string[],
+    options?: ContinueTaskOptions,
+  ) => Promise<boolean>
   handleAccidentSuccess: (detail?: string) => void
   getTareaActiva: (tareaId: string) => Tarea | undefined
 }
@@ -156,11 +167,11 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
   const partesAbiertosRef = useRef(partesAbiertos)
   partesAbiertosRef.current = partesAbiertos
 
-  const abrirParteDeLabores = useCallback(async (tarea: Tarea) => {
+  const abrirParteDeLabores = useCallback(async (tarea: Tarea, ejecutor?: ParteEjecutorOverride) => {
     if (tieneParteAbierto(partesAbiertosRef.current, tarea.id)) return
     await addDoc(
       collection(db, 'partes_labores'),
-      buildParteAbiertoPayload(tarea, operadorNombre, Timestamp.now()),
+      buildParteAbiertoPayload(tarea, operadorNombre, Timestamp.now(), ejecutor),
     )
   }, [operadorNombre])
 
@@ -339,6 +350,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         cantidadPersonas: validated.data.cantidadPersonas,
         cuadros: validated.data.cuadros,
         cuadroIds: validated.data.cuadroIds,
+        ...(payload.ejecutorPorCuadro ? { ejecutorPorCuadro: payload.ejecutorPorCuadro } : {}),
         estado: 'en_progreso',
         operador: operadorNombre.trim(),
         fechaInicio: payload.fechaInicio,
@@ -405,6 +417,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         ...(validated.data.ordenCuraRef ? { ordenCuraRef: validated.data.ordenCuraRef } : {}),
         cuadros: validated.data.cuadros,
         cuadroIds: validated.data.cuadroIds,
+        ...(payload.ejecutorPorCuadro ? { ejecutorPorCuadro: payload.ejecutorPorCuadro } : {}),
         estado: 'en_progreso',
         operador: operadorNombre.trim(),
         fechaInicio: payload.fechaInicio,
@@ -435,36 +448,66 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     tareaId: string,
     cuadros: string[],
     cuadroIds: string[],
-    cantidadPersonas?: number,
+    options: ContinueTaskOptions = {},
   ): Promise<boolean> => {
     if (submittingRef.current) return false
     submittingRef.current = true
     try {
+      const tarea = tareasActivas.find(t => t.id === tareaId)
+      if (!tarea) {
+        setFirestoreError('No se encontró la tarea activa.')
+        return false
+      }
+
+      const ejecutorLabel = ejecutorLabelFromContinueOptions(tarea.tipo, options)
+      const ejecutorPatch = ejecutorLabel
+        ? buildEjecutorPorCuadroPatch(cuadroIds, ejecutorLabel)
+        : {}
+
       const updates: Record<string, unknown> = {
         cuadros: arrayUnion(...cuadros),
         cuadroIds: arrayUnion(...cuadroIds),
       }
-      if (cantidadPersonas !== undefined) {
-        updates.cantidadPersonas = cantidadPersonas
+      if (Object.keys(ejecutorPatch).length > 0) {
+        updates.ejecutorPorCuadro = mergeEjecutorPorCuadro(tarea.ejecutorPorCuadro, ejecutorPatch)
       }
+      if (options.cantidadPersonas !== undefined && tarea.tipo === 'manual') {
+        updates.cantidadPersonas = Math.max(tarea.cantidadPersonas, options.cantidadPersonas)
+      }
+
       await updateDoc(doc(db, 'tareas', tareaId), updates)
-      const tarea = tareasActivas.find(t => t.id === tareaId)
-      if (tarea) {
-        const tareaActualizada: Tarea = {
-          ...tarea,
-          cuadros: [...new Set([...(tarea.cuadros ?? []), ...cuadros])],
-          cuadroIds: [...new Set([...(tarea.cuadroIds ?? []), ...cuadroIds])],
-          ...(cantidadPersonas !== undefined && tarea.tipo === 'manual'
-            ? { cantidadPersonas }
-            : {}),
-        }
-        await abrirParteDeLabores(tareaActualizada)
+
+      const tareaActualizada: Tarea = {
+        ...tarea,
+        cuadros: [...new Set([...(tarea.cuadros ?? []), ...cuadros])],
+        cuadroIds: [...new Set([...(tarea.cuadroIds ?? []), ...cuadroIds])],
+        ...(Object.keys(ejecutorPatch).length > 0
+          ? { ejecutorPorCuadro: mergeEjecutorPorCuadro(tarea.ejecutorPorCuadro, ejecutorPatch) }
+          : {}),
+        ...(options.cantidadPersonas !== undefined && tarea.tipo === 'manual'
+          ? { cantidadPersonas: Math.max(tarea.cantidadPersonas, options.cantidadPersonas) }
+          : {}),
       }
+
+      const parteEjecutor: ParteEjecutorOverride | undefined =
+        tarea.tipo === 'manual'
+          ? {
+              cuadrilla: options.cuadrilla,
+              cantidadPersonas: options.cantidadPersonas,
+            }
+          : {
+              persona: options.persona,
+              maquinaria: options.maquinaria,
+              maquinariaModelo: options.maquinariaModelo,
+              maquinariaId: options.maquinariaId,
+            }
+
+      await abrirParteDeLabores(tareaActualizada, parteEjecutor)
       setFirestoreError(null)
       setLastCreatedTareaId(tareaId)
       setSuccessMsg({
         message: 'Cuadros agregados a tarea existente',
-        detail: `Se agregaron ${cuadros.length} cuadro${cuadros.length > 1 ? 's' : ''} a la tarea`,
+        detail: `Se agregaron ${cuadros.length} cuadro${cuadros.length > 1 ? 's' : ''} a la labor ${tarea.tarea}`,
       })
       if (!navigator.onLine) {
         markPendingSync()

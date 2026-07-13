@@ -11,6 +11,16 @@ type ParteExtras = {
   clima?: WeatherSnapshot
 }
 
+/** Datos de ejecutor al abrir parte (p. ej. otra cuadrilla en la misma labor). */
+export type ParteEjecutorOverride = {
+  cuadrilla?: string
+  cantidadPersonas?: number
+  persona?: string
+  maquinaria?: string
+  maquinariaModelo?: string
+  maquinariaId?: string
+}
+
 function parteBaseFields(tarea: Tarea, operador: string) {
   return {
     tareaId: tarea.id,
@@ -29,6 +39,7 @@ export function buildParteAbiertoPayload(
   tarea: Tarea,
   operador: string,
   abiertoEn: Timestamp,
+  ejecutor?: ParteEjecutorOverride,
 ): ParteDeLaboresFirestorePayload {
   const base = {
     ...parteBaseFields(tarea, operador),
@@ -39,17 +50,21 @@ export function buildParteAbiertoPayload(
   if (tarea.tipo === 'manual') {
     return {
       ...base,
-      cuadrilla: tarea.cuadrilla,
-      cantidadPersonas: tarea.cantidadPersonas,
+      cuadrilla: ejecutor?.cuadrilla?.trim() || tarea.cuadrilla,
+      cantidadPersonas: ejecutor?.cantidadPersonas ?? tarea.cantidadPersonas,
     }
   }
 
   return {
     ...base,
-    persona: tarea.persona,
-    maquinaria: tarea.maquinaria,
-    ...(tarea.maquinariaModelo ? { maquinariaModelo: tarea.maquinariaModelo } : {}),
-    ...(tarea.maquinariaId ? { maquinariaId: tarea.maquinariaId } : {}),
+    persona: ejecutor?.persona?.trim() || tarea.persona,
+    maquinaria: ejecutor?.maquinaria?.trim() || tarea.maquinaria,
+    ...((ejecutor?.maquinariaModelo ?? tarea.maquinariaModelo)
+      ? { maquinariaModelo: ejecutor?.maquinariaModelo ?? tarea.maquinariaModelo }
+      : {}),
+    ...((ejecutor?.maquinariaId ?? tarea.maquinariaId)
+      ? { maquinariaId: ejecutor?.maquinariaId ?? tarea.maquinariaId }
+      : {}),
   }
 }
 

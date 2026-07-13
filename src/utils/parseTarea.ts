@@ -88,6 +88,20 @@ export function parseTarea(id: string, raw: Record<string, unknown>): ParseTarea
         .filter((r): r is NonNullable<typeof r> => r !== null)
     : []
 
+  const ejecutorPorCuadroRaw = raw.ejecutorPorCuadro
+  const ejecutorPorCuadro =
+    ejecutorPorCuadroRaw && typeof ejecutorPorCuadroRaw === 'object' && !Array.isArray(ejecutorPorCuadroRaw)
+      ? Object.fromEntries(
+          Object.entries(ejecutorPorCuadroRaw as Record<string, unknown>).filter(
+            (entry): entry is [string, string] =>
+              typeof entry[0] === 'string' &&
+              entry[0].trim().length > 0 &&
+              typeof entry[1] === 'string' &&
+              entry[1].trim().length > 0,
+          ),
+        )
+      : undefined
+
   const rendimientosDiarios = Array.isArray(raw.rendimientosDiarios)
     ? raw.rendimientosDiarios
         .map(entry => {
@@ -118,6 +132,7 @@ export function parseTarea(id: string, raw: Record<string, unknown>): ParseTarea
     ...(cuadroIds.length > 0 ? { cuadroIds } : {}),
     ...(cuadroIdsFinalizados.length > 0 ? { cuadroIdsFinalizados } : {}),
     ...(cuadroFinalizaciones.length > 0 ? { cuadroFinalizaciones } : {}),
+    ...(ejecutorPorCuadro && Object.keys(ejecutorPorCuadro).length > 0 ? { ejecutorPorCuadro } : {}),
     estado,
     operador,
     fechaInicio,

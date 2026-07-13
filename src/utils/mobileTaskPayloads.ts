@@ -1,5 +1,6 @@
 import type { Timestamp } from 'firebase/firestore'
 import type { ManualTaskCreateInput, MechanicalTaskCreateInput } from '../validation/tareaCreate'
+import { buildEjecutorPorCuadroPatch } from './tareaEjecutor'
 
 export interface ManualTaskFirestorePayload {
   fincaId: string
@@ -13,6 +14,7 @@ export interface ManualTaskFirestorePayload {
   estado: 'en_progreso'
   operador: string
   fechaInicio: Timestamp
+  ejecutorPorCuadro?: Record<string, string>
 }
 
 export interface MechanicalTaskFirestorePayload {
@@ -30,6 +32,7 @@ export interface MechanicalTaskFirestorePayload {
   estado: 'en_progreso'
   operador: string
   fechaInicio: Timestamp
+  ejecutorPorCuadro?: Record<string, string>
 }
 
 export function hasMobileSession(
@@ -44,6 +47,7 @@ export function buildManualTaskFirestorePayload(
   validated: ManualTaskCreateInput,
   ctx: { fincaId: string; fincaNombre: string; operadorNombre: string; fechaInicio: Timestamp },
 ): ManualTaskFirestorePayload {
+  const ejecutorPorCuadro = buildEjecutorPorCuadroPatch(validated.cuadroIds, validated.cuadrilla)
   return {
     fincaId: ctx.fincaId,
     fincaNombre: ctx.fincaNombre,
@@ -56,6 +60,7 @@ export function buildManualTaskFirestorePayload(
     estado: 'en_progreso',
     operador: ctx.operadorNombre.trim(),
     fechaInicio: ctx.fechaInicio,
+    ejecutorPorCuadro,
   }
 }
 
@@ -63,6 +68,11 @@ export function buildMechanicalTaskFirestorePayload(
   validated: MechanicalTaskCreateInput,
   ctx: { fincaId: string; fincaNombre: string; operadorNombre: string; fechaInicio: Timestamp },
 ): MechanicalTaskFirestorePayload {
+  const modelo = validated.maquinariaModelo?.trim()
+  const ejecutorLabel = modelo
+    ? `${validated.persona} · ${validated.maquinaria} (${modelo})`
+    : `${validated.persona} · ${validated.maquinaria}`
+  const ejecutorPorCuadro = buildEjecutorPorCuadroPatch(validated.cuadroIds, ejecutorLabel)
   return {
     fincaId: ctx.fincaId,
     fincaNombre: ctx.fincaNombre,
@@ -78,5 +88,6 @@ export function buildMechanicalTaskFirestorePayload(
     estado: 'en_progreso',
     operador: ctx.operadorNombre.trim(),
     fechaInicio: ctx.fechaInicio,
+    ejecutorPorCuadro,
   }
 }

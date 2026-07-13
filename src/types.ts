@@ -106,6 +106,8 @@ interface TareaBase {
   rendimiento?: string
   /** Historial de cierres diarios desde campo. */
   rendimientosDiarios?: RendimientoDiario[]
+  /** Ejecutor asignado por cuadro (cuadrilla u operario+maquinaria). */
+  ejecutorPorCuadro?: Record<string, string>
 }
 
 export interface TareaManual extends TareaBase {
