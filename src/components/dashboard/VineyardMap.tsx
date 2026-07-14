@@ -18,8 +18,8 @@ import { getCuadroDetalleById } from '../../data/fincaData'
 import { formatHectareas } from '../../utils/cuadroQr'
 import CuadroCatalogoResumen from '../cuadro/CuadroCatalogoResumen'
 import { formatTareaMapLabel } from '../../utils/vineyardMapLabels'
-import { filterTareasForMap, MAP_TAREA_TODAS } from '../../utils/mapTaskFilter'
-import { buildEstadoPorCuadro, collectCuadroIdsFromTareas } from '../../utils/vineyardMapState'
+import { filterTareasForMap } from '../../utils/mapTaskFilter'
+import { buildEstadoPorCuadro, buildEstadoPorCuadroParaMapa } from '../../utils/vineyardMapState'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 import TaskProgressBar from './TaskProgressBar'
 // map-relevamiento: imports de la feature (ver src/features/mapRelevamiento/config.ts)
@@ -46,6 +46,8 @@ const DEFAULT_ZOOM = 14
 
 const CUADRO_FILL = '#9ca3af'
 const CUADRO_STROKE = '#6b7280'
+const CUADRO_MULTI_FILL = '#ddd6fe'
+const CUADRO_MULTI_STROKE = '#7c3aed'
 
 /** Interpolates red→yellow→green based on ratio 0..1. */
 function heatColor(ratio: number): string {
@@ -101,12 +103,20 @@ export default function VineyardMap({
     [tareasParaEstado, filtroTarea],
   )
 
-  // Estado real del cuadro (todas las labores). El filtro de labor solo acota el resaltado.
-  const estadoPorCuadro = useMemo(() => buildEstadoPorCuadro(tareasParaEstado), [tareasParaEstado])
+  /**
+   * Color del polígono: según la labor del filtro.
+   * - filtro labor → solo esa labor (Poda cerrada = gris aunque haya otra abierta)
+   * - filtro todas → estado combinado (verde si alguna labor está pendiente)
+   */
+  const estadoPorCuadroColor = useMemo(
+    () => buildEstadoPorCuadroParaMapa(tareasParaEstado, filtroTarea),
+    [tareasParaEstado, filtroTarea],
+  )
 
-  const cuadrosConLaborFiltro = useMemo(
-    () => (filtroTarea === MAP_TAREA_TODAS ? null : collectCuadroIdsFromTareas(tareasMapa)),
-    [filtroTarea, tareasMapa],
+  /** Panel lateral: todas las labores del cuadro, independientemente del filtro. */
+  const estadoPorCuadroCompleto = useMemo(
+    () => buildEstadoPorCuadro(tareasParaEstado),
+    [tareasParaEstado],
   )
 
   // Agregación de rendimiento por cuadro para heat map.
@@ -191,11 +201,9 @@ export default function VineyardMap({
           }
         }
       } else {
-        const estado = estadoPorCuadro.get(props.name)
-        const visibleConFiltroLabor =
-          cuadrosConLaborFiltro === null || cuadrosConLaborFiltro.has(props.name)
+        const estado = estadoPorCuadroColor.get(props.name)
 
-        if (!visibleConFiltroLabor || !estado) {
+        if (!estado) {
           base = {
             fill: true,
             fillColor: CUADRO_FILL,
@@ -203,6 +211,15 @@ export default function VineyardMap({
             color: CUADRO_STROKE,
             weight: 1,
             opacity: 0.75,
+          }
+        } else if (estado.multiplesLabores) {
+          base = {
+            fill: true,
+            fillColor: CUADRO_MULTI_FILL,
+            fillOpacity: 0.55,
+            color: CUADRO_MULTI_STROKE,
+            weight: 2.5,
+            opacity: 1,
           }
         } else if (estado.pendiente) {
           base = {
@@ -246,7 +263,7 @@ export default function VineyardMap({
         fillOpacity: Math.min((base.fillOpacity ?? 0.4) + 0.15, 0.85),
       }
     },
-    [estadoPorCuadro, cuadrosConLaborFiltro, viewMode, rendimientoHeatData]
+    [estadoPorCuadroColor, viewMode, rendimientoHeatData]
   )
 
   // Tooltip y click en cada feature.
@@ -298,12 +315,15 @@ export default function VineyardMap({
 
   // Forzamos re-render del GeoJSON cuando cambia el set de features o el estado.
   const geoKey = useMemo(() => {
-    const marcados = Array.from(estadoPorCuadro.entries())
-      .map(([k, v]) => `${k}:${v.pendiente ? 'p' : ''}${v.cuadroFinalizado ? 'f' : ''}`)
+    const marcados = Array.from(estadoPorCuadroColor.entries())
+      .map(
+        ([k, v]) =>
+          `${k}:${v.multiplesLabores ? 'm' : ''}${v.pendiente ? 'p' : ''}${v.cuadroFinalizado ? 'f' : ''}`,
+      )
       .sort()
       .join(',')
     return `${filtroFinca}|${filtroTarea}|${features.length}|${marcados}|${viewMode}`
-  }, [filtroFinca, filtroTarea, features, estadoPorCuadro, viewMode])
+  }, [filtroFinca, filtroTarea, features, estadoPorCuadroColor, viewMode])
 
   const detallesSeleccion = useMemo(() => {
     if (!seleccionado) return null
@@ -312,9 +332,9 @@ export default function VineyardMap({
     return {
       name: props.name,
       cuadro,
-      estado: estadoPorCuadro.get(props.name),
+      estado: estadoPorCuadroCompleto.get(props.name),
     }
-  }, [seleccionado, estadoPorCuadro])
+  }, [seleccionado, estadoPorCuadroCompleto])
 
   return (
     <div
@@ -373,6 +393,13 @@ export default function VineyardMap({
             <div className="map-legend-item">
               <span className="legend-swatch" style={{ borderColor: '#16a34a' }} />
               <span>Cuadro en progreso</span>
+            </div>
+            <div className="map-legend-item">
+              <span
+                className="legend-swatch"
+                style={{ background: CUADRO_MULTI_FILL, borderColor: CUADRO_MULTI_STROKE }}
+              />
+              <span>Múltiples labores</span>
             </div>
             <div className="map-legend-item">
               <span className="legend-swatch" style={{ borderColor: '#4b5563' }} />
