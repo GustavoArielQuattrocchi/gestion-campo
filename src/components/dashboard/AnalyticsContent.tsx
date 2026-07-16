@@ -1,10 +1,16 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Tarea, ParteDeLabores } from '../../types'
 import {
   computeDailyProductivity,
   computeDailyStaffing,
   computeCumulativeProgress,
   computeAnalyticsKPIs,
+  chartTotalsByDay,
+  chartRatiosByDay,
+  listProductivityUnits,
+  listRatioUnits,
+  formatTotalsCell,
+  formatRatiosCell,
 } from '../../utils/analyticsAggregations'
 import { aggregateStaffingFromPartes } from '../../utils/dotacion'
 import { computeTareaProgress } from '../../utils/tareaProgress'
@@ -31,8 +37,9 @@ interface Props {
 export default function AnalyticsContent({ tareas, partes, partesStaffing }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>('productividad')
   const [selectedUnit, setSelectedUnit] = useState<string>('hileras')
+  const [selectedRatioUnit, setSelectedRatioUnit] = useState<string>('hileras')
 
-  const dailyProd = useMemo(() => computeDailyProductivity(tareas), [tareas])
+  const dailyProd = useMemo(() => computeDailyProductivity(tareas, partes), [tareas, partes])
   const dailyStaff = useMemo(() => {
     const staffingPartes = partesStaffing ?? partes
     const fromPartes = aggregateStaffingFromPartes(staffingPartes)
@@ -66,23 +73,31 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
     [tareas],
   )
 
-  const availableUnits = useMemo(() => {
-    const units = new Set<string>()
-    for (const day of dailyProd) {
-      for (const u of Object.keys(day.totalByUnit)) units.add(u)
+  const availableUnits = useMemo(() => listProductivityUnits(dailyProd), [dailyProd])
+  const ratioUnits = useMemo(() => listRatioUnits(dailyProd), [dailyProd])
+
+  useEffect(() => {
+    if (availableUnits.length === 0) return
+    if (!availableUnits.includes(selectedUnit)) {
+      setSelectedUnit(availableUnits.includes('hileras') ? 'hileras' : availableUnits[0])
     }
-    return [...units].sort()
-  }, [dailyProd])
+  }, [availableUnits, selectedUnit])
+
+  useEffect(() => {
+    if (ratioUnits.length === 0) return
+    if (!ratioUnits.includes(selectedRatioUnit)) {
+      setSelectedRatioUnit(ratioUnits.includes('hileras') ? 'hileras' : ratioUnits[0])
+    }
+  }, [ratioUnits, selectedRatioUnit])
 
   const prodChartData = useMemo(
-    () =>
-      dailyProd
-        .filter(d => (d.totalByUnit[selectedUnit] ?? 0) > 0)
-        .map(d => ({
-          label: d.label,
-          value: d.totalByUnit[selectedUnit] ?? 0,
-        })),
+    () => chartTotalsByDay(dailyProd, selectedUnit),
     [dailyProd, selectedUnit],
+  )
+
+  const ratioChartData = useMemo(
+    () => chartRatiosByDay(dailyProd, selectedRatioUnit),
+    [dailyProd, selectedRatioUnit],
   )
 
   const staffChartData = useMemo(
@@ -131,6 +146,60 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
               <BarChart data={prodChartData} unit={selectedUnit} barColor="#22c55e" />
             ) : (
               <p className="analytics-empty">No hay datos de rendimiento numérico aún.</p>
+            )}
+
+            <div className="analytics-chart-header" style={{ marginTop: 20 }}>
+              <h4>Rendimiento por jornal</h4>
+              {ratioUnits.length > 1 && (
+                <select
+                  className="analytics-unit-select"
+                  value={selectedRatioUnit}
+                  onChange={e => setSelectedRatioUnit(e.target.value)}
+                >
+                  {ratioUnits.map(u => (
+                    <option key={u} value={u}>{u}/jornal</option>
+                  ))}
+                </select>
+              )}
+            </div>
+            {ratioChartData.length > 0 ? (
+              <BarChart
+                data={ratioChartData}
+                unit={`${selectedRatioUnit}/jornal`}
+                barColor="#8b5cf6"
+              />
+            ) : (
+              <p className="analytics-empty">
+                No hay datos para calcular rendimiento por jornal con la unidad seleccionada.
+              </p>
+            )}
+
+            {dailyProd.length > 0 && (
+              <div className="analytics-kpi-table">
+                <h4>Detalle por día y labor</h4>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Labor</th>
+                      <th>Totales</th>
+                      <th>Jornales</th>
+                      <th>Ratio</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dailyProd.map(row => (
+                      <tr key={`${row.fecha}|${row.tarea}`}>
+                        <td>{row.label}</td>
+                        <td>{row.tarea}</td>
+                        <td>{formatTotalsCell(row.totalByUnit)}</td>
+                        <td className="num">{row.jornalesTotales.toFixed(1)}</td>
+                        <td>{formatRatiosCell(row.ratioByUnit)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
 
             {kpis.rendimientoPromedioPorLabor.length > 0 && (

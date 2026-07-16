@@ -2,12 +2,18 @@ import { format } from 'date-fns'
 import type { Tarea, TareaManual, ParteDeLabores, RendimientoUnidad } from '../types'
 import { getHectareasCuadro, getTotalHectareasFinca } from '../data/fincaData'
 
-/** Daily productivity data point for bar chart */
+/** Productividad diaria por labor (fuente de gráficos y tabla). */
 export interface DailyProductivity {
   fecha: string
   label: string
+  tarea: string
   entries: { tarea: string; cantidad: number; unidad: RendimientoUnidad }[]
+  /** Totales del día/labor por unidad (incluye jornal si se cargó como unidad). */
   totalByUnit: Record<string, number>
+  /** Jornales gastados (unidad jornal, o personas / 1 mecánica). */
+  jornalesTotales: number
+  /** Ratio cantidad/jornal por unidad productiva (sin `jornal`). */
+  ratioByUnit: Record<string, number>
 }
 
 /** Daily staffing data point */
@@ -46,33 +52,187 @@ function toLabel(d: Date): string {
   return format(d, 'dd/MM')
 }
 
-export function computeDailyProductivity(tareas: Tarea[]): DailyProductivity[] {
-  const byDate = new Map<string, { date: Date; entries: { tarea: string; cantidad: number; unidad: RendimientoUnidad }[] }>()
+function round2(n: number): number {
+  return Math.round(n * 100) / 100
+}
+
+type CloseMeta = {
+  closeKey: string
+  tipo: Tarea['tipo']
+  personasFallback: number
+}
+
+type LaborDayBucket = {
+  date: Date
+  tarea: string
+  entries: { tarea: string; cantidad: number; unidad: RendimientoUnidad }[]
+  closes: CloseMeta[]
+}
+
+function resolvePersonasFallback(
+  tarea: Tarea,
+  rd: { parteId?: string },
+  partesById: Map<string, ParteDeLabores>,
+): number {
+  if (tarea.tipo === 'mecanica') return 1
+  if (rd.parteId) {
+    const parte = partesById.get(rd.parteId)
+    if (parte?.cantidadPersonas && parte.cantidadPersonas >= 1) {
+      return parte.cantidadPersonas
+    }
+  }
+  return Math.max(1, (tarea as TareaManual).cantidadPersonas || 1)
+}
+
+/**
+ * Productividad por día y labor.
+ * Jornales: suma de unidad `jornal` si hay; si no, personas del parte→tarea (manual)
+ * o 1 por cierre (mecánica).
+ */
+export function computeDailyProductivity(
+  tareas: Tarea[],
+  partes: ParteDeLabores[] = [],
+): DailyProductivity[] {
+  const partesById = new Map(partes.map(p => [p.id, p]))
+  const byKey = new Map<string, LaborDayBucket>()
 
   for (const t of tareas) {
     if (!t.rendimientosDiarios) continue
     for (const rd of t.rendimientosDiarios) {
-      if (rd.cantidad == null || !rd.unidad) continue
+      if (rd.cantidad == null || !rd.unidad || !rd.fecha?.toDate) continue
       const d = rd.fecha.toDate()
-      const key = toDateKey(d)
-      let bucket = byDate.get(key)
+      const fecha = toDateKey(d)
+      const key = `${fecha}|${t.tarea}`
+      let bucket = byKey.get(key)
       if (!bucket) {
-        bucket = { date: d, entries: [] }
-        byDate.set(key, bucket)
+        bucket = { date: d, tarea: t.tarea, entries: [], closes: [] }
+        byKey.set(key, bucket)
       }
       bucket.entries.push({ tarea: t.tarea, cantidad: rd.cantidad, unidad: rd.unidad })
+      const closeKey = rd.parteId?.trim() || `${t.id}:${fecha}`
+      if (!bucket.closes.some(c => c.closeKey === closeKey)) {
+        bucket.closes.push({
+          closeKey,
+          tipo: t.tipo,
+          personasFallback: resolvePersonasFallback(t, rd, partesById),
+        })
+      }
     }
   }
 
-  return Array.from(byDate.entries())
+  return Array.from(byKey.entries())
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([fecha, { date, entries }]) => {
+    .map(([, bucket]) => {
       const totalByUnit: Record<string, number> = {}
-      for (const e of entries) {
+      for (const e of bucket.entries) {
         totalByUnit[e.unidad] = (totalByUnit[e.unidad] ?? 0) + e.cantidad
       }
-      return { fecha, label: toLabel(date), entries, totalByUnit }
+
+      const jornalesExplicitos = totalByUnit.jornal ?? 0
+      let jornalesTotales: number
+      if (jornalesExplicitos > 0) {
+        jornalesTotales = jornalesExplicitos
+      } else {
+        jornalesTotales = bucket.closes.reduce((sum, c) => {
+          if (c.tipo === 'mecanica') return sum + 1
+          return sum + c.personasFallback
+        }, 0)
+      }
+
+      const ratioByUnit: Record<string, number> = {}
+      if (jornalesTotales > 0) {
+        for (const [unidad, cantidad] of Object.entries(totalByUnit)) {
+          if (unidad === 'jornal') continue
+          ratioByUnit[unidad] = round2(cantidad / jornalesTotales)
+        }
+      }
+
+      return {
+        fecha: toDateKey(bucket.date),
+        label: toLabel(bucket.date),
+        tarea: bucket.tarea,
+        entries: bucket.entries,
+        totalByUnit,
+        jornalesTotales: round2(jornalesTotales),
+        ratioByUnit,
+      }
     })
+}
+
+/** Agrega totales por día (suma labors) para el gráfico de rendimiento crudo. */
+export function chartTotalsByDay(
+  rows: DailyProductivity[],
+  unit: string,
+): { label: string; value: number }[] {
+  const byFecha = new Map<string, { label: string; value: number }>()
+  for (const row of rows) {
+    const v = row.totalByUnit[unit] ?? 0
+    if (v <= 0) continue
+    const prev = byFecha.get(row.fecha)
+    if (prev) prev.value += v
+    else byFecha.set(row.fecha, { label: row.label, value: v })
+  }
+  return Array.from(byFecha.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, v]) => ({ label: v.label, value: round2(v.value) }))
+}
+
+/** Agrega ratio ponderado por día: Σ cantidad / Σ jornales. */
+export function chartRatiosByDay(
+  rows: DailyProductivity[],
+  unit: string,
+): { label: string; value: number }[] {
+  if (unit === 'jornal') return []
+  const byFecha = new Map<string, { label: string; cantidad: number; jornales: number }>()
+  for (const row of rows) {
+    const cantidad = row.totalByUnit[unit] ?? 0
+    if (cantidad <= 0 || row.jornalesTotales <= 0) continue
+    const prev = byFecha.get(row.fecha)
+    if (prev) {
+      prev.cantidad += cantidad
+      prev.jornales += row.jornalesTotales
+    } else {
+      byFecha.set(row.fecha, {
+        label: row.label,
+        cantidad,
+        jornales: row.jornalesTotales,
+      })
+    }
+  }
+  return Array.from(byFecha.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, v]) => ({
+      label: v.label,
+      value: round2(v.cantidad / v.jornales),
+    }))
+}
+
+export function listProductivityUnits(rows: DailyProductivity[]): string[] {
+  const units = new Set<string>()
+  for (const row of rows) {
+    for (const u of Object.keys(row.totalByUnit)) units.add(u)
+  }
+  return [...units].sort()
+}
+
+export function listRatioUnits(rows: DailyProductivity[]): string[] {
+  return listProductivityUnits(rows).filter(u => u !== 'jornal')
+}
+
+export function formatTotalsCell(totalByUnit: Record<string, number>): string {
+  const parts = Object.entries(totalByUnit)
+    .filter(([, v]) => v > 0)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([u, v]) => `${round2(v)} ${u}`)
+  return parts.length > 0 ? parts.join(' · ') : '—'
+}
+
+export function formatRatiosCell(ratioByUnit: Record<string, number>): string {
+  const parts = Object.entries(ratioByUnit)
+    .filter(([, v]) => v > 0)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([u, v]) => `${v.toFixed(1)} ${u}/jornal`)
+  return parts.length > 0 ? parts.join(' · ') : '—'
 }
 
 export function computeDailyStaffing(tareas: Tarea[]): DailyStaffing[] {
@@ -181,7 +341,6 @@ export function computeCumulativeProgress(tareas: Tarea[]): ProgressPoint[] {
 }
 
 export function computeAnalyticsKPIs(tareas: Tarea[], partes: ParteDeLabores[]): AnalyticsKPIs {
-  // --- rendimientoPromedioPorLabor ---
   const rendByLabor = new Map<string, { sum: number; count: number; unidad: string }>()
   for (const p of partes) {
     if (p.rendimientoCantidad == null || !p.rendimientoUnidad) continue
@@ -198,7 +357,6 @@ export function computeAnalyticsKPIs(tareas: Tarea[], partes: ParteDeLabores[]):
     count: v.count,
   }))
 
-  // --- diasParaCompletar ---
   const diasByTarea = new Map<string, { totalDias: number; count: number }>()
   for (const t of tareas) {
     if (t.estado !== 'finalizada' || !t.fechaFin) continue
@@ -214,11 +372,9 @@ export function computeAnalyticsKPIs(tareas: Tarea[], partes: ParteDeLabores[]):
     count: v.count,
   }))
 
-  // --- operadoresActivos ---
   const operadores = new Set(partes.map(p => p.operador))
   const operadoresActivos = operadores.size
 
-  // --- partesPorDia ---
   const diasDistintos = new Set(
     partes
       .filter(p => p.cerradoEn?.toDate)
@@ -228,7 +384,6 @@ export function computeAnalyticsKPIs(tareas: Tarea[], partes: ParteDeLabores[]):
     ? Math.round((partes.length / diasDistintos.size) * 10) / 10
     : 0
 
-  // --- rendimientoPorPersona ---
   const rendPP = new Map<string, { sum: number; personas: number; unidad: string }>()
   for (const p of partes) {
     if (p.tipo !== 'manual' || p.rendimientoCantidad == null || !p.rendimientoUnidad) continue
@@ -245,7 +400,6 @@ export function computeAnalyticsKPIs(tareas: Tarea[], partes: ParteDeLabores[]):
     unidad: v.unidad,
   }))
 
-  // --- utilizacionMaquinaria ---
   const maqMap = new Map<string, { modelo?: string; partes: number }>()
   for (const p of partes) {
     if (p.tipo !== 'mecanica' || !p.maquinaria) continue
@@ -261,7 +415,6 @@ export function computeAnalyticsKPIs(tareas: Tarea[], partes: ParteDeLabores[]):
     partes: v.partes,
   }))
 
-  // --- avancePorFinca ---
   const fincaProgress = new Map<string, Set<string>>()
   for (const t of tareas) {
     if (t.estado !== 'en_progreso') continue

@@ -29,6 +29,7 @@ const testFiles = [
   'src/features/mapRelevamiento/escritorioTareaConflicts.test.ts',
   'src/utils/vineyardMapState.test.ts',
   'src/utils/findTareaContinuable.test.ts',
+  'src/utils/analyticsAggregations.test.ts',
 ]
 
 const outDir = mkdtempSync(join(tmpdir(), 'gestion-campo-tests-'))
