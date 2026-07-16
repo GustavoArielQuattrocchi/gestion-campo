@@ -280,6 +280,56 @@ export function filterPartesByNombre(partes: ParteDeLabores[], filtroTarea: stri
   return partes.filter(p => p.tarea === filtroTarea)
 }
 
+export const FINCA_FILTRO_TODAS = 'todas'
+
+/** Nombres de finca ordenados por actividad más reciente primero. */
+export function listFincasPorRecencia(tareas: Tarea[], partes: ParteDeLabores[] = []): string[] {
+  const latest = new Map<string, number>()
+  const bump = (nombre: string, ms: number) => {
+    const key = nombre.trim()
+    if (!key) return
+    latest.set(key, Math.max(latest.get(key) ?? 0, ms))
+  }
+
+  for (const t of tareas) {
+    bump(t.fincaNombre, t.fechaInicio?.toDate?.()?.getTime() ?? 0)
+    bump(t.fincaNombre, t.fechaFin?.toDate?.()?.getTime() ?? 0)
+    for (const rd of t.rendimientosDiarios ?? []) {
+      bump(t.fincaNombre, rd.fecha?.toDate?.()?.getTime() ?? 0)
+    }
+  }
+  for (const p of partes) {
+    bump(p.fincaNombre, p.cerradoEn?.toDate?.()?.getTime() ?? p.abiertoEn?.toDate?.()?.getTime() ?? 0)
+  }
+
+  return [...latest.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'es'))
+    .map(([nombre]) => nombre)
+}
+
+export function filterTareasByFinca(tareas: Tarea[], filtroFinca: string): Tarea[] {
+  if (filtroFinca === FINCA_FILTRO_TODAS) return tareas
+  return tareas.filter(t => t.fincaNombre === filtroFinca)
+}
+
+export function filterPartesByFinca(partes: ParteDeLabores[], filtroFinca: string): ParteDeLabores[] {
+  if (filtroFinca === FINCA_FILTRO_TODAS) return partes
+  return partes.filter(p => p.fincaNombre === filtroFinca)
+}
+
+/** Aplica filtros de tarea y finca sobre el dataset de analytics. */
+export function filterAnalyticsScope(
+  tareas: Tarea[],
+  partes: ParteDeLabores[],
+  filtroTarea: string,
+  filtroFinca: string,
+): { tareas: Tarea[]; partes: ParteDeLabores[] } {
+  return {
+    tareas: filterTareasByFinca(filterTareasByNombre(tareas, filtroTarea), filtroFinca),
+    partes: filterPartesByFinca(filterPartesByNombre(partes, filtroTarea), filtroFinca),
+  }
+}
+
 export function computeDailyStaffing(tareas: Tarea[]): DailyStaffing[] {
   const manualTareas = tareas.filter((t): t is TareaManual => t.tipo === 'manual')
   const byDate = new Map<string, { date: Date; personas: number; tareas: number; fincas: Set<string> }>()

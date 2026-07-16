@@ -161,3 +161,15 @@ describe('listTareasPorRecencia', () => {
     assert.deepEqual(ordered, ['Desbrotar', 'Podando'])
   })
 })
+
+describe('listFincasPorRecencia', () => {
+  it('ordena fincas por actividad más reciente primero', async () => {
+    const { listFincasPorRecencia } = await import('./analyticsAggregations.ts')
+    const a = manualConRendimiento('1', 'Podando', 4, 8, 'hileras', '2026-06-10T12:00:00Z')
+    const b = manualConRendimiento('2', 'Podando', 2, 4, 'hileras', '2026-06-20T12:00:00Z')
+    b.fincaId = 'FOB'
+    b.fincaNombre = 'FOB'
+    const ordered = listFincasPorRecencia([a, b])
+    assert.deepEqual(ordered, ['FOB', 'FOA'])
+  })
+})

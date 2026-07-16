@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Tarea, ParteDeLabores } from '../../types'
 import {
   computeDailyProductivity,
@@ -12,10 +12,10 @@ import {
   formatTotalsCell,
   formatRatiosCell,
   listTareasPorRecencia,
-  filterRowsByTarea,
-  filterTareasByNombre,
-  filterPartesByNombre,
+  listFincasPorRecencia,
+  filterAnalyticsScope,
   TAREA_FILTRO_TODAS,
+  FINCA_FILTRO_TODAS,
 } from '../../utils/analyticsAggregations'
 import { aggregateStaffingFromPartes } from '../../utils/dotacion'
 import { computeTareaProgress } from '../../utils/tareaProgress'
@@ -39,30 +39,55 @@ interface Props {
   partesStaffing?: ParteDeLabores[]
 }
 
-function TareaSelect({
-  value,
-  options,
-  onChange,
+function ChartFilters({
+  tarea,
+  finca,
+  tareasOptions,
+  fincasOptions,
+  onTareaChange,
+  onFincaChange,
+  children,
 }: {
-  value: string
-  options: string[]
-  onChange: (value: string) => void
+  tarea: string
+  finca: string
+  tareasOptions: string[]
+  fincasOptions: string[]
+  onTareaChange: (value: string) => void
+  onFincaChange: (value: string) => void
+  children?: ReactNode
 }) {
   return (
-    <select
-      className="analytics-unit-select"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      aria-label="Tarea"
-      title="Tarea"
-    >
-      <option value={TAREA_FILTRO_TODAS}>Todas las labores</option>
-      {options.map(nombre => (
-        <option key={nombre} value={nombre}>
-          {nombre}
-        </option>
-      ))}
-    </select>
+    <div className="analytics-chart-filters">
+      <select
+        className="analytics-unit-select"
+        value={tarea}
+        onChange={e => onTareaChange(e.target.value)}
+        aria-label="Tarea"
+        title="Tarea"
+      >
+        <option value={TAREA_FILTRO_TODAS}>Todas las labores</option>
+        {tareasOptions.map(nombre => (
+          <option key={nombre} value={nombre}>
+            {nombre}
+          </option>
+        ))}
+      </select>
+      <select
+        className="analytics-unit-select"
+        value={finca}
+        onChange={e => onFincaChange(e.target.value)}
+        aria-label="Finca"
+        title="Finca"
+      >
+        <option value={FINCA_FILTRO_TODAS}>Todas las fincas</option>
+        {fincasOptions.map(nombre => (
+          <option key={nombre} value={nombre}>
+            {nombre}
+          </option>
+        ))}
+      </select>
+      {children}
+    </div>
   )
 }
 
@@ -72,37 +97,53 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
   const [selectedRatioUnit, setSelectedRatioUnit] = useState<string>('hileras')
 
   const [tareaTotales, setTareaTotales] = useState(TAREA_FILTRO_TODAS)
+  const [fincaTotales, setFincaTotales] = useState(FINCA_FILTRO_TODAS)
   const [tareaRatio, setTareaRatio] = useState(TAREA_FILTRO_TODAS)
+  const [fincaRatio, setFincaRatio] = useState(FINCA_FILTRO_TODAS)
   const [tareaDetalle, setTareaDetalle] = useState(TAREA_FILTRO_TODAS)
+  const [fincaDetalle, setFincaDetalle] = useState(FINCA_FILTRO_TODAS)
   const [tareaPromedio, setTareaPromedio] = useState(TAREA_FILTRO_TODAS)
+  const [fincaPromedio, setFincaPromedio] = useState(FINCA_FILTRO_TODAS)
   const [tareaDotacion, setTareaDotacion] = useState(TAREA_FILTRO_TODAS)
+  const [fincaDotacion, setFincaDotacion] = useState(FINCA_FILTRO_TODAS)
   const [tareaRendPersona, setTareaRendPersona] = useState(TAREA_FILTRO_TODAS)
+  const [fincaRendPersona, setFincaRendPersona] = useState(FINCA_FILTRO_TODAS)
   const [tareaAvance, setTareaAvance] = useState(TAREA_FILTRO_TODAS)
+  const [fincaAvance, setFincaAvance] = useState(FINCA_FILTRO_TODAS)
   const [tareaAvanceFinca, setTareaAvanceFinca] = useState(TAREA_FILTRO_TODAS)
+  const [fincaAvanceFinca, setFincaAvanceFinca] = useState(FINCA_FILTRO_TODAS)
   const [tareaKpis, setTareaKpis] = useState(TAREA_FILTRO_TODAS)
+  const [fincaKpis, setFincaKpis] = useState(FINCA_FILTRO_TODAS)
   const [tareaDias, setTareaDias] = useState(TAREA_FILTRO_TODAS)
+  const [fincaDias, setFincaDias] = useState(FINCA_FILTRO_TODAS)
   const [tareaMaquinaria, setTareaMaquinaria] = useState(TAREA_FILTRO_TODAS)
+  const [fincaMaquinaria, setFincaMaquinaria] = useState(FINCA_FILTRO_TODAS)
   const [tareaTimeline, setTareaTimeline] = useState(TAREA_FILTRO_TODAS)
+  const [fincaTimeline, setFincaTimeline] = useState(FINCA_FILTRO_TODAS)
 
   const tareasOpciones = useMemo(
     () => listTareasPorRecencia(tareas, partes),
     [tareas, partes],
   )
+  const fincasOpciones = useMemo(
+    () => listFincasPorRecencia(tareas, partes),
+    [tareas, partes],
+  )
 
-  const dailyProd = useMemo(() => computeDailyProductivity(tareas, partes), [tareas, partes])
+  const dailyProdTotales = useMemo(() => {
+    const scope = filterAnalyticsScope(tareas, partes, tareaTotales, fincaTotales)
+    return computeDailyProductivity(scope.tareas, scope.partes)
+  }, [tareas, partes, tareaTotales, fincaTotales])
 
-  const dailyProdTotales = useMemo(
-    () => filterRowsByTarea(dailyProd, tareaTotales),
-    [dailyProd, tareaTotales],
-  )
-  const dailyProdRatio = useMemo(
-    () => filterRowsByTarea(dailyProd, tareaRatio),
-    [dailyProd, tareaRatio],
-  )
-  const dailyProdDetalle = useMemo(
-    () => filterRowsByTarea(dailyProd, tareaDetalle),
-    [dailyProd, tareaDetalle],
-  )
+  const dailyProdRatio = useMemo(() => {
+    const scope = filterAnalyticsScope(tareas, partes, tareaRatio, fincaRatio)
+    return computeDailyProductivity(scope.tareas, scope.partes)
+  }, [tareas, partes, tareaRatio, fincaRatio])
+
+  const dailyProdDetalle = useMemo(() => {
+    const scope = filterAnalyticsScope(tareas, partes, tareaDetalle, fincaDetalle)
+    return computeDailyProductivity(scope.tareas, scope.partes)
+  }, [tareas, partes, tareaDetalle, fincaDetalle])
 
   const availableUnits = useMemo(
     () => listProductivityUnits(dailyProdTotales),
@@ -135,8 +176,13 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
   )
 
   const dailyStaff = useMemo(() => {
-    const staffingPartes = filterPartesByNombre(partesStaffing ?? partes, tareaDotacion)
-    const fromPartes = aggregateStaffingFromPartes(staffingPartes)
+    const scope = filterAnalyticsScope(
+      tareas,
+      partesStaffing ?? partes,
+      tareaDotacion,
+      fincaDotacion,
+    )
+    const fromPartes = aggregateStaffingFromPartes(scope.partes)
     if (fromPartes.length > 0) {
       return fromPartes.map(d => ({
         fecha: d.fecha,
@@ -146,75 +192,58 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
         fincas: [] as string[],
       }))
     }
-    return computeDailyStaffing(filterTareasByNombre(tareas, tareaDotacion))
-  }, [tareas, partes, partesStaffing, tareaDotacion])
+    return computeDailyStaffing(scope.tareas)
+  }, [tareas, partes, partesStaffing, tareaDotacion, fincaDotacion])
 
-  const progress = useMemo(
-    () => computeCumulativeProgress(filterTareasByNombre(tareas, tareaAvance)),
-    [tareas, tareaAvance],
-  )
+  const progress = useMemo(() => {
+    const scope = filterAnalyticsScope(tareas, partes, tareaAvance, fincaAvance)
+    return computeCumulativeProgress(scope.tareas)
+  }, [tareas, partes, tareaAvance, fincaAvance])
 
-  const kpisPromedio = useMemo(
-    () => computeAnalyticsKPIs(tareas, filterPartesByNombre(partes, tareaPromedio)),
-    [tareas, partes, tareaPromedio],
-  )
+  const kpisPromedio = useMemo(() => {
+    const scope = filterAnalyticsScope(tareas, partes, tareaPromedio, fincaPromedio)
+    return computeAnalyticsKPIs(scope.tareas, scope.partes)
+  }, [tareas, partes, tareaPromedio, fincaPromedio])
 
-  const kpisRendPersona = useMemo(
-    () => computeAnalyticsKPIs(tareas, filterPartesByNombre(partes, tareaRendPersona)),
-    [tareas, partes, tareaRendPersona],
-  )
+  const kpisRendPersona = useMemo(() => {
+    const scope = filterAnalyticsScope(tareas, partes, tareaRendPersona, fincaRendPersona)
+    return computeAnalyticsKPIs(scope.tareas, scope.partes)
+  }, [tareas, partes, tareaRendPersona, fincaRendPersona])
 
-  const kpisAvanceFinca = useMemo(
-    () =>
-      computeAnalyticsKPIs(
-        filterTareasByNombre(tareas, tareaAvanceFinca),
-        filterPartesByNombre(partes, tareaAvanceFinca),
-      ),
-    [tareas, partes, tareaAvanceFinca],
-  )
+  const kpisAvanceFinca = useMemo(() => {
+    const scope = filterAnalyticsScope(tareas, partes, tareaAvanceFinca, fincaAvanceFinca)
+    return computeAnalyticsKPIs(scope.tareas, scope.partes)
+  }, [tareas, partes, tareaAvanceFinca, fincaAvanceFinca])
 
-  const kpisCards = useMemo(
-    () =>
-      computeAnalyticsKPIs(
-        filterTareasByNombre(tareas, tareaKpis),
-        filterPartesByNombre(partes, tareaKpis),
-      ),
-    [tareas, partes, tareaKpis],
-  )
+  const kpisCards = useMemo(() => {
+    const scope = filterAnalyticsScope(tareas, partes, tareaKpis, fincaKpis)
+    return computeAnalyticsKPIs(scope.tareas, scope.partes)
+  }, [tareas, partes, tareaKpis, fincaKpis])
 
-  const kpisDias = useMemo(
-    () =>
-      computeAnalyticsKPIs(
-        filterTareasByNombre(tareas, tareaDias),
-        filterPartesByNombre(partes, tareaDias),
-      ),
-    [tareas, partes, tareaDias],
-  )
+  const kpisDias = useMemo(() => {
+    const scope = filterAnalyticsScope(tareas, partes, tareaDias, fincaDias)
+    return computeAnalyticsKPIs(scope.tareas, scope.partes)
+  }, [tareas, partes, tareaDias, fincaDias])
 
-  const kpisMaquinaria = useMemo(
-    () =>
-      computeAnalyticsKPIs(
-        filterTareasByNombre(tareas, tareaMaquinaria),
-        filterPartesByNombre(partes, tareaMaquinaria),
-      ),
-    [tareas, partes, tareaMaquinaria],
-  )
+  const kpisMaquinaria = useMemo(() => {
+    const scope = filterAnalyticsScope(tareas, partes, tareaMaquinaria, fincaMaquinaria)
+    return computeAnalyticsKPIs(scope.tareas, scope.partes)
+  }, [tareas, partes, tareaMaquinaria, fincaMaquinaria])
 
-  const ganttTasks: GanttTask[] = useMemo(
-    () =>
-      filterTareasByNombre(tareas, tareaTimeline)
-        .filter(t => t.fechaInicio?.toDate)
-        .map(t => ({
-          id: t.id,
-          label: t.tarea,
-          sublabel: t.fincaNombre,
-          start: t.fechaInicio.toDate(),
-          end: t.fechaFin?.toDate() ?? new Date(),
-          progress: computeTareaProgress(t).porcentaje,
-          color: t.estado === 'finalizada' ? '#9ca3af' : '#22c55e',
-        })),
-    [tareas, tareaTimeline],
-  )
+  const ganttTasks: GanttTask[] = useMemo(() => {
+    const scope = filterAnalyticsScope(tareas, partes, tareaTimeline, fincaTimeline)
+    return scope.tareas
+      .filter(t => t.fechaInicio?.toDate)
+      .map(t => ({
+        id: t.id,
+        label: t.tarea,
+        sublabel: t.fincaNombre,
+        start: t.fechaInicio.toDate(),
+        end: t.fechaFin?.toDate() ?? new Date(),
+        progress: computeTareaProgress(t).porcentaje,
+        color: t.estado === 'finalizada' ? '#9ca3af' : '#22c55e',
+      }))
+  }, [tareas, partes, tareaTimeline, fincaTimeline])
 
   const staffChartData = useMemo(
     () => dailyStaff.map(d => ({ label: d.label, value: d.personas })),
@@ -246,12 +275,14 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
           <>
             <div className="analytics-chart-header">
               <h4>Rendimiento diario</h4>
-              <div className="analytics-chart-filters">
-                <TareaSelect
-                  value={tareaTotales}
-                  options={tareasOpciones}
-                  onChange={setTareaTotales}
-                />
+              <ChartFilters
+                tarea={tareaTotales}
+                finca={fincaTotales}
+                tareasOptions={tareasOpciones}
+                fincasOptions={fincasOpciones}
+                onTareaChange={setTareaTotales}
+                onFincaChange={setFincaTotales}
+              >
                 {availableUnits.length > 1 && (
                   <select
                     className="analytics-unit-select"
@@ -264,7 +295,7 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                     ))}
                   </select>
                 )}
-              </div>
+              </ChartFilters>
             </div>
             {prodChartData.length > 0 ? (
               <BarChart data={prodChartData} unit={selectedUnit} barColor="#22c55e" />
@@ -274,12 +305,14 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
 
             <div className="analytics-chart-header" style={{ marginTop: 20 }}>
               <h4>Rendimiento por jornal</h4>
-              <div className="analytics-chart-filters">
-                <TareaSelect
-                  value={tareaRatio}
-                  options={tareasOpciones}
-                  onChange={setTareaRatio}
-                />
+              <ChartFilters
+                tarea={tareaRatio}
+                finca={fincaRatio}
+                tareasOptions={tareasOpciones}
+                fincasOptions={fincasOpciones}
+                onTareaChange={setTareaRatio}
+                onFincaChange={setFincaRatio}
+              >
                 {ratioUnits.length > 1 && (
                   <select
                     className="analytics-unit-select"
@@ -292,7 +325,7 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                     ))}
                   </select>
                 )}
-              </div>
+              </ChartFilters>
             </div>
             {ratioChartData.length > 0 ? (
               <BarChart
@@ -309,10 +342,13 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
             <div className="analytics-kpi-table">
               <div className="analytics-chart-header">
                 <h4>Detalle por día y labor</h4>
-                <TareaSelect
-                  value={tareaDetalle}
-                  options={tareasOpciones}
-                  onChange={setTareaDetalle}
+                <ChartFilters
+                  tarea={tareaDetalle}
+                  finca={fincaDetalle}
+                  tareasOptions={tareasOpciones}
+                  fincasOptions={fincasOpciones}
+                  onTareaChange={setTareaDetalle}
+                  onFincaChange={setFincaDetalle}
                 />
               </div>
               {dailyProdDetalle.length > 0 ? (
@@ -339,17 +375,20 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                   </tbody>
                 </table>
               ) : (
-                <p className="analytics-empty">Sin filas para la tarea seleccionada.</p>
+                <p className="analytics-empty">Sin filas para la selección actual.</p>
               )}
             </div>
 
             <div className="analytics-kpi-table">
               <div className="analytics-chart-header">
                 <h4>Rendimiento promedio por labor</h4>
-                <TareaSelect
-                  value={tareaPromedio}
-                  options={tareasOpciones}
-                  onChange={setTareaPromedio}
+                <ChartFilters
+                  tarea={tareaPromedio}
+                  finca={fincaPromedio}
+                  tareasOptions={tareasOpciones}
+                  fincasOptions={fincasOpciones}
+                  onTareaChange={setTareaPromedio}
+                  onFincaChange={setFincaPromedio}
                 />
               </div>
               {kpisPromedio.rendimientoPromedioPorLabor.length > 0 ? (
@@ -369,7 +408,7 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                   </tbody>
                 </table>
               ) : (
-                <p className="analytics-empty">Sin datos de promedio para la tarea seleccionada.</p>
+                <p className="analytics-empty">Sin datos de promedio para la selección actual.</p>
               )}
             </div>
           </>
@@ -379,10 +418,13 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
           <>
             <div className="analytics-chart-header">
               <h4>Personas por día</h4>
-              <TareaSelect
-                value={tareaDotacion}
-                options={tareasOpciones}
-                onChange={setTareaDotacion}
+              <ChartFilters
+                tarea={tareaDotacion}
+                finca={fincaDotacion}
+                tareasOptions={tareasOpciones}
+                fincasOptions={fincasOpciones}
+                onTareaChange={setTareaDotacion}
+                onFincaChange={setFincaDotacion}
               />
             </div>
             {staffChartData.length > 0 ? (
@@ -394,10 +436,13 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
             <div className="analytics-kpi-table">
               <div className="analytics-chart-header">
                 <h4>Rendimiento por persona</h4>
-                <TareaSelect
-                  value={tareaRendPersona}
-                  options={tareasOpciones}
-                  onChange={setTareaRendPersona}
+                <ChartFilters
+                  tarea={tareaRendPersona}
+                  finca={fincaRendPersona}
+                  tareasOptions={tareasOpciones}
+                  fincasOptions={fincasOpciones}
+                  onTareaChange={setTareaRendPersona}
+                  onFincaChange={setFincaRendPersona}
                 />
               </div>
               {kpisRendPersona.rendimientoPorPersona.length > 0 ? (
@@ -416,7 +461,7 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                   </tbody>
                 </table>
               ) : (
-                <p className="analytics-empty">Sin datos para la tarea seleccionada.</p>
+                <p className="analytics-empty">Sin datos para la selección actual.</p>
               )}
             </div>
           </>
@@ -426,10 +471,13 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
           <>
             <div className="analytics-chart-header">
               <h4>Avance acumulado (ha)</h4>
-              <TareaSelect
-                value={tareaAvance}
-                options={tareasOpciones}
-                onChange={setTareaAvance}
+              <ChartFilters
+                tarea={tareaAvance}
+                finca={fincaAvance}
+                tareasOptions={tareasOpciones}
+                fincasOptions={fincasOpciones}
+                onTareaChange={setTareaAvance}
+                onFincaChange={setFincaAvance}
               />
             </div>
             {progressChartData.length > 0 ? (
@@ -446,10 +494,13 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
             <div className="analytics-kpi-table">
               <div className="analytics-chart-header">
                 <h4>Avance por finca</h4>
-                <TareaSelect
-                  value={tareaAvanceFinca}
-                  options={tareasOpciones}
-                  onChange={setTareaAvanceFinca}
+                <ChartFilters
+                  tarea={tareaAvanceFinca}
+                  finca={fincaAvanceFinca}
+                  tareasOptions={tareasOpciones}
+                  fincasOptions={fincasOpciones}
+                  onTareaChange={setTareaAvanceFinca}
+                  onFincaChange={setFincaAvanceFinca}
                 />
               </div>
               {kpisAvanceFinca.avancePorFinca.length > 0 ? (
@@ -471,7 +522,7 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                   </tbody>
                 </table>
               ) : (
-                <p className="analytics-empty">Sin avance por finca para la tarea seleccionada.</p>
+                <p className="analytics-empty">Sin avance por finca para la selección actual.</p>
               )}
             </div>
           </>
@@ -481,10 +532,13 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
           <div className="analytics-kpis-grid">
             <div className="analytics-chart-header" style={{ gridColumn: '1 / -1' }}>
               <h4 style={{ margin: 0, fontSize: 13 }}>Resumen</h4>
-              <TareaSelect
-                value={tareaKpis}
-                options={tareasOpciones}
-                onChange={setTareaKpis}
+              <ChartFilters
+                tarea={tareaKpis}
+                finca={fincaKpis}
+                tareasOptions={tareasOpciones}
+                fincasOptions={fincasOpciones}
+                onTareaChange={setTareaKpis}
+                onFincaChange={setFincaKpis}
               />
             </div>
             <div className="analytics-kpi-card">
@@ -499,10 +553,13 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
             <div className="analytics-kpi-table" style={{ gridColumn: '1 / -1' }}>
               <div className="analytics-chart-header">
                 <h4>Días promedio para completar labor</h4>
-                <TareaSelect
-                  value={tareaDias}
-                  options={tareasOpciones}
-                  onChange={setTareaDias}
+                <ChartFilters
+                  tarea={tareaDias}
+                  finca={fincaDias}
+                  tareasOptions={tareasOpciones}
+                  fincasOptions={fincasOpciones}
+                  onTareaChange={setTareaDias}
+                  onFincaChange={setFincaDias}
                 />
               </div>
               {kpisDias.diasParaCompletar.length > 0 ? (
@@ -521,17 +578,20 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                   </tbody>
                 </table>
               ) : (
-                <p className="analytics-empty">Sin datos para la tarea seleccionada.</p>
+                <p className="analytics-empty">Sin datos para la selección actual.</p>
               )}
             </div>
 
             <div className="analytics-kpi-table" style={{ gridColumn: '1 / -1' }}>
               <div className="analytics-chart-header">
                 <h4>Utilización de maquinaria</h4>
-                <TareaSelect
-                  value={tareaMaquinaria}
-                  options={tareasOpciones}
-                  onChange={setTareaMaquinaria}
+                <ChartFilters
+                  tarea={tareaMaquinaria}
+                  finca={fincaMaquinaria}
+                  tareasOptions={tareasOpciones}
+                  fincasOptions={fincasOpciones}
+                  onTareaChange={setTareaMaquinaria}
+                  onFincaChange={setFincaMaquinaria}
                 />
               </div>
               {kpisMaquinaria.utilizacionMaquinaria.length > 0 ? (
@@ -550,7 +610,7 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                   </tbody>
                 </table>
               ) : (
-                <p className="analytics-empty">Sin maquinaria para la tarea seleccionada.</p>
+                <p className="analytics-empty">Sin maquinaria para la selección actual.</p>
               )}
             </div>
           </div>
@@ -560,10 +620,13 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
           <>
             <div className="analytics-chart-header">
               <h4>Cronograma de labores</h4>
-              <TareaSelect
-                value={tareaTimeline}
-                options={tareasOpciones}
-                onChange={setTareaTimeline}
+              <ChartFilters
+                tarea={tareaTimeline}
+                finca={fincaTimeline}
+                tareasOptions={tareasOpciones}
+                fincasOptions={fincasOpciones}
+                onTareaChange={setTareaTimeline}
+                onFincaChange={setFincaTimeline}
               />
             </div>
             <GanttChart tasks={ganttTasks} />
