@@ -235,6 +235,51 @@ export function formatRatiosCell(ratioByUnit: Record<string, number>): string {
   return parts.length > 0 ? parts.join(' · ') : '—'
 }
 
+export const TAREA_FILTRO_TODAS = 'todas'
+
+/** Nombres de labor ordenados por actividad más reciente primero. */
+export function listTareasPorRecencia(tareas: Tarea[], partes: ParteDeLabores[] = []): string[] {
+  const latest = new Map<string, number>()
+  const bump = (nombre: string, ms: number) => {
+    const key = nombre.trim()
+    if (!key) return
+    latest.set(key, Math.max(latest.get(key) ?? 0, ms))
+  }
+
+  for (const t of tareas) {
+    bump(t.tarea, t.fechaInicio?.toDate?.()?.getTime() ?? 0)
+    bump(t.tarea, t.fechaFin?.toDate?.()?.getTime() ?? 0)
+    for (const rd of t.rendimientosDiarios ?? []) {
+      bump(t.tarea, rd.fecha?.toDate?.()?.getTime() ?? 0)
+    }
+  }
+  for (const p of partes) {
+    bump(p.tarea, p.cerradoEn?.toDate?.()?.getTime() ?? p.abiertoEn?.toDate?.()?.getTime() ?? 0)
+  }
+
+  return [...latest.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'es'))
+    .map(([nombre]) => nombre)
+}
+
+export function filterRowsByTarea<T extends { tarea: string }>(
+  rows: T[],
+  filtroTarea: string,
+): T[] {
+  if (filtroTarea === TAREA_FILTRO_TODAS) return rows
+  return rows.filter(r => r.tarea === filtroTarea)
+}
+
+export function filterTareasByNombre(tareas: Tarea[], filtroTarea: string): Tarea[] {
+  if (filtroTarea === TAREA_FILTRO_TODAS) return tareas
+  return tareas.filter(t => t.tarea === filtroTarea)
+}
+
+export function filterPartesByNombre(partes: ParteDeLabores[], filtroTarea: string): ParteDeLabores[] {
+  if (filtroTarea === TAREA_FILTRO_TODAS) return partes
+  return partes.filter(p => p.tarea === filtroTarea)
+}
+
 export function computeDailyStaffing(tareas: Tarea[]): DailyStaffing[] {
   const manualTareas = tareas.filter((t): t is TareaManual => t.tipo === 'manual')
   const byDate = new Map<string, { date: Date; personas: number; tareas: number; fincas: Set<string> }>()

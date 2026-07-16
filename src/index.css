@@ -4395,10 +4395,19 @@ button.task-list-item {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .analytics-chart-header h4 {
   margin-bottom: 0;
+}
+
+.analytics-chart-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .analytics-unit-select {

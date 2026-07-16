@@ -11,6 +11,11 @@ import {
   listRatioUnits,
   formatTotalsCell,
   formatRatiosCell,
+  listTareasPorRecencia,
+  filterRowsByTarea,
+  filterTareasByNombre,
+  filterPartesByNombre,
+  TAREA_FILTRO_TODAS,
 } from '../../utils/analyticsAggregations'
 import { aggregateStaffingFromPartes } from '../../utils/dotacion'
 import { computeTareaProgress } from '../../utils/tareaProgress'
@@ -34,47 +39,76 @@ interface Props {
   partesStaffing?: ParteDeLabores[]
 }
 
+function TareaSelect({
+  value,
+  options,
+  onChange,
+}: {
+  value: string
+  options: string[]
+  onChange: (value: string) => void
+}) {
+  return (
+    <select
+      className="analytics-unit-select"
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      aria-label="Tarea"
+      title="Tarea"
+    >
+      <option value={TAREA_FILTRO_TODAS}>Todas las labores</option>
+      {options.map(nombre => (
+        <option key={nombre} value={nombre}>
+          {nombre}
+        </option>
+      ))}
+    </select>
+  )
+}
+
 export default function AnalyticsContent({ tareas, partes, partesStaffing }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>('productividad')
   const [selectedUnit, setSelectedUnit] = useState<string>('hileras')
   const [selectedRatioUnit, setSelectedRatioUnit] = useState<string>('hileras')
 
-  const dailyProd = useMemo(() => computeDailyProductivity(tareas, partes), [tareas, partes])
-  const dailyStaff = useMemo(() => {
-    const staffingPartes = partesStaffing ?? partes
-    const fromPartes = aggregateStaffingFromPartes(staffingPartes)
-    if (fromPartes.length > 0) {
-      return fromPartes.map(d => ({
-        fecha: d.fecha,
-        label: d.fecha.slice(8, 10) + '/' + d.fecha.slice(5, 7),
-        personas: d.personas,
-        tareas: d.tareas,
-        fincas: [] as string[],
-      }))
-    }
-    return computeDailyStaffing(tareas)
-  }, [tareas, partes, partesStaffing])
-  const progress = useMemo(() => computeCumulativeProgress(tareas), [tareas])
-  const kpis = useMemo(() => computeAnalyticsKPIs(tareas, partes), [tareas, partes])
+  const [tareaTotales, setTareaTotales] = useState(TAREA_FILTRO_TODAS)
+  const [tareaRatio, setTareaRatio] = useState(TAREA_FILTRO_TODAS)
+  const [tareaDetalle, setTareaDetalle] = useState(TAREA_FILTRO_TODAS)
+  const [tareaPromedio, setTareaPromedio] = useState(TAREA_FILTRO_TODAS)
+  const [tareaDotacion, setTareaDotacion] = useState(TAREA_FILTRO_TODAS)
+  const [tareaRendPersona, setTareaRendPersona] = useState(TAREA_FILTRO_TODAS)
+  const [tareaAvance, setTareaAvance] = useState(TAREA_FILTRO_TODAS)
+  const [tareaAvanceFinca, setTareaAvanceFinca] = useState(TAREA_FILTRO_TODAS)
+  const [tareaKpis, setTareaKpis] = useState(TAREA_FILTRO_TODAS)
+  const [tareaDias, setTareaDias] = useState(TAREA_FILTRO_TODAS)
+  const [tareaMaquinaria, setTareaMaquinaria] = useState(TAREA_FILTRO_TODAS)
+  const [tareaTimeline, setTareaTimeline] = useState(TAREA_FILTRO_TODAS)
 
-  const ganttTasks: GanttTask[] = useMemo(
-    () =>
-      tareas
-        .filter(t => t.fechaInicio?.toDate)
-        .map(t => ({
-          id: t.id,
-          label: t.tarea,
-          sublabel: t.fincaNombre,
-          start: t.fechaInicio.toDate(),
-          end: t.fechaFin?.toDate() ?? new Date(),
-          progress: computeTareaProgress(t).porcentaje,
-          color: t.estado === 'finalizada' ? '#9ca3af' : '#22c55e',
-        })),
-    [tareas],
+  const tareasOpciones = useMemo(
+    () => listTareasPorRecencia(tareas, partes),
+    [tareas, partes],
   )
 
-  const availableUnits = useMemo(() => listProductivityUnits(dailyProd), [dailyProd])
-  const ratioUnits = useMemo(() => listRatioUnits(dailyProd), [dailyProd])
+  const dailyProd = useMemo(() => computeDailyProductivity(tareas, partes), [tareas, partes])
+
+  const dailyProdTotales = useMemo(
+    () => filterRowsByTarea(dailyProd, tareaTotales),
+    [dailyProd, tareaTotales],
+  )
+  const dailyProdRatio = useMemo(
+    () => filterRowsByTarea(dailyProd, tareaRatio),
+    [dailyProd, tareaRatio],
+  )
+  const dailyProdDetalle = useMemo(
+    () => filterRowsByTarea(dailyProd, tareaDetalle),
+    [dailyProd, tareaDetalle],
+  )
+
+  const availableUnits = useMemo(
+    () => listProductivityUnits(dailyProdTotales),
+    [dailyProdTotales],
+  )
+  const ratioUnits = useMemo(() => listRatioUnits(dailyProdRatio), [dailyProdRatio])
 
   useEffect(() => {
     if (availableUnits.length === 0) return
@@ -91,13 +125,95 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
   }, [ratioUnits, selectedRatioUnit])
 
   const prodChartData = useMemo(
-    () => chartTotalsByDay(dailyProd, selectedUnit),
-    [dailyProd, selectedUnit],
+    () => chartTotalsByDay(dailyProdTotales, selectedUnit),
+    [dailyProdTotales, selectedUnit],
   )
 
   const ratioChartData = useMemo(
-    () => chartRatiosByDay(dailyProd, selectedRatioUnit),
-    [dailyProd, selectedRatioUnit],
+    () => chartRatiosByDay(dailyProdRatio, selectedRatioUnit),
+    [dailyProdRatio, selectedRatioUnit],
+  )
+
+  const dailyStaff = useMemo(() => {
+    const staffingPartes = filterPartesByNombre(partesStaffing ?? partes, tareaDotacion)
+    const fromPartes = aggregateStaffingFromPartes(staffingPartes)
+    if (fromPartes.length > 0) {
+      return fromPartes.map(d => ({
+        fecha: d.fecha,
+        label: d.fecha.slice(8, 10) + '/' + d.fecha.slice(5, 7),
+        personas: d.personas,
+        tareas: d.tareas,
+        fincas: [] as string[],
+      }))
+    }
+    return computeDailyStaffing(filterTareasByNombre(tareas, tareaDotacion))
+  }, [tareas, partes, partesStaffing, tareaDotacion])
+
+  const progress = useMemo(
+    () => computeCumulativeProgress(filterTareasByNombre(tareas, tareaAvance)),
+    [tareas, tareaAvance],
+  )
+
+  const kpisPromedio = useMemo(
+    () => computeAnalyticsKPIs(tareas, filterPartesByNombre(partes, tareaPromedio)),
+    [tareas, partes, tareaPromedio],
+  )
+
+  const kpisRendPersona = useMemo(
+    () => computeAnalyticsKPIs(tareas, filterPartesByNombre(partes, tareaRendPersona)),
+    [tareas, partes, tareaRendPersona],
+  )
+
+  const kpisAvanceFinca = useMemo(
+    () =>
+      computeAnalyticsKPIs(
+        filterTareasByNombre(tareas, tareaAvanceFinca),
+        filterPartesByNombre(partes, tareaAvanceFinca),
+      ),
+    [tareas, partes, tareaAvanceFinca],
+  )
+
+  const kpisCards = useMemo(
+    () =>
+      computeAnalyticsKPIs(
+        filterTareasByNombre(tareas, tareaKpis),
+        filterPartesByNombre(partes, tareaKpis),
+      ),
+    [tareas, partes, tareaKpis],
+  )
+
+  const kpisDias = useMemo(
+    () =>
+      computeAnalyticsKPIs(
+        filterTareasByNombre(tareas, tareaDias),
+        filterPartesByNombre(partes, tareaDias),
+      ),
+    [tareas, partes, tareaDias],
+  )
+
+  const kpisMaquinaria = useMemo(
+    () =>
+      computeAnalyticsKPIs(
+        filterTareasByNombre(tareas, tareaMaquinaria),
+        filterPartesByNombre(partes, tareaMaquinaria),
+      ),
+    [tareas, partes, tareaMaquinaria],
+  )
+
+  const ganttTasks: GanttTask[] = useMemo(
+    () =>
+      filterTareasByNombre(tareas, tareaTimeline)
+        .filter(t => t.fechaInicio?.toDate)
+        .map(t => ({
+          id: t.id,
+          label: t.tarea,
+          sublabel: t.fincaNombre,
+          start: t.fechaInicio.toDate(),
+          end: t.fechaFin?.toDate() ?? new Date(),
+          progress: computeTareaProgress(t).porcentaje,
+          color: t.estado === 'finalizada' ? '#9ca3af' : '#22c55e',
+        })),
+    [tareas, tareaTimeline],
   )
 
   const staffChartData = useMemo(
@@ -130,17 +246,25 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
           <>
             <div className="analytics-chart-header">
               <h4>Rendimiento diario</h4>
-              {availableUnits.length > 1 && (
-                <select
-                  className="analytics-unit-select"
-                  value={selectedUnit}
-                  onChange={e => setSelectedUnit(e.target.value)}
-                >
-                  {availableUnits.map(u => (
-                    <option key={u} value={u}>{u}</option>
-                  ))}
-                </select>
-              )}
+              <div className="analytics-chart-filters">
+                <TareaSelect
+                  value={tareaTotales}
+                  options={tareasOpciones}
+                  onChange={setTareaTotales}
+                />
+                {availableUnits.length > 1 && (
+                  <select
+                    className="analytics-unit-select"
+                    value={selectedUnit}
+                    onChange={e => setSelectedUnit(e.target.value)}
+                    aria-label="Unidad"
+                  >
+                    {availableUnits.map(u => (
+                      <option key={u} value={u}>{u}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
             {prodChartData.length > 0 ? (
               <BarChart data={prodChartData} unit={selectedUnit} barColor="#22c55e" />
@@ -150,17 +274,25 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
 
             <div className="analytics-chart-header" style={{ marginTop: 20 }}>
               <h4>Rendimiento por jornal</h4>
-              {ratioUnits.length > 1 && (
-                <select
-                  className="analytics-unit-select"
-                  value={selectedRatioUnit}
-                  onChange={e => setSelectedRatioUnit(e.target.value)}
-                >
-                  {ratioUnits.map(u => (
-                    <option key={u} value={u}>{u}/jornal</option>
-                  ))}
-                </select>
-              )}
+              <div className="analytics-chart-filters">
+                <TareaSelect
+                  value={tareaRatio}
+                  options={tareasOpciones}
+                  onChange={setTareaRatio}
+                />
+                {ratioUnits.length > 1 && (
+                  <select
+                    className="analytics-unit-select"
+                    value={selectedRatioUnit}
+                    onChange={e => setSelectedRatioUnit(e.target.value)}
+                    aria-label="Unidad ratio"
+                  >
+                    {ratioUnits.map(u => (
+                      <option key={u} value={u}>{u}/jornal</option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
             {ratioChartData.length > 0 ? (
               <BarChart
@@ -170,13 +302,20 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
               />
             ) : (
               <p className="analytics-empty">
-                No hay datos para calcular rendimiento por jornal con la unidad seleccionada.
+                No hay datos para calcular rendimiento por jornal con la selección actual.
               </p>
             )}
 
-            {dailyProd.length > 0 && (
-              <div className="analytics-kpi-table">
+            <div className="analytics-kpi-table">
+              <div className="analytics-chart-header">
                 <h4>Detalle por día y labor</h4>
+                <TareaSelect
+                  value={tareaDetalle}
+                  options={tareasOpciones}
+                  onChange={setTareaDetalle}
+                />
+              </div>
+              {dailyProdDetalle.length > 0 ? (
                 <table>
                   <thead>
                     <tr>
@@ -188,7 +327,7 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                     </tr>
                   </thead>
                   <tbody>
-                    {dailyProd.map(row => (
+                    {dailyProdDetalle.map(row => (
                       <tr key={`${row.fecha}|${row.tarea}`}>
                         <td>{row.label}</td>
                         <td>{row.tarea}</td>
@@ -199,18 +338,27 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                     ))}
                   </tbody>
                 </table>
-              </div>
-            )}
+              ) : (
+                <p className="analytics-empty">Sin filas para la tarea seleccionada.</p>
+              )}
+            </div>
 
-            {kpis.rendimientoPromedioPorLabor.length > 0 && (
-              <div className="analytics-kpi-table">
+            <div className="analytics-kpi-table">
+              <div className="analytics-chart-header">
                 <h4>Rendimiento promedio por labor</h4>
+                <TareaSelect
+                  value={tareaPromedio}
+                  options={tareasOpciones}
+                  onChange={setTareaPromedio}
+                />
+              </div>
+              {kpisPromedio.rendimientoPromedioPorLabor.length > 0 ? (
                 <table>
                   <thead>
                     <tr><th>Labor</th><th>Promedio</th><th>Unidad</th><th>Partes</th></tr>
                   </thead>
                   <tbody>
-                    {kpis.rendimientoPromedioPorLabor.map(r => (
+                    {kpisPromedio.rendimientoPromedioPorLabor.map(r => (
                       <tr key={`${r.tarea}-${r.unidad}`}>
                         <td>{r.tarea}</td>
                         <td className="num">{r.promedio.toFixed(1)}</td>
@@ -220,29 +368,45 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                     ))}
                   </tbody>
                 </table>
-              </div>
-            )}
+              ) : (
+                <p className="analytics-empty">Sin datos de promedio para la tarea seleccionada.</p>
+              )}
+            </div>
           </>
         )}
 
         {activeTab === 'dotacion' && (
           <>
-            <h4>Personas por día</h4>
+            <div className="analytics-chart-header">
+              <h4>Personas por día</h4>
+              <TareaSelect
+                value={tareaDotacion}
+                options={tareasOpciones}
+                onChange={setTareaDotacion}
+              />
+            </div>
             {staffChartData.length > 0 ? (
               <BarChart data={staffChartData} unit="personas" barColor="#3b82f6" />
             ) : (
               <p className="analytics-empty">No hay datos de dotación aún.</p>
             )}
 
-            {kpis.rendimientoPorPersona.length > 0 && (
-              <div className="analytics-kpi-table">
+            <div className="analytics-kpi-table">
+              <div className="analytics-chart-header">
                 <h4>Rendimiento por persona</h4>
+                <TareaSelect
+                  value={tareaRendPersona}
+                  options={tareasOpciones}
+                  onChange={setTareaRendPersona}
+                />
+              </div>
+              {kpisRendPersona.rendimientoPorPersona.length > 0 ? (
                 <table>
                   <thead>
                     <tr><th>Labor</th><th>Rend. / persona</th><th>Unidad</th></tr>
                   </thead>
                   <tbody>
-                    {kpis.rendimientoPorPersona.map(r => (
+                    {kpisRendPersona.rendimientoPorPersona.map(r => (
                       <tr key={r.tarea}>
                         <td>{r.tarea}</td>
                         <td className="num">{r.valor.toFixed(1)}</td>
@@ -251,14 +415,23 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                     ))}
                   </tbody>
                 </table>
-              </div>
-            )}
+              ) : (
+                <p className="analytics-empty">Sin datos para la tarea seleccionada.</p>
+              )}
+            </div>
           </>
         )}
 
         {activeTab === 'avance' && (
           <>
-            <h4>Avance acumulado (ha)</h4>
+            <div className="analytics-chart-header">
+              <h4>Avance acumulado (ha)</h4>
+              <TareaSelect
+                value={tareaAvance}
+                options={tareasOpciones}
+                onChange={setTareaAvance}
+              />
+            </div>
             {progressChartData.length > 0 ? (
               <LineChart
                 data={progressChartData}
@@ -270,15 +443,22 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
               <p className="analytics-empty">No hay datos de avance acumulado aún.</p>
             )}
 
-            {kpis.avancePorFinca.length > 0 && (
-              <div className="analytics-kpi-table">
+            <div className="analytics-kpi-table">
+              <div className="analytics-chart-header">
                 <h4>Avance por finca</h4>
+                <TareaSelect
+                  value={tareaAvanceFinca}
+                  options={tareasOpciones}
+                  onChange={setTareaAvanceFinca}
+                />
+              </div>
+              {kpisAvanceFinca.avancePorFinca.length > 0 ? (
                 <table>
                   <thead>
                     <tr><th>Finca</th><th>Ha finalizadas</th><th>Ha totales</th><th>%</th></tr>
                   </thead>
                   <tbody>
-                    {kpis.avancePorFinca.map(f => (
+                    {kpisAvanceFinca.avancePorFinca.map(f => (
                       <tr key={f.finca}>
                         <td>{f.finca}</td>
                         <td className="num">{f.hectareasFinalizadas.toFixed(1)}</td>
@@ -290,31 +470,48 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                     ))}
                   </tbody>
                 </table>
-              </div>
-            )}
+              ) : (
+                <p className="analytics-empty">Sin avance por finca para la tarea seleccionada.</p>
+              )}
+            </div>
           </>
         )}
 
         {activeTab === 'indicadores' && (
           <div className="analytics-kpis-grid">
+            <div className="analytics-chart-header" style={{ gridColumn: '1 / -1' }}>
+              <h4 style={{ margin: 0, fontSize: 13 }}>Resumen</h4>
+              <TareaSelect
+                value={tareaKpis}
+                options={tareasOpciones}
+                onChange={setTareaKpis}
+              />
+            </div>
             <div className="analytics-kpi-card">
-              <span className="analytics-kpi-value">{kpis.operadoresActivos}</span>
+              <span className="analytics-kpi-value">{kpisCards.operadoresActivos}</span>
               <span className="analytics-kpi-label">Operadores activos</span>
             </div>
             <div className="analytics-kpi-card">
-              <span className="analytics-kpi-value">{kpis.partesPorDia.toFixed(1)}</span>
+              <span className="analytics-kpi-value">{kpisCards.partesPorDia.toFixed(1)}</span>
               <span className="analytics-kpi-label">Partes / día</span>
             </div>
 
-            {kpis.diasParaCompletar.length > 0 && (
-              <div className="analytics-kpi-table" style={{ gridColumn: '1 / -1' }}>
+            <div className="analytics-kpi-table" style={{ gridColumn: '1 / -1' }}>
+              <div className="analytics-chart-header">
                 <h4>Días promedio para completar labor</h4>
+                <TareaSelect
+                  value={tareaDias}
+                  options={tareasOpciones}
+                  onChange={setTareaDias}
+                />
+              </div>
+              {kpisDias.diasParaCompletar.length > 0 ? (
                 <table>
                   <thead>
                     <tr><th>Labor</th><th>Días promedio</th><th>Tareas</th></tr>
                   </thead>
                   <tbody>
-                    {kpis.diasParaCompletar.map(d => (
+                    {kpisDias.diasParaCompletar.map(d => (
                       <tr key={d.tarea}>
                         <td>{d.tarea}</td>
                         <td className="num">{d.diasPromedio.toFixed(1)}</td>
@@ -323,18 +520,27 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                     ))}
                   </tbody>
                 </table>
-              </div>
-            )}
+              ) : (
+                <p className="analytics-empty">Sin datos para la tarea seleccionada.</p>
+              )}
+            </div>
 
-            {kpis.utilizacionMaquinaria.length > 0 && (
-              <div className="analytics-kpi-table" style={{ gridColumn: '1 / -1' }}>
+            <div className="analytics-kpi-table" style={{ gridColumn: '1 / -1' }}>
+              <div className="analytics-chart-header">
                 <h4>Utilización de maquinaria</h4>
+                <TareaSelect
+                  value={tareaMaquinaria}
+                  options={tareasOpciones}
+                  onChange={setTareaMaquinaria}
+                />
+              </div>
+              {kpisMaquinaria.utilizacionMaquinaria.length > 0 ? (
                 <table>
                   <thead>
                     <tr><th>Maquinaria</th><th>Modelo</th><th>Partes</th></tr>
                   </thead>
                   <tbody>
-                    {kpis.utilizacionMaquinaria.map(m => (
+                    {kpisMaquinaria.utilizacionMaquinaria.map(m => (
                       <tr key={`${m.maquinaria}-${m.modelo}`}>
                         <td>{m.maquinaria}</td>
                         <td>{m.modelo ?? '—'}</td>
@@ -343,14 +549,23 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                     ))}
                   </tbody>
                 </table>
-              </div>
-            )}
+              ) : (
+                <p className="analytics-empty">Sin maquinaria para la tarea seleccionada.</p>
+              )}
+            </div>
           </div>
         )}
 
         {activeTab === 'timeline' && (
           <>
-            <h4>Cronograma de labores</h4>
+            <div className="analytics-chart-header">
+              <h4>Cronograma de labores</h4>
+              <TareaSelect
+                value={tareaTimeline}
+                options={tareasOpciones}
+                onChange={setTareaTimeline}
+              />
+            </div>
             <GanttChart tasks={ganttTasks} />
           </>
         )}

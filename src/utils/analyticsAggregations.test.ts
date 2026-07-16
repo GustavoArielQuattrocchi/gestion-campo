@@ -149,3 +149,15 @@ describe('computeDailyProductivity', () => {
     assert.equal(ratios[0].value, 2) // 12 / (4+2)
   })
 })
+
+describe('listTareasPorRecencia', () => {
+  it('ordena por actividad más reciente primero', async () => {
+    const { listTareasPorRecencia } = await import('./analyticsAggregations.ts')
+    const tareas = [
+      manualConRendimiento('1', 'Podando', 4, 8, 'hileras', '2026-06-10T12:00:00Z'),
+      manualConRendimiento('2', 'Desbrotar', 2, 4, 'hileras', '2026-06-20T12:00:00Z'),
+    ]
+    const ordered = listTareasPorRecencia(tareas)
+    assert.deepEqual(ordered, ['Desbrotar', 'Podando'])
+  })
+})
