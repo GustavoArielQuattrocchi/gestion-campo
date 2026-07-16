@@ -33,8 +33,7 @@ export const tareasManuales: CatalogItem[] = [
   { id: '23', nombre: 'Movimiento de materiales', descripcion: 'Movimiento de materiales de la parcela' },
   { id: '24', nombre: 'Supervision', descripcion: 'Supervision de la parcela' },
   { id: '25', nombre: 'Colocando polainas', descripcion: 'Colocacion de polainas de la parcela' },
-  { id: '26', nombre: 'MAnu', descripcion: 'Intercepa de la parcela' },
-  { id: '27', nombre: 'Otros', descripcion: 'Otros de la parcela' },
+  { id: '26', nombre: 'Otros', descripcion: 'Otros de la parcela' },
 ]
 
 export const tareasMecanicas: CatalogItem[] = [
