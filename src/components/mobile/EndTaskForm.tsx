@@ -94,31 +94,37 @@ export default function EndTaskForm({ tarea, parteAbierto, onSubmit, onBack }: P
             <>
               <div className="task-summary-row">
                 <span className="label">Cuadrilla</span>
-                <span className="value">{tarea.cuadrilla}</span>
+                <span className="value">{parteAbierto.cuadrilla ?? tarea.cuadrilla}</span>
               </div>
               <div className="task-summary-row">
                 <span className="label">Personas</span>
-                <span className="value">{tarea.cantidadPersonas}</span>
+                <span className="value">
+                  {parteAbierto.cantidadPersonas ?? tarea.cantidadPersonas}
+                </span>
               </div>
             </>
           ) : (
             <>
               <div className="task-summary-row">
                 <span className="label">Operario</span>
-                <span className="value">{tarea.persona}</span>
+                <span className="value">{parteAbierto.persona ?? tarea.persona}</span>
               </div>
               <div className="task-summary-row">
                 <span className="label">Maquinaria</span>
                 <span className="value">
-                  {tarea.maquinariaModelo
-                    ? `${tarea.maquinaria} (${tarea.maquinariaModelo})`
-                    : tarea.maquinaria}
+                  {(parteAbierto.maquinariaModelo ?? tarea.maquinariaModelo)
+                    ? `${parteAbierto.maquinaria ?? tarea.maquinaria} (${parteAbierto.maquinariaModelo ?? tarea.maquinariaModelo})`
+                    : (parteAbierto.maquinaria ?? tarea.maquinaria)}
                 </span>
               </div>
             </>
           )}
           <div className="task-summary-row">
-            <span className="label">Cuadros</span>
+            <span className="label">Cuadros (jornada)</span>
+            <span className="value">{(parteAbierto.cuadros ?? []).join(', ') || '—'}</span>
+          </div>
+          <div className="task-summary-row">
+            <span className="label">Cuadros (labor)</span>
             <span className="value">{(tarea.cuadros ?? []).join(', ') || '—'}</span>
           </div>
           <div className="task-summary-row">

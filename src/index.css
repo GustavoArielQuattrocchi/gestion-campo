@@ -574,6 +574,28 @@ button.option-card {
   border: 1px solid var(--gray-100);
 }
 
+.jornada-item--stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.jornada-partes-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jornada-parte-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .jornada-item--done {
   opacity: 0.65;
 }

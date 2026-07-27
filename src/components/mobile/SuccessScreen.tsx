@@ -6,8 +6,9 @@ interface Props {
   motivo?: string | null
   pendientesCierreCount?: number
   lastCreatedTareaId?: string | null
+  lastCreatedParteId?: string | null
   onContinue: () => void
-  onCerrarParte?: (tareaId: string) => void
+  onCerrarParte?: (tareaId: string, parteId: string) => void
   onCargarOtra?: () => void
   onCerrarSiguiente?: () => void
 }
@@ -18,6 +19,7 @@ export default function SuccessScreen({
   motivo,
   pendientesCierreCount = 0,
   lastCreatedTareaId,
+  lastCreatedParteId,
   onContinue,
   onCerrarParte,
   onCargarOtra,
@@ -43,10 +45,10 @@ export default function SuccessScreen({
       {detail && <p style={{ marginBottom: 24, maxWidth: 300 }}>{detail}</p>}
 
       <div className="success-actions">
-        {esInicio && lastCreatedTareaId && onCerrarParte && (
+        {esInicio && lastCreatedTareaId && lastCreatedParteId && onCerrarParte && (
           <button
             className="btn btn-primary success-action-btn"
-            onClick={() => onCerrarParte(lastCreatedTareaId)}
+            onClick={() => onCerrarParte(lastCreatedTareaId, lastCreatedParteId)}
           >
             <Square size={18} />
             Cerrar parte de este día
@@ -69,7 +71,8 @@ export default function SuccessScreen({
             onClick={onCerrarSiguiente}
           >
             <Square size={18} />
-            Cerrar siguiente tarea ({pendientesCierreCount} pendiente{pendientesCierreCount > 1 ? 's' : ''})
+            Cerrar siguiente jornada ({pendientesCierreCount} pendiente
+            {pendientesCierreCount > 1 ? 's' : ''})
           </button>
         )}
 

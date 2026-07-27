@@ -70,6 +70,29 @@ describe('parteEstado vencidos', () => {
     assert.equal(filterTareasConParteVencido(tareas, partes, ref)[0].id, 't2')
   })
 
+  it('lista un ítem de cierre por cuadrilla en la misma tarea', async () => {
+    const { buildCierreItemsHoy, tieneParteAbiertoParaEjecutor, ejecutorKeyFromTareaOrOverride } =
+      await import('./parteEstado.ts')
+    const partes = [
+      { ...parteAbierto('t1', '2026-07-09T08:00:00-03:00'), id: 'p1', cuadrilla: 'Cuadrilla Propia' },
+      {
+        ...parteAbierto('t1', '2026-07-09T09:00:00-03:00'),
+        id: 'p2',
+        cuadrilla: 'Cuadrilla Externa',
+        cantidadPersonas: 6,
+      },
+    ]
+    const items = buildCierreItemsHoy([baseTarea], partes, ref)
+    assert.equal(items.length, 2)
+    const keys = items.map(i => i.parte.cuadrilla).sort()
+    assert.deepEqual(keys, ['Cuadrilla Externa', 'Cuadrilla Propia'])
+
+    const keyExterna = ejecutorKeyFromTareaOrOverride(baseTarea, { cuadrilla: 'Cuadrilla Externa' })
+    assert.equal(tieneParteAbiertoParaEjecutor(partes, 't1', keyExterna), true)
+    const keyOtra = ejecutorKeyFromTareaOrOverride(baseTarea, { cuadrilla: 'Otra' })
+    assert.equal(tieneParteAbiertoParaEjecutor(partes, 't1', keyOtra), false)
+  })
+
   it('resolveCerradoEn usa fin del día de apertura para vencidos', () => {
     const vencido = parteAbierto('t1', '2026-07-07T08:00:00-03:00')
     const cerrado = resolveCerradoEn(vencido, ref)

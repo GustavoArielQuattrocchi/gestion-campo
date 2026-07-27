@@ -4,8 +4,12 @@ import { Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from
 import { useMobileAppContext } from '../../contexts/MobileAppContext'
 import { MOBILE_ROUTES } from '../../mobile/routes'
 import { loadMobileSession } from '../../utils/mobileSession'
-import { filterTareasPendientesHoy, filterTareasPendientesVencidas } from '../../utils/parteLabores'
-import { findParteAbierto, isParteAbiertoHoy, isParteAbiertoVencido, tieneParteAbierto } from '../../utils/parteEstado'
+import {
+  buildCierreItemsHoy,
+  buildCierreItemsVencidos,
+  isParteAbiertoHoy,
+  isParteAbiertoVencido,
+} from '../../utils/parteEstado'
 import PendingPartesBanner from './PendingPartesBanner'
 import StartScreen from './StartScreen'
 import OperatorNameScreen from './OperatorNameScreen'
@@ -48,16 +52,16 @@ function FincaRoute() {
 }
 
 function FinalizarDetalleRoute() {
-  const { tareaId } = useParams<{ tareaId: string }>()
+  const { tareaId, parteId } = useParams<{ tareaId: string; parteId: string }>()
   const navigate = useNavigate()
   const { getTareaActiva, partesAbiertos, handleRegisterRendimiento } = useMobileAppContext()
 
-  if (!tareaId) {
+  if (!tareaId || !parteId) {
     return <Navigate to={MOBILE_ROUTES.finalizar} replace />
   }
 
   const tarea = getTareaActiva(tareaId)
-  const parte = findParteAbierto(partesAbiertos, tareaId)
+  const parte = partesAbiertos.find(p => p.id === parteId && p.tareaId === tareaId)
   const esVencido = parte ? isParteAbiertoVencido(parte) : false
   const esHoy = parte ? isParteAbiertoHoy(parte) : false
 
@@ -70,7 +74,7 @@ function FinalizarDetalleRoute() {
       tarea={tarea}
       parteAbierto={parte}
       onSubmit={(cantidad, unidad, extras) =>
-        handleRegisterRendimiento(tareaId, cantidad, unidad, extras)
+        handleRegisterRendimiento(tareaId, parteId, cantidad, unidad, extras)
       }
       onBack={() => navigate(esVencido ? MOBILE_ROUTES.finalizarVencidos : MOBILE_ROUTES.finalizar)}
     />
@@ -80,11 +84,17 @@ function FinalizarDetalleRoute() {
 function ExitoRoute() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { successMsg, lastCreatedTareaId, tareasActivas, partesAbiertos } = useMobileAppContext()
+  const {
+    successMsg,
+    lastCreatedTareaId,
+    lastCreatedParteId,
+    tareasActivas,
+    partesAbiertos,
+  } = useMobileAppContext()
   const motivo = searchParams.get('motivo')
 
   const pendientesHoy = useMemo(
-    () => filterTareasPendientesHoy(tareasActivas, partesAbiertos),
+    () => buildCierreItemsHoy(tareasActivas, partesAbiertos),
     [tareasActivas, partesAbiertos],
   )
 
@@ -92,10 +102,17 @@ function ExitoRoute() {
     return <Navigate to={MOBILE_ROUTES.menu} replace />
   }
 
-  const puedeCerrarParte =
-    motivo === 'inicio' &&
-    !!lastCreatedTareaId &&
-    tieneParteAbierto(partesAbiertos, lastCreatedTareaId)
+  const parteCierre =
+    lastCreatedTareaId && lastCreatedParteId
+      ? partesAbiertos.find(
+          p =>
+            p.id === lastCreatedParteId &&
+            p.tareaId === lastCreatedTareaId &&
+            isParteAbiertoHoy(p),
+        )
+      : undefined
+
+  const puedeCerrarParte = motivo === 'inicio' && !!parteCierre
 
   return (
     <SuccessScreen
@@ -104,8 +121,11 @@ function ExitoRoute() {
       motivo={motivo}
       pendientesCierreCount={pendientesHoy.length}
       lastCreatedTareaId={puedeCerrarParte ? lastCreatedTareaId : null}
+      lastCreatedParteId={puedeCerrarParte ? lastCreatedParteId : null}
       onContinue={() => navigate(MOBILE_ROUTES.menu)}
-      onCerrarParte={tareaId => navigate(MOBILE_ROUTES.finalizarDetalle(tareaId))}
+      onCerrarParte={(tareaId, parteId) =>
+        navigate(MOBILE_ROUTES.finalizarDetalle(tareaId, parteId))
+      }
       onCargarOtra={() => navigate(MOBILE_ROUTES.tareaTipo)}
       onCerrarSiguiente={() => navigate(MOBILE_ROUTES.finalizar)}
     />
@@ -180,13 +200,13 @@ export default function MobileRoutes() {
     handleContinueTask,
   } = useMobileAppContext()
 
-  const tareasPendientesHoy = useMemo(
-    () => filterTareasPendientesHoy(tareasActivas, partesAbiertos),
+  const itemsPendientesHoy = useMemo(
+    () => buildCierreItemsHoy(tareasActivas, partesAbiertos),
     [tareasActivas, partesAbiertos],
   )
 
-  const tareasPendientesVencidas = useMemo(
-    () => filterTareasPendientesVencidas(tareasActivas, partesAbiertos),
+  const itemsPendientesVencidas = useMemo(
+    () => buildCierreItemsVencidos(tareasActivas, partesAbiertos),
     [tareasActivas, partesAbiertos],
   )
 
@@ -221,13 +241,15 @@ export default function MobileRoutes() {
                 fincaNombre={fincaNombre}
                 tareasActivas={tareasActivas}
                 partesAbiertos={partesAbiertos}
-                pendientesHoyCount={tareasPendientesHoy.length}
-                pendientesVencidosCount={tareasPendientesVencidas.length}
+                pendientesHoyCount={itemsPendientesHoy.length}
+                pendientesVencidosCount={itemsPendientesVencidas.length}
                 onSelectInicio={() => navigate(MOBILE_ROUTES.tareaTipo)}
                 onSelectFin={() => navigate(MOBILE_ROUTES.finalizar)}
                 onSelectFinVencidos={() => navigate(MOBILE_ROUTES.finalizarVencidos)}
                 onSelectAccidente={() => navigate(MOBILE_ROUTES.informe)}
-                onCerrarTarea={tareaId => navigate(MOBILE_ROUTES.finalizarDetalle(tareaId))}
+                onCerrarParte={(tareaId, parteId) =>
+                  navigate(MOBILE_ROUTES.finalizarDetalle(tareaId, parteId))
+                }
                 onBack={() => navigate(MOBILE_ROUTES.finca)}
               />
             }
@@ -273,11 +295,12 @@ export default function MobileRoutes() {
             path="finalizar"
             element={
               <EndTaskList
-                tareas={tareasPendientesHoy}
-                partesAbiertos={partesAbiertos}
+                items={itemsPendientesHoy}
                 fincaNombre={fincaNombre}
                 emptyMessage={mensajeSinTareasCierre}
-                onSelectTarea={tarea => navigate(MOBILE_ROUTES.finalizarDetalle(tarea.id))}
+                onSelect={(tarea, parte) =>
+                  navigate(MOBILE_ROUTES.finalizarDetalle(tarea.id, parte.id))
+                }
                 onBack={() => navigate(MOBILE_ROUTES.menu)}
               />
             }
@@ -286,19 +309,20 @@ export default function MobileRoutes() {
             path="finalizar/vencidos"
             element={
               <EndTaskList
-                tareas={tareasPendientesVencidas}
-                partesAbiertos={partesAbiertos}
+                items={itemsPendientesVencidas}
                 fincaNombre={fincaNombre}
                 title="Cierres pendientes"
                 subtitle={`${fincaNombre} — Partes de días anteriores sin cerrar`}
                 emptyMessage={mensajeSinVencidos}
                 showFechaApertura
-                onSelectTarea={tarea => navigate(MOBILE_ROUTES.finalizarDetalle(tarea.id))}
+                onSelect={(tarea, parte) =>
+                  navigate(MOBILE_ROUTES.finalizarDetalle(tarea.id, parte.id))
+                }
                 onBack={() => navigate(MOBILE_ROUTES.menu)}
               />
             }
           />
-          <Route path="finalizar/:tareaId" element={<FinalizarDetalleRoute />} />
+          <Route path="finalizar/:tareaId/:parteId" element={<FinalizarDetalleRoute />} />
           <Route path="informe" element={<InformeRoute />} />
           <Route path="exito" element={<ExitoRoute />} />
         </Route>

@@ -135,6 +135,7 @@ export default function ManualTaskForm({ fincaNombre, tareasActivas, partesAbier
           tarea={tareaContinuable}
           partesAbiertos={partesAbiertos}
           ejecutorActual={cuadrilla}
+          ejecutorClave={cuadrilla}
         />
       )}
 

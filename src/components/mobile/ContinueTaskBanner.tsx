@@ -1,21 +1,45 @@
 import { AlertCircle, RefreshCw } from 'lucide-react'
 import type { ParteDeLabores, Tarea } from '../../types'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
-import { tieneParteAbierto } from '../../utils/parteEstado'
-import { getEjecutorLabelFromTarea } from '../../utils/tareaEjecutor'
+import {
+  ejecutorKeyFromTareaOrOverride,
+  findPartesAbiertosDeTarea,
+  parteEjecutorKey,
+  tieneParteAbiertoParaEjecutor,
+} from '../../utils/parteEstado'
 
 interface Props {
   tarea: Tarea
   partesAbiertos: ParteDeLabores[]
-  /** Ejecutor que va a trabajar en los cuadros nuevos (p. ej. otra cuadrilla). */
+  /** Texto para mensajes (cuadrilla o "persona · máquina"). */
   ejecutorActual?: string
+  /** Valor usado para la clave del parte: cuadrilla (manual) o persona (mecánica). */
+  ejecutorClave?: string
 }
 
-export default function ContinueTaskBanner({ tarea, partesAbiertos, ejecutorActual }: Props) {
+export default function ContinueTaskBanner({
+  tarea,
+  partesAbiertos,
+  ejecutorActual,
+  ejecutorClave,
+}: Props) {
   const progress = computeTareaProgress(tarea)
-  const parteAbierto = tieneParteAbierto(partesAbiertos, tarea.id)
-  const ejecutorTarea = getEjecutorLabelFromTarea(tarea)
-  const otroEjecutor = ejecutorActual && ejecutorActual !== ejecutorTarea
+  const partesTarea = findPartesAbiertosDeTarea(partesAbiertos, tarea.id)
+  const clave = (ejecutorClave ?? ejecutorActual)?.trim()
+  const keyActual =
+    clave
+      ? ejecutorKeyFromTareaOrOverride(
+          tarea,
+          tarea.tipo === 'manual' ? { cuadrilla: clave } : { persona: clave },
+        )
+      : null
+  const mismaJornadaAbierta =
+    keyActual != null && tieneParteAbiertoParaEjecutor(partesAbiertos, tarea.id, keyActual)
+  const otrasJornadas = keyActual
+    ? partesTarea.filter(p => parteEjecutorKey(p) !== keyActual)
+    : partesTarea
+
+  const label = ejecutorActual ?? clave
 
   return (
     <>
@@ -27,21 +51,34 @@ export default function ContinueTaskBanner({ tarea, partesAbiertos, ejecutorActu
             {tarea.tarea} — {formatProgressLabel(progress)} sobre la finca
           </small>
           <small>
-            {otroEjecutor
-              ? `Los cuadros nuevos quedarán asignados a ${ejecutorActual}.`
-              : 'Los cuadros nuevos se agregarán a la misma tarea.'}
+            {label
+              ? `Los cuadros nuevos quedan en la misma labor, con jornada de ${label}.`
+              : 'Los cuadros nuevos se agregarán a la misma labor.'}
           </small>
         </div>
       </div>
 
-      {parteAbierto && (
+      {mismaJornadaAbierta && (
         <div className="card continue-task-banner continue-task-banner--warn">
           <AlertCircle size={16} />
           <div>
-            <strong>Parte de labores en jornada</strong>
+            <strong>Jornada ya abierta</strong>
             <small>
-              Esta labor ya tiene un parte abierto. Agregá cuadros si hace falta y cerrá la jornada
-              en «Cierre del día» con el rendimiento.
+              {label ?? 'Este ejecutor'} ya tiene un parte abierto para esta labor. Agregá
+              cuadros si hace falta y cerrá el rendimiento en «Cierre del día».
+            </small>
+          </div>
+        </div>
+      )}
+
+      {!mismaJornadaAbierta && otrasJornadas.length > 0 && label && (
+        <div className="card continue-task-banner">
+          <AlertCircle size={16} />
+          <div>
+            <strong>Otras cuadrillas en la misma labor</strong>
+            <small>
+              Se abrirá un parte aparte para {label}. Cada cuadrilla cierra su propio
+              rendimiento.
             </small>
           </div>
         </div>

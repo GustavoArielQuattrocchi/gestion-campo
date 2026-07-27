@@ -29,9 +29,13 @@ function parteBaseFields(tarea: Tarea, operador: string) {
     tarea: tarea.tarea,
     tipo: tarea.tipo,
     operador: operador.trim(),
-    cuadros: tarea.cuadros ?? [],
-    ...(tarea.cuadroIds?.length ? { cuadroIds: tarea.cuadroIds } : {}),
   }
+}
+
+/** Alcance de cuadros del parte (p. ej. solo los de esta cuadrilla al continuar). */
+export type ParteCuadrosScope = {
+  cuadros?: string[]
+  cuadroIds?: string[]
 }
 
 /** Apertura de jornada: parte abierto sin rendimiento (al cargar tarea en campo). */
@@ -40,9 +44,14 @@ export function buildParteAbiertoPayload(
   operador: string,
   abiertoEn: Timestamp,
   ejecutor?: ParteEjecutorOverride,
+  scope?: ParteCuadrosScope,
 ): ParteDeLaboresFirestorePayload {
+  const cuadros = scope?.cuadros ?? tarea.cuadros ?? []
+  const cuadroIds = scope?.cuadroIds ?? tarea.cuadroIds
   const base = {
     ...parteBaseFields(tarea, operador),
+    cuadros,
+    ...(cuadroIds?.length ? { cuadroIds } : {}),
     estado: 'abierto' as const,
     abiertoEn,
   }

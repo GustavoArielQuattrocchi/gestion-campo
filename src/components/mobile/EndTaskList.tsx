@@ -3,12 +3,12 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { ParteDeLabores, Tarea } from '../../types'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
-import { findParteAbierto } from '../../utils/parteEstado'
+import { getEjecutorLabelFromParte } from '../../utils/tareaEjecutor'
+import type { CierreParteItem } from '../../utils/parteEstado'
 
 interface Props {
-  tareas: Tarea[]
-  partesAbiertos: ParteDeLabores[]
-  onSelectTarea: (tarea: Tarea) => void
+  items: CierreParteItem[]
+  onSelect: (tarea: Tarea, parte: ParteDeLabores) => void
   onBack: () => void
   fincaNombre: string
   title?: string
@@ -17,10 +17,17 @@ interface Props {
   showFechaApertura?: boolean
 }
 
+function formatEjecutorDetalle(parte: ParteDeLabores): string {
+  const label = getEjecutorLabelFromParte(parte)
+  if (parte.tipo === 'manual' && parte.cantidadPersonas != null) {
+    return `${label} · ${parte.cantidadPersonas} personas`
+  }
+  return label
+}
+
 export default function EndTaskList({
-  tareas,
-  partesAbiertos,
-  onSelectTarea,
+  items,
+  onSelect,
   onBack,
   fincaNombre,
   title = 'Cierre del día',
@@ -38,35 +45,30 @@ export default function EndTaskList({
         <p>{subtitle ?? `${fincaNombre} — Partes abiertos pendientes de cierre`}</p>
       </div>
 
-      {tareas.length === 0 ? (
+      {items.length === 0 ? (
         <div className="empty-state">
           <Inbox size={48} />
           <p>{emptyMessage}</p>
         </div>
       ) : (
-        tareas.map(tarea => {
-          const parte = findParteAbierto(partesAbiertos, tarea.id)
+        items.map(({ tarea, parte }) => {
           const progress = computeTareaProgress(tarea)
-          const ejecutor =
-            tarea.tipo === 'manual'
-              ? `${tarea.cuadrilla} · ${tarea.cantidadPersonas} personas`
-              : tarea.maquinariaModelo
-                ? `${tarea.maquinaria} (${tarea.maquinariaModelo})`
-                : `${tarea.persona} · ${tarea.maquinaria}`
+          const ejecutor = formatEjecutorDetalle(parte)
           const finalizados = tarea.cuadroIdsFinalizados?.length ?? 0
           const totalCuadros = (tarea.cuadroIds ?? tarea.cuadros ?? []).length
+          const cuadrosParte = (parte.cuadros ?? []).length
 
           return (
             <button
               type="button"
-              key={tarea.id}
+              key={parte.id}
               className="task-list-item task-list-item--rich"
-              onClick={() => onSelectTarea(tarea)}
+              onClick={() => onSelect(tarea, parte)}
             >
               <div className="task-info">
                 <h4>{tarea.tarea}</h4>
                 <p className="task-list-ejecutor">{ejecutor}</p>
-                {showFechaApertura && parte && (
+                {showFechaApertura && (
                   <p className="task-list-fecha-apertura">
                     Abierto el {format(parte.abiertoEn.toDate(), "EEEE d 'de' MMMM", { locale: es })}
                   </p>
@@ -82,9 +84,14 @@ export default function EndTaskList({
                     {formatProgressLabel(progress)}
                   </span>
                 </div>
+                {cuadrosParte > 0 && (
+                  <p className="task-list-cuadros-info">
+                    {cuadrosParte} cuadro{cuadrosParte > 1 ? 's' : ''} en esta jornada
+                  </p>
+                )}
                 {finalizados > 0 && (
                   <p className="task-list-cuadros-info">
-                    {finalizados} de {totalCuadros} cuadros finalizados
+                    {finalizados} de {totalCuadros} cuadros finalizados (labor)
                   </p>
                 )}
               </div>

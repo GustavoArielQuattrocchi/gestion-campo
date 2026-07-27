@@ -357,6 +357,7 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                     <tr>
                       <th>Fecha</th>
                       <th>Labor</th>
+                      <th>Ejecutor</th>
                       <th>Totales</th>
                       <th>Jornales</th>
                       <th>Ratio</th>
@@ -364,9 +365,10 @@ export default function AnalyticsContent({ tareas, partes, partesStaffing }: Pro
                   </thead>
                   <tbody>
                     {dailyProdDetalle.map(row => (
-                      <tr key={`${row.fecha}|${row.tarea}`}>
+                      <tr key={`${row.fecha}|${row.tarea}|${row.ejecutor}`}>
                         <td>{row.label}</td>
                         <td>{row.tarea}</td>
+                        <td>{row.ejecutor}</td>
                         <td>{formatTotalsCell(row.totalByUnit)}</td>
                         <td className="num">{row.jornalesTotales.toFixed(1)}</td>
                         <td>{formatRatiosCell(row.ratioByUnit)}</td>

@@ -1,10 +1,11 @@
 import { ChevronLeft, Play, Square, AlertTriangle, Clock, ChevronRight, History } from 'lucide-react'
 import type { ParteDeLabores, Tarea } from '../../types'
 import {
-  findParteAbierto,
+  findPartesAbiertosDeTarea,
   isParteAbiertoHoy,
   isParteAbiertoVencido,
 } from '../../utils/parteEstado'
+import { getEjecutorLabelFromParte } from '../../utils/tareaEjecutor'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 
 interface Props {
@@ -17,8 +18,16 @@ interface Props {
   onSelectFin: () => void
   onSelectFinVencidos: () => void
   onSelectAccidente: () => void
-  onCerrarTarea: (tareaId: string) => void
+  onCerrarParte: (tareaId: string, parteId: string) => void
   onBack: () => void
+}
+
+function formatEjecutorDetalle(parte: ParteDeLabores): string {
+  const label = getEjecutorLabelFromParte(parte)
+  if (parte.tipo === 'manual' && parte.cantidadPersonas != null) {
+    return `${label} · ${parte.cantidadPersonas} pers.`
+  }
+  return label
 }
 
 export default function TaskMenu({
@@ -31,7 +40,7 @@ export default function TaskMenu({
   onSelectFin,
   onSelectFinVencidos,
   onSelectAccidente,
-  onCerrarTarea,
+  onCerrarParte,
   onBack,
 }: Props) {
   return (
@@ -49,22 +58,13 @@ export default function TaskMenu({
           <div className="card-title">Tareas activas</div>
           <ul className="jornada-list">
             {tareasActivas.map(tarea => {
-              const parte = findParteAbierto(partesAbiertos, tarea.id)
-              const enJornadaHoy = parte ? isParteAbiertoHoy(parte) : false
-              const enJornadaVencida = parte ? isParteAbiertoVencido(parte) : false
+              const partesTarea = findPartesAbiertosDeTarea(partesAbiertos, tarea.id)
               const progress = computeTareaProgress(tarea)
-              const ejecutor =
-                tarea.tipo === 'manual'
-                  ? `${tarea.cuadrilla} · ${tarea.cantidadPersonas} pers.`
-                  : tarea.maquinariaModelo
-                    ? `${tarea.maquinaria} (${tarea.maquinariaModelo})`
-                    : `${tarea.persona} · ${tarea.maquinaria}`
 
               return (
-                <li key={tarea.id} className="jornada-item">
+                <li key={tarea.id} className="jornada-item jornada-item--stack">
                   <div className="jornada-item-info">
                     <strong>{tarea.tarea}</strong>
-                    <span className="jornada-item-meta">{ejecutor}</span>
                     <div className="jornada-progress-row">
                       <div className="jornada-progress-bar">
                         <div
@@ -77,27 +77,43 @@ export default function TaskMenu({
                       </span>
                     </div>
                   </div>
-                  <div className="jornada-item-actions">
-                    {enJornadaHoy && (
-                      <span className="jornada-badge-jornada">
-                        <Clock size={14} /> En jornada
-                      </span>
-                    )}
-                    {enJornadaVencida && (
-                      <span className="jornada-badge-vencido">
-                        <History size={14} /> Pendiente día anterior
-                      </span>
-                    )}
-                    {enJornadaHoy && (
-                      <button
-                        type="button"
-                        className="jornada-btn-cerrar"
-                        onClick={() => onCerrarTarea(tarea.id)}
-                      >
-                        Cerrar jornada <ChevronRight size={14} />
-                      </button>
-                    )}
-                  </div>
+
+                  {partesTarea.length === 0 ? (
+                    <span className="jornada-item-meta">Sin parte abierto hoy</span>
+                  ) : (
+                    <ul className="jornada-partes-list">
+                      {partesTarea.map(parte => {
+                        const enJornadaHoy = isParteAbiertoHoy(parte)
+                        const enJornadaVencida = isParteAbiertoVencido(parte)
+                        return (
+                          <li key={parte.id} className="jornada-parte-row">
+                            <div>
+                              <span className="jornada-item-meta">{formatEjecutorDetalle(parte)}</span>
+                              {enJornadaHoy && (
+                                <span className="jornada-badge-jornada">
+                                  <Clock size={14} /> En jornada
+                                </span>
+                              )}
+                              {enJornadaVencida && (
+                                <span className="jornada-badge-vencido">
+                                  <History size={14} /> Pendiente día anterior
+                                </span>
+                              )}
+                            </div>
+                            {(enJornadaHoy || enJornadaVencida) && (
+                              <button
+                                type="button"
+                                className="jornada-btn-cerrar"
+                                onClick={() => onCerrarParte(tarea.id, parte.id)}
+                              >
+                                Cerrar jornada <ChevronRight size={14} />
+                              </button>
+                            )}
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  )}
                 </li>
               )
             })}
@@ -148,7 +164,7 @@ export default function TaskMenu({
           </div>
           <div className="option-card-content">
             <h3>Informe de Accidente</h3>
-            <p>Reportar accidente o condición riesgosa</p>
+            <p>Registrar un incidente o accidente</p>
           </div>
         </button>
       </div>

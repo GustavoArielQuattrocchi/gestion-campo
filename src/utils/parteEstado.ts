@@ -10,12 +10,90 @@ export function isParteCerrado(parte: ParteDeLabores): boolean {
   return parte.estado === 'cerrado'
 }
 
+/** Clave estable tarea+ejecutor para un parte (cuadrilla o persona). */
+export function parteEjecutorKey(parte: Pick<ParteDeLabores, 'tipo' | 'cuadrilla' | 'persona'>): string {
+  if (parte.tipo === 'manual') {
+    return `manual:${(parte.cuadrilla ?? '').trim().toLowerCase()}`
+  }
+  return `mecanica:${(parte.persona ?? '').trim().toLowerCase()}`
+}
+
+/** Clave de ejecutor al abrir/continuar una jornada. */
+export function ejecutorKeyFromTareaOrOverride(
+  tarea: Tarea,
+  ejecutor?: { cuadrilla?: string; persona?: string },
+): string {
+  if (tarea.tipo === 'manual') {
+    const cuadrilla = (ejecutor?.cuadrilla ?? tarea.cuadrilla).trim().toLowerCase()
+    return `manual:${cuadrilla}`
+  }
+  const persona = (ejecutor?.persona ?? tarea.persona).trim().toLowerCase()
+  return `mecanica:${persona}`
+}
+
 export function findParteAbierto(partes: ParteDeLabores[], tareaId: string): ParteDeLabores | undefined {
   return partes.find(p => p.tareaId === tareaId && p.estado === 'abierto')
 }
 
+export function findPartesAbiertosDeTarea(partes: ParteDeLabores[], tareaId: string): ParteDeLabores[] {
+  return partes.filter(p => p.tareaId === tareaId && p.estado === 'abierto')
+}
+
+export function findParteAbiertoParaEjecutor(
+  partes: ParteDeLabores[],
+  tareaId: string,
+  ejecutorKey: string,
+): ParteDeLabores | undefined {
+  return partes.find(
+    p => p.tareaId === tareaId && p.estado === 'abierto' && parteEjecutorKey(p) === ejecutorKey,
+  )
+}
+
 export function tieneParteAbierto(partes: ParteDeLabores[], tareaId: string): boolean {
   return partes.some(p => p.tareaId === tareaId && p.estado === 'abierto')
+}
+
+export function tieneParteAbiertoParaEjecutor(
+  partes: ParteDeLabores[],
+  tareaId: string,
+  ejecutorKey: string,
+): boolean {
+  return findParteAbiertoParaEjecutor(partes, tareaId, ejecutorKey) != null
+}
+
+export interface CierreParteItem {
+  tarea: Tarea
+  parte: ParteDeLabores
+}
+
+/** Pares tarea+parte abiertos hoy (una fila por cuadrilla/persona). */
+export function buildCierreItemsHoy(
+  tareas: Tarea[],
+  partesAbiertos: ParteDeLabores[],
+  referenceDate = new Date(),
+): CierreParteItem[] {
+  const byId = new Map(tareas.map(t => [t.id, t]))
+  return filterPartesAbiertosHoy(partesAbiertos, referenceDate)
+    .map(parte => {
+      const tarea = byId.get(parte.tareaId)
+      return tarea ? { tarea, parte } : null
+    })
+    .filter((x): x is CierreParteItem => x != null)
+}
+
+/** Pares tarea+parte abiertos de días anteriores. */
+export function buildCierreItemsVencidos(
+  tareas: Tarea[],
+  partesAbiertos: ParteDeLabores[],
+  referenceDate = new Date(),
+): CierreParteItem[] {
+  const byId = new Map(tareas.map(t => [t.id, t]))
+  return filterPartesAbiertosVencidos(partesAbiertos, referenceDate)
+    .map(parte => {
+      const tarea = byId.get(parte.tareaId)
+      return tarea ? { tarea, parte } : null
+    })
+    .filter((x): x is CierreParteItem => x != null)
 }
 
 export function isParteAbiertoHoy(parte: ParteDeLabores, referenceDate = new Date()): boolean {

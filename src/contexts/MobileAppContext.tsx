@@ -50,7 +50,12 @@ import {
   OFFLINE_WRITE_TOAST,
   useOnlineStatus,
 } from '../hooks/useOnlineStatus'
-import { buildParteAbiertoPayload, buildParteCierreUpdate, type ParteEjecutorOverride } from '../utils/buildParteDeLaboresPayload'
+import {
+  buildParteAbiertoPayload,
+  buildParteCierreUpdate,
+  type ParteCuadrosScope,
+  type ParteEjecutorOverride,
+} from '../utils/buildParteDeLaboresPayload'
 import {
   buildEjecutorPorCuadroPatch,
   ejecutorLabelFromContinueOptions,
@@ -58,7 +63,12 @@ import {
   type ContinueTaskOptions,
 } from '../utils/tareaEjecutor'
 import { parsePartesFromSnapshot } from '../utils/parseParteDeLabores'
-import { tieneParteAbierto, resolveCerradoEn } from '../utils/parteEstado'
+import {
+  ejecutorKeyFromTareaOrOverride,
+  findParteAbiertoParaEjecutor,
+  resolveCerradoEn,
+  tieneParteAbiertoParaEjecutor,
+} from '../utils/parteEstado'
 
 function initialSessionState() {
   const session = loadMobileSession()
@@ -77,6 +87,7 @@ interface MobileAppContextValue {
   partesAbiertos: ParteDeLabores[]
   successMsg: { message: string; detail: string }
   lastCreatedTareaId: string | null
+  lastCreatedParteId: string | null
   firestoreError: string | null
   parseWarning: string | null
   toast: MobileToastState | null
@@ -108,6 +119,7 @@ interface MobileAppContextValue {
   }) => Promise<boolean>
   handleRegisterRendimiento: (
     tareaId: string,
+    parteId: string,
     cantidad: number,
     unidad: RendimientoUnidad,
     extras?: {
@@ -139,6 +151,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
   const [partesAbiertos, setPartesAbiertos] = useState<ParteDeLabores[]>([])
   const [successMsg, setSuccessMsg] = useState({ message: '', detail: '' })
   const [lastCreatedTareaId, setLastCreatedTareaId] = useState<string | null>(null)
+  const [lastCreatedParteId, setLastCreatedParteId] = useState<string | null>(null)
   const [firestoreError, setFirestoreError] = useState<string | null>(null)
   const [parseWarning, setParseWarning] = useState<string | null>(null)
   const [toast, setToast] = useState<MobileToastState | null>(null)
@@ -167,12 +180,20 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
   const partesAbiertosRef = useRef(partesAbiertos)
   partesAbiertosRef.current = partesAbiertos
 
-  const abrirParteDeLabores = useCallback(async (tarea: Tarea, ejecutor?: ParteEjecutorOverride) => {
-    if (tieneParteAbierto(partesAbiertosRef.current, tarea.id)) return
-    await addDoc(
+  const abrirParteDeLabores = useCallback(async (
+    tarea: Tarea,
+    ejecutor?: ParteEjecutorOverride,
+    scope?: ParteCuadrosScope,
+  ): Promise<string | null> => {
+    const key = ejecutorKeyFromTareaOrOverride(tarea, ejecutor)
+    if (tieneParteAbiertoParaEjecutor(partesAbiertosRef.current, tarea.id, key)) {
+      return findParteAbiertoParaEjecutor(partesAbiertosRef.current, tarea.id, key)?.id ?? null
+    }
+    const docRef = await addDoc(
       collection(db, 'partes_labores'),
-      buildParteAbiertoPayload(tarea, operadorNombre, Timestamp.now(), ejecutor),
+      buildParteAbiertoPayload(tarea, operadorNombre, Timestamp.now(), ejecutor, scope),
     )
+    return docRef.id
   }, [operadorNombre])
 
   useEffect(() => {
@@ -355,9 +376,10 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         operador: operadorNombre.trim(),
         fechaInicio: payload.fechaInicio,
       }
-      await abrirParteDeLabores(nuevaTarea)
+      const parteId = await abrirParteDeLabores(nuevaTarea)
       setFirestoreError(null)
       setLastCreatedTareaId(docRef.id)
+      setLastCreatedParteId(parteId)
       setSuccessMsg({
         message: 'Parte de labores abierto',
         detail: `${data.tarea} — ${data.cuadrilla} con ${data.cantidadPersonas} personas`,
@@ -422,9 +444,10 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         operador: operadorNombre.trim(),
         fechaInicio: payload.fechaInicio,
       }
-      await abrirParteDeLabores(nuevaTarea)
+      const parteId = await abrirParteDeLabores(nuevaTarea)
       setFirestoreError(null)
       setLastCreatedTareaId(docRef.id)
+      setLastCreatedParteId(parteId)
       setSuccessMsg({
         message: 'Parte de labores abierto',
         detail: `${data.tarea} — ${data.persona} con ${data.maquinaria}`,
@@ -502,12 +525,20 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
               maquinariaId: options.maquinariaId,
             }
 
-      await abrirParteDeLabores(tareaActualizada, parteEjecutor)
+      const parteId = await abrirParteDeLabores(tareaActualizada, parteEjecutor, {
+        cuadros,
+        cuadroIds,
+      })
       setFirestoreError(null)
       setLastCreatedTareaId(tareaId)
+      setLastCreatedParteId(parteId)
+      const ejecutorDetail =
+        tarea.tipo === 'manual'
+          ? (options.cuadrilla ?? tarea.cuadrilla)
+          : (options.persona ?? tarea.persona)
       setSuccessMsg({
-        message: 'Cuadros agregados a tarea existente',
-        detail: `Se agregaron ${cuadros.length} cuadro${cuadros.length > 1 ? 's' : ''} a la labor ${tarea.tarea}`,
+        message: 'Cuadros agregados a la labor',
+        detail: `${tarea.tarea} — jornada de ${ejecutorDetail}`,
       })
       if (!navigator.onLine) {
         markPendingSync()
@@ -526,15 +557,18 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
 
   const handleRegisterRendimiento = useCallback(async (
     tareaId: string,
+    parteId: string,
     cantidad: number,
     unidad: RendimientoUnidad,
     extras: { horaInicio?: string; horaFin?: string; observaciones?: string; clima?: WeatherSnapshot } = {},
   ) => {
     if (submittingRef.current) return
     const tarea = tareasActivas.find(t => t.id === tareaId)
-    const parteAbierto = partesAbiertosRef.current.find(p => p.tareaId === tareaId)
+    const parteAbierto = partesAbiertosRef.current.find(
+      p => p.id === parteId && p.tareaId === tareaId && p.estado === 'abierto',
+    )
     if (!tarea || !parteAbierto) {
-      showToast('No hay un parte de labores abierto para esta tarea.', 'error')
+      showToast('No hay un parte de labores abierto para esta jornada.', 'error')
       return
     }
 
@@ -573,9 +607,13 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         markPendingSync()
         showToast(OFFLINE_WRITE_TOAST, 'info')
       }
+      const ejecutorLabel =
+        parteAbierto.tipo === 'manual'
+          ? (parteAbierto.cuadrilla ?? '')
+          : (parteAbierto.persona ?? '')
       setSuccessMsg({
         message: 'Parte de labores cerrado',
-        detail: `${tarea.tarea} — ${texto}`,
+        detail: `${tarea.tarea} — ${ejecutorLabel} — ${texto}`,
       })
       navigate(`${MOBILE_ROUTES.exito}?motivo=rendimiento`)
     } catch (err) {
@@ -608,6 +646,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       partesAbiertos,
       successMsg,
       lastCreatedTareaId,
+      lastCreatedParteId,
       firestoreError,
       parseWarning,
       toast,
@@ -635,6 +674,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
       partesAbiertos,
       successMsg,
       lastCreatedTareaId,
+      lastCreatedParteId,
       firestoreError,
       parseWarning,
       toast,

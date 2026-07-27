@@ -175,6 +175,7 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
           tarea={tareaContinuable}
           partesAbiertos={partesAbiertos}
           ejecutorActual={ejecutorActualLabel}
+          ejecutorClave={persona || undefined}
         />
       )}
 

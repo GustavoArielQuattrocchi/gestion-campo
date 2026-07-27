@@ -2,11 +2,13 @@ import { format } from 'date-fns'
 import type { Tarea, TareaManual, ParteDeLabores, RendimientoUnidad } from '../types'
 import { getHectareasCuadro, getTotalHectareasFinca } from '../data/fincaData'
 
-/** Productividad diaria por labor (fuente de gráficos y tabla). */
+/** Productividad diaria por labor y ejecutor (fuente de gráficos y tabla). */
 export interface DailyProductivity {
   fecha: string
   label: string
   tarea: string
+  /** Cuadrilla (manual) o persona (mecánica) del cierre. */
+  ejecutor: string
   entries: { tarea: string; cantidad: number; unidad: RendimientoUnidad }[]
   /** Totales del día/labor por unidad (incluye jornal si se cargó como unidad). */
   totalByUnit: Record<string, number>
@@ -65,8 +67,25 @@ type CloseMeta = {
 type LaborDayBucket = {
   date: Date
   tarea: string
+  ejecutor: string
   entries: { tarea: string; cantidad: number; unidad: RendimientoUnidad }[]
   closes: CloseMeta[]
+}
+
+function resolveEjecutorLabel(
+  tarea: Tarea,
+  rd: { parteId?: string },
+  partesById: Map<string, ParteDeLabores>,
+): string {
+  if (rd.parteId) {
+    const parte = partesById.get(rd.parteId)
+    if (parte) {
+      if (parte.tipo === 'manual') return (parte.cuadrilla ?? '').trim() || 'Sin cuadrilla'
+      return (parte.persona ?? '').trim() || 'Sin operario'
+    }
+  }
+  if (tarea.tipo === 'manual') return tarea.cuadrilla
+  return tarea.persona
 }
 
 function resolvePersonasFallback(
@@ -102,10 +121,11 @@ export function computeDailyProductivity(
       if (rd.cantidad == null || !rd.unidad || !rd.fecha?.toDate) continue
       const d = rd.fecha.toDate()
       const fecha = toDateKey(d)
-      const key = `${fecha}|${t.tarea}`
+      const ejecutor = resolveEjecutorLabel(t, rd, partesById)
+      const key = `${fecha}|${t.tarea}|${ejecutor}`
       let bucket = byKey.get(key)
       if (!bucket) {
-        bucket = { date: d, tarea: t.tarea, entries: [], closes: [] }
+        bucket = { date: d, tarea: t.tarea, ejecutor, entries: [], closes: [] }
         byKey.set(key, bucket)
       }
       bucket.entries.push({ tarea: t.tarea, cantidad: rd.cantidad, unidad: rd.unidad })
@@ -151,6 +171,7 @@ export function computeDailyProductivity(
         fecha: toDateKey(bucket.date),
         label: toLabel(bucket.date),
         tarea: bucket.tarea,
+        ejecutor: bucket.ejecutor,
         entries: bucket.entries,
         totalByUnit,
         jornalesTotales: round2(jornalesTotales),

@@ -173,3 +173,55 @@ describe('listFincasPorRecencia', () => {
     assert.deepEqual(ordered, ['FOB', 'FOA'])
   })
 })
+
+describe('computeDailyProductivity por ejecutor', () => {
+  it('separa filas por cuadrilla cuando hay parteId distinto', () => {
+    const propia = manualConRendimiento('1', 'Podando', 4, 8, 'hileras', '2026-06-15T12:00:00Z', 'p-propia')
+    const externa = manualConRendimiento('1', 'Podando', 6, 10, 'hileras', '2026-06-15T12:00:00Z', 'p-externa')
+    // misma tarea id con dos cierres: simulamos dos entries en una tarea
+    const tarea = {
+      ...propia,
+      rendimientosDiarios: [
+        ...(propia.rendimientosDiarios ?? []),
+        ...(externa.rendimientosDiarios ?? []),
+      ],
+    }
+    const partes: ParteDeLabores[] = [
+      {
+        id: 'p-propia',
+        tareaId: '1',
+        fincaId: 'FOA',
+        fincaNombre: 'FOA',
+        tarea: 'Podando',
+        tipo: 'manual',
+        operador: 'op',
+        estado: 'cerrado',
+        abiertoEn: ts('2026-06-15T08:00:00Z'),
+        cerradoEn: ts('2026-06-15T12:00:00Z'),
+        cuadros: [],
+        cuadrilla: 'Cuadrilla Propia',
+        cantidadPersonas: 4,
+      },
+      {
+        id: 'p-externa',
+        tareaId: '1',
+        fincaId: 'FOA',
+        fincaNombre: 'FOA',
+        tarea: 'Podando',
+        tipo: 'manual',
+        operador: 'op',
+        estado: 'cerrado',
+        abiertoEn: ts('2026-06-15T08:00:00Z'),
+        cerradoEn: ts('2026-06-15T12:00:00Z'),
+        cuadros: [],
+        cuadrilla: 'Cuadrilla Externa',
+        cantidadPersonas: 6,
+      },
+    ]
+    const rows = computeDailyProductivity([tarea], partes)
+    assert.equal(rows.length, 2)
+    const byEjecutor = Object.fromEntries(rows.map(r => [r.ejecutor, r]))
+    assert.equal(byEjecutor['Cuadrilla Propia'].jornalesTotales, 4)
+    assert.equal(byEjecutor['Cuadrilla Externa'].jornalesTotales, 6)
+  })
+})
