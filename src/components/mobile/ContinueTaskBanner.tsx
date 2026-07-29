@@ -7,14 +7,17 @@ import {
   parteEjecutorKey,
   tieneParteAbiertoParaEjecutor,
 } from '../../utils/parteEstado'
+import type { OrigenEjecucion } from '../../utils/origenEjecucion'
 
 interface Props {
   tarea: Tarea
   partesAbiertos: ParteDeLabores[]
-  /** Texto para mensajes (cuadrilla o "persona · máquina"). */
+  /** Texto para mensajes. */
   ejecutorActual?: string
-  /** Valor usado para la clave del parte: cuadrilla (manual) o persona (mecánica). */
+  /** Cuadrilla (manual) o persona (mecánica) para la clave. */
   ejecutorClave?: string
+  responsableClave?: string
+  origenEjecucion?: OrigenEjecucion
 }
 
 export default function ContinueTaskBanner({
@@ -22,16 +25,20 @@ export default function ContinueTaskBanner({
   partesAbiertos,
   ejecutorActual,
   ejecutorClave,
+  responsableClave,
+  origenEjecucion,
 }: Props) {
   const progress = computeTareaProgress(tarea)
   const partesTarea = findPartesAbiertosDeTarea(partesAbiertos, tarea.id)
-  const clave = (ejecutorClave ?? ejecutorActual)?.trim()
+  const clave = ejecutorClave?.trim()
   const keyActual =
-    clave
-      ? ejecutorKeyFromTareaOrOverride(
-          tarea,
-          tarea.tipo === 'manual' ? { cuadrilla: clave } : { persona: clave },
-        )
+    clave && responsableClave?.trim()
+      ? ejecutorKeyFromTareaOrOverride(tarea, {
+          ...(tarea.tipo === 'manual'
+            ? { cuadrilla: clave }
+            : { persona: clave, origenEjecucion }),
+          responsable: responsableClave,
+        })
       : null
   const mismaJornadaAbierta =
     keyActual != null && tieneParteAbiertoParaEjecutor(partesAbiertos, tarea.id, keyActual)
@@ -71,13 +78,13 @@ export default function ContinueTaskBanner({
         </div>
       )}
 
-      {!mismaJornadaAbierta && otrasJornadas.length > 0 && label && (
+      {!mismaJornadaAbierta && otrasJornadas.length > 0 && label && responsableClave && (
         <div className="card continue-task-banner">
           <AlertCircle size={16} />
           <div>
-            <strong>Otras cuadrillas en la misma labor</strong>
+            <strong>Otras jornadas en la misma labor</strong>
             <small>
-              Se abrirá un parte aparte para {label}. Cada cuadrilla cierra su propio
+              Se abrirá un parte aparte para {label}. Cada cuadrilla/empresa cierra su propio
               rendimiento.
             </small>
           </div>

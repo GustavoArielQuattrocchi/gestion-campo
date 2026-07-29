@@ -8,13 +8,23 @@ export function getEjecutorLabelFromTarea(t: Tarea): string {
 }
 
 export function getEjecutorLabelFromParte(p: ParteDeLabores): string {
-  if (p.tipo === 'manual') return (p.cuadrilla ?? 'Sin cuadrilla').trim()
+  if (p.tipo === 'manual') {
+    const base = (p.cuadrilla ?? 'Sin cuadrilla').trim()
+    const resp = p.responsable?.trim()
+    return resp ? `${base} · ${resp}` : base
+  }
   const persona = (p.persona ?? 'Sin operario').trim()
   const maq = (p.maquinaria ?? '').trim()
   const modelo = p.maquinariaModelo?.trim()
-  if (maq && modelo) return `${persona} · ${maq} (${modelo})`
-  if (maq) return `${persona} · ${maq}`
-  return persona
+  const resp = p.responsable?.trim()
+  const origen = p.origenEjecucion === 'externa' ? 'Externa' : p.origenEjecucion === 'propia' ? 'Propia' : null
+  let core = persona
+  if (maq && modelo) core = `${persona} · ${maq} (${modelo})`
+  else if (maq) core = `${persona} · ${maq}`
+  if (origen && resp) return `${origen} · ${resp} · ${core}`
+  if (resp) return `${resp} · ${core}`
+  if (origen) return `${origen} · ${core}`
+  return core
 }
 
 export function buildEjecutorPorCuadroPatch(
@@ -48,6 +58,8 @@ export interface ContinueTaskOptions {
   maquinaria?: string
   maquinariaModelo?: string
   maquinariaId?: string
+  responsable?: string
+  origenEjecucion?: 'propia' | 'externa'
 }
 
 export function ejecutorLabelFromContinueOptions(
@@ -56,14 +68,20 @@ export function ejecutorLabelFromContinueOptions(
 ): string | undefined {
   if (tipo === 'manual') {
     const cuadrilla = opts.cuadrilla?.trim()
-    return cuadrilla || undefined
+    if (!cuadrilla) return undefined
+    const resp = opts.responsable?.trim()
+    return resp ? `${cuadrilla} · ${resp}` : cuadrilla
   }
   const persona = opts.persona?.trim()
   const maquinaria = opts.maquinaria?.trim()
   if (!persona || !maquinaria) return undefined
   const modelo = opts.maquinariaModelo?.trim()
-  if (modelo) return `${persona} · ${maquinaria} (${modelo})`
-  return `${persona} · ${maquinaria}`
+  const resp = opts.responsable?.trim()
+  const origen = opts.origenEjecucion === 'externa' ? 'Externa' : opts.origenEjecucion === 'propia' ? 'Propia' : null
+  let core = modelo ? `${persona} · ${maquinaria} (${modelo})` : `${persona} · ${maquinaria}`
+  if (origen && resp) return `${origen} · ${resp} · ${core}`
+  if (resp) return `${resp} · ${core}`
+  return core
 }
 
 /** Etiquetas de ejecutor inferidas de tareas legacy sin ejecutorPorCuadro. */

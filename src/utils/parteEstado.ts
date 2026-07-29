@@ -10,25 +10,36 @@ export function isParteCerrado(parte: ParteDeLabores): boolean {
   return parte.estado === 'cerrado'
 }
 
-/** Clave estable tarea+ejecutor para un parte (cuadrilla o persona). */
-export function parteEjecutorKey(parte: Pick<ParteDeLabores, 'tipo' | 'cuadrilla' | 'persona'>): string {
+/** Clave estable tarea+ejecutor+responsable para un parte. */
+export function parteEjecutorKey(
+  parte: Pick<ParteDeLabores, 'tipo' | 'cuadrilla' | 'persona' | 'responsable' | 'origenEjecucion'>,
+): string {
+  const resp = (parte.responsable ?? '').trim().toLowerCase()
   if (parte.tipo === 'manual') {
-    return `manual:${(parte.cuadrilla ?? '').trim().toLowerCase()}`
+    return `manual:${(parte.cuadrilla ?? '').trim().toLowerCase()}:${resp}`
   }
-  return `mecanica:${(parte.persona ?? '').trim().toLowerCase()}`
+  const origen = (parte.origenEjecucion ?? 'propia').trim().toLowerCase()
+  return `mecanica:${origen}:${(parte.persona ?? '').trim().toLowerCase()}:${resp}`
 }
 
 /** Clave de ejecutor al abrir/continuar una jornada. */
 export function ejecutorKeyFromTareaOrOverride(
   tarea: Tarea,
-  ejecutor?: { cuadrilla?: string; persona?: string },
+  ejecutor?: {
+    cuadrilla?: string
+    persona?: string
+    responsable?: string
+    origenEjecucion?: string
+  },
 ): string {
+  const resp = (ejecutor?.responsable ?? '').trim().toLowerCase()
   if (tarea.tipo === 'manual') {
     const cuadrilla = (ejecutor?.cuadrilla ?? tarea.cuadrilla).trim().toLowerCase()
-    return `manual:${cuadrilla}`
+    return `manual:${cuadrilla}:${resp}`
   }
+  const origen = (ejecutor?.origenEjecucion ?? 'propia').trim().toLowerCase()
   const persona = (ejecutor?.persona ?? tarea.persona).trim().toLowerCase()
-  return `mecanica:${persona}`
+  return `mecanica:${origen}:${persona}:${resp}`
 }
 
 export function findParteAbierto(partes: ParteDeLabores[], tareaId: string): ParteDeLabores | undefined {

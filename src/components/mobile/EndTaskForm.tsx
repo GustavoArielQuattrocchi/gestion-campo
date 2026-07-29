@@ -97,6 +97,15 @@ export default function EndTaskForm({ tarea, parteAbierto, onSubmit, onBack }: P
                 <span className="value">{parteAbierto.cuadrilla ?? tarea.cuadrilla}</span>
               </div>
               <div className="task-summary-row">
+                <span className="label">
+                  {(parteAbierto.origenEjecucion ?? '').includes('extern') ||
+                  (parteAbierto.cuadrilla ?? '').toLowerCase().includes('extern')
+                    ? 'Empresa'
+                    : 'Responsable'}
+                </span>
+                <span className="value">{parteAbierto.responsable?.trim() || '—'}</span>
+              </div>
+              <div className="task-summary-row">
                 <span className="label">Personas</span>
                 <span className="value">
                   {parteAbierto.cantidadPersonas ?? tarea.cantidadPersonas}
@@ -105,6 +114,22 @@ export default function EndTaskForm({ tarea, parteAbierto, onSubmit, onBack }: P
             </>
           ) : (
             <>
+              <div className="task-summary-row">
+                <span className="label">Tipo de servicio</span>
+                <span className="value">
+                  {parteAbierto.origenEjecucion === 'externa'
+                    ? 'Externo'
+                    : parteAbierto.origenEjecucion === 'propia'
+                      ? 'Propio'
+                      : '—'}
+                </span>
+              </div>
+              <div className="task-summary-row">
+                <span className="label">
+                  {parteAbierto.origenEjecucion === 'externa' ? 'Empresa' : 'Responsable'}
+                </span>
+                <span className="value">{parteAbierto.responsable?.trim() || '—'}</span>
+              </div>
               <div className="task-summary-row">
                 <span className="label">Operario</span>
                 <span className="value">{parteAbierto.persona ?? tarea.persona}</span>

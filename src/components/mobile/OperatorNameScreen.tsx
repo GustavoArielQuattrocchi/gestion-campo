@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { User, ArrowRight } from 'lucide-react'
+import { loadRememberedOperador } from '../../utils/mobileLocalMemory'
 
 interface Props {
   onSubmit: (nombre: string) => Promise<boolean>
 }
 
 export default function OperatorNameScreen({ onSubmit }: Props) {
-  const [nombre, setNombre] = useState('')
+  const [nombre, setNombre] = useState(() => loadRememberedOperador() ?? '')
   const [saving, setSaving] = useState(false)
 
   const handleSubmit = async () => {

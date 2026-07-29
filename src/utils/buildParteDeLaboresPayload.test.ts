@@ -43,12 +43,17 @@ const mecanica: TareaMecanica = {
 
 describe('buildParteAbiertoPayload', () => {
   it('arma parte abierto sin rendimiento', () => {
-    const payload = buildParteAbiertoPayload(manual, 'María', mockTs)
+    const payload = buildParteAbiertoPayload(manual, 'María', mockTs, {
+      responsable: 'Juan Capataz',
+      origenEjecucion: 'propia',
+    })
     assert.equal(payload.estado, 'abierto')
     assert.equal(payload.abiertoEn, mockTs)
     assert.equal('rendimiento' in payload, false)
     assert.equal('cerradoEn' in payload, false)
     assert.equal(payload.operador, 'María')
+    assert.equal(payload.responsable, 'Juan Capataz')
+    assert.equal(payload.origenEjecucion, 'propia')
   })
 })
 

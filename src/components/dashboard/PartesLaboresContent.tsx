@@ -8,6 +8,7 @@ import { formatTimestamp } from '../../utils/formatTimestamp'
 import { deleteParte, updateParteRendimiento } from '../../utils/partesLaboresMutations'
 import { groupPartesForDashboard, historicoPorDia, isParteAbiertoVencido, formatParteAbiertoDia } from '../../utils/parteEstado'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
+import { getEjecutorLabelFromParte } from '../../utils/tareaEjecutor'
 import TaskProgressBar from './TaskProgressBar'
 import ParteWeather from './ParteWeather'
 
@@ -25,13 +26,11 @@ interface Props {
 }
 
 function resumenParte(parte: ParteDeLabores): string {
-  if (parte.tipo === 'manual') {
-    return `${parte.cuadrilla} · ${parte.cantidadPersonas} pers.`
+  const label = getEjecutorLabelFromParte(parte)
+  if (parte.tipo === 'manual' && parte.cantidadPersonas != null) {
+    return `${label} · ${parte.cantidadPersonas} pers.`
   }
-  if (parte.maquinariaModelo) {
-    return `${parte.maquinaria} (${parte.maquinariaModelo})`
-  }
-  return `${parte.persona} · ${parte.maquinaria}`
+  return label
 }
 
 function ParteCard({

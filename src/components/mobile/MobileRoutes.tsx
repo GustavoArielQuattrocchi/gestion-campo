@@ -192,6 +192,7 @@ export default function MobileRoutes() {
   const {
     fincaId,
     fincaNombre,
+    operadorNombre,
     tareasActivas,
     partesAbiertos,
     handleOperatorSubmit,
@@ -269,6 +270,7 @@ export default function MobileRoutes() {
             element={
               <ManualTaskForm
                 fincaNombre={fincaNombre}
+                operadorNombre={operadorNombre}
                 tareasActivas={tareasActivas}
                 partesAbiertos={partesAbiertos}
                 onSubmit={handleStartManualTask}
@@ -283,6 +285,7 @@ export default function MobileRoutes() {
               <MechanicalTaskForm
                 fincaId={fincaId}
                 fincaNombre={fincaNombre}
+                operadorNombre={operadorNombre}
                 tareasActivas={tareasActivas}
                 partesAbiertos={partesAbiertos}
                 onSubmit={handleStartMechanicalTask}

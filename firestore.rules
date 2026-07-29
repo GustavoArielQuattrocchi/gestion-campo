@@ -308,7 +308,10 @@ service cloud.firestore {
         || (d.cuadrilla is string
           && d.cuadrilla.size() > 0
           && d.cantidadPersonas is int
-          && d.cantidadPersonas >= 1);
+          && d.cantidadPersonas >= 1
+          && d.responsable is string
+          && d.responsable.size() > 0
+          && d.origenEjecucion in ['propia', 'externa']);
     }
 
     function validParteMecanica() {
@@ -318,6 +321,9 @@ service cloud.firestore {
           && d.persona.size() > 0
           && d.maquinaria is string
           && d.maquinaria.size() > 0
+          && d.responsable is string
+          && d.responsable.size() > 0
+          && d.origenEjecucion in ['propia', 'externa']
           && (d.get('maquinariaModelo', null) == null || d.maquinariaModelo is string)
           && (d.get('maquinariaId', null) == null || d.maquinariaId is string));
     }

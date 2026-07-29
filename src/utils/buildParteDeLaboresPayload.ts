@@ -1,5 +1,7 @@
 import type { Timestamp } from 'firebase/firestore'
 import type { ParteDeLabores, RendimientoUnidad, Tarea, WeatherSnapshot } from '../types'
+import { origenFromCuadrilla, type OrigenEjecucion } from './origenEjecucion'
+import { normalizeResponsable } from './origenEjecucion'
 
 export type ParteDeLaboresFirestorePayload = Omit<ParteDeLabores, 'id'>
 
@@ -19,6 +21,8 @@ export type ParteEjecutorOverride = {
   maquinaria?: string
   maquinariaModelo?: string
   maquinariaId?: string
+  responsable?: string
+  origenEjecucion?: OrigenEjecucion
 }
 
 function parteBaseFields(tarea: Tarea, operador: string) {
@@ -38,7 +42,7 @@ export type ParteCuadrosScope = {
   cuadroIds?: string[]
 }
 
-/** Apertura de jornada: parte abierto sin rendimiento (al cargar tarea en campo). */
+/** Asegura responsable y origen en el payload (obligatorios en reglas nuevas). */
 export function buildParteAbiertoPayload(
   tarea: Tarea,
   operador: string,
@@ -48,26 +52,33 @@ export function buildParteAbiertoPayload(
 ): ParteDeLaboresFirestorePayload {
   const cuadros = scope?.cuadros ?? tarea.cuadros ?? []
   const cuadroIds = scope?.cuadroIds ?? tarea.cuadroIds
+  const responsable = normalizeResponsable(ejecutor?.responsable ?? '')
   const base = {
     ...parteBaseFields(tarea, operador),
     cuadros,
     ...(cuadroIds?.length ? { cuadroIds } : {}),
     estado: 'abierto' as const,
     abiertoEn,
+    responsable,
   }
 
   if (tarea.tipo === 'manual') {
+    const cuadrilla = ejecutor?.cuadrilla?.trim() || tarea.cuadrilla
+    const origen = ejecutor?.origenEjecucion ?? origenFromCuadrilla(cuadrilla)
     return {
       ...base,
-      cuadrilla: ejecutor?.cuadrilla?.trim() || tarea.cuadrilla,
+      cuadrilla,
       cantidadPersonas: ejecutor?.cantidadPersonas ?? tarea.cantidadPersonas,
+      origenEjecucion: origen,
     }
   }
 
+  const origen = ejecutor?.origenEjecucion ?? 'propia'
   return {
     ...base,
     persona: ejecutor?.persona?.trim() || tarea.persona,
     maquinaria: ejecutor?.maquinaria?.trim() || tarea.maquinaria,
+    origenEjecucion: origen,
     ...((ejecutor?.maquinariaModelo ?? tarea.maquinariaModelo)
       ? { maquinariaModelo: ejecutor?.maquinariaModelo ?? tarea.maquinariaModelo }
       : {}),

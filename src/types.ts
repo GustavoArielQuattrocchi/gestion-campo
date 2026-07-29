@@ -161,6 +161,13 @@ export interface ParteDeLabores {
   maquinaria?: string
   maquinariaModelo?: string
   maquinariaId?: string
+  /**
+   * Responsable (cuadrilla/servicio propio) o empresa (externa).
+   * Obligatorio en partes nuevos; opcional en legacy.
+   */
+  responsable?: string
+  /** Propia vs externa (mecánica; en manual se deriva de cuadrilla si falta). */
+  origenEjecucion?: 'propia' | 'externa'
   horaInicio?: string
   horaFin?: string
   observaciones?: string

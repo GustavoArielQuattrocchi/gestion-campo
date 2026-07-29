@@ -44,6 +44,8 @@ import {
   loadMobileSession,
   saveMobileSession,
 } from '../utils/mobileSession'
+import { saveRememberedOperador } from '../utils/mobileLocalMemory'
+import { origenFromCuadrilla } from '../utils/origenEjecucion'
 import {
   OFFLINE_FIRST_LAUNCH_ERROR,
   OFFLINE_SYNCED_TOAST,
@@ -106,6 +108,7 @@ interface MobileAppContextValue {
     cantidadPersonas: number
     cuadros: string[]
     cuadroIds: string[]
+    responsable: string
   }) => Promise<boolean>
   handleStartMechanicalTask: (data: {
     tarea: string
@@ -116,6 +119,8 @@ interface MobileAppContextValue {
     cuadros: string[]
     cuadroIds: string[]
     ordenCuraRef?: string
+    responsable: string
+    origenEjecucion: 'propia' | 'externa'
   }) => Promise<boolean>
   handleRegisterRendimiento: (
     tareaId: string,
@@ -306,6 +311,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     try {
       await registerOperador(nombre)
       setOperadorNombre(nombre)
+      saveRememberedOperador(nombre)
       setFirestoreError(null)
       navigate(MOBILE_ROUTES.bienvenida)
       return true
@@ -343,11 +349,17 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     cantidadPersonas: number
     cuadros: string[]
     cuadroIds: string[]
+    responsable: string
   }): Promise<boolean> => {
     if (submittingRef.current) return false
     const validated = validateManualTaskCreate(data)
     if (!validated.success) {
       showToast(validated.reason, 'error')
+      return false
+    }
+    const responsable = data.responsable.trim()
+    if (!responsable) {
+      showToast('Ingresá el responsable o la empresa', 'error')
       return false
     }
 
@@ -376,13 +388,19 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         operador: operadorNombre.trim(),
         fechaInicio: payload.fechaInicio,
       }
-      const parteId = await abrirParteDeLabores(nuevaTarea)
+      const origen = origenFromCuadrilla(validated.data.cuadrilla)
+      const parteId = await abrirParteDeLabores(nuevaTarea, {
+        cuadrilla: validated.data.cuadrilla,
+        cantidadPersonas: validated.data.cantidadPersonas,
+        responsable,
+        origenEjecucion: origen,
+      })
       setFirestoreError(null)
       setLastCreatedTareaId(docRef.id)
       setLastCreatedParteId(parteId)
       setSuccessMsg({
         message: 'Parte de labores abierto',
-        detail: `${data.tarea} — ${data.cuadrilla} con ${data.cantidadPersonas} personas`,
+        detail: `${data.tarea} — ${data.cuadrilla} · ${responsable} · ${data.cantidadPersonas} personas`,
       })
       if (!navigator.onLine) {
         markPendingSync()
@@ -408,11 +426,18 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     cuadros: string[]
     cuadroIds: string[]
     ordenCuraRef?: string
+    responsable: string
+    origenEjecucion: 'propia' | 'externa'
   }): Promise<boolean> => {
     if (submittingRef.current) return false
     const validated = validateMechanicalTaskCreate(data)
     if (!validated.success) {
       showToast(validated.reason, 'error')
+      return false
+    }
+    const responsable = data.responsable.trim()
+    if (!responsable) {
+      showToast('Ingresá el responsable o la empresa', 'error')
       return false
     }
 
@@ -444,13 +469,21 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         operador: operadorNombre.trim(),
         fechaInicio: payload.fechaInicio,
       }
-      const parteId = await abrirParteDeLabores(nuevaTarea)
+      const parteId = await abrirParteDeLabores(nuevaTarea, {
+        persona: validated.data.persona,
+        maquinaria: validated.data.maquinaria,
+        maquinariaModelo: validated.data.maquinariaModelo,
+        maquinariaId: validated.data.maquinariaId,
+        responsable,
+        origenEjecucion: data.origenEjecucion,
+      })
       setFirestoreError(null)
       setLastCreatedTareaId(docRef.id)
       setLastCreatedParteId(parteId)
+      const origenLabel = data.origenEjecucion === 'externa' ? 'Externa' : 'Propia'
       setSuccessMsg({
         message: 'Parte de labores abierto',
-        detail: `${data.tarea} — ${data.persona} con ${data.maquinaria}`,
+        detail: `${data.tarea} — ${origenLabel} · ${responsable} · ${data.persona} · ${data.maquinaria}`,
       })
       if (!navigator.onLine) {
         markPendingSync()
@@ -517,12 +550,16 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
           ? {
               cuadrilla: options.cuadrilla,
               cantidadPersonas: options.cantidadPersonas,
+              responsable: options.responsable,
+              origenEjecucion: options.origenEjecucion,
             }
           : {
               persona: options.persona,
               maquinaria: options.maquinaria,
               maquinariaModelo: options.maquinariaModelo,
               maquinariaId: options.maquinariaId,
+              responsable: options.responsable,
+              origenEjecucion: options.origenEjecucion,
             }
 
       const parteId = await abrirParteDeLabores(tareaActualizada, parteEjecutor, {

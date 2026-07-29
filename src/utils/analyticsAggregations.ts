@@ -80,8 +80,14 @@ function resolveEjecutorLabel(
   if (rd.parteId) {
     const parte = partesById.get(rd.parteId)
     if (parte) {
-      if (parte.tipo === 'manual') return (parte.cuadrilla ?? '').trim() || 'Sin cuadrilla'
-      return (parte.persona ?? '').trim() || 'Sin operario'
+      if (parte.tipo === 'manual') {
+        const base = (parte.cuadrilla ?? '').trim() || 'Sin cuadrilla'
+        const resp = parte.responsable?.trim()
+        return resp ? `${base} · ${resp}` : base
+      }
+      const persona = (parte.persona ?? '').trim() || 'Sin operario'
+      const resp = parte.responsable?.trim()
+      return resp ? `${persona} · ${resp}` : persona
     }
   }
   if (tarea.tipo === 'manual') return tarea.cuadrilla

@@ -4,12 +4,23 @@ import { getMaquinariasPorFinca, tareasMecanicas } from '../../data/catalog'
 import { emptyCuadroSelection, type CuadroSelection, type ParteDeLabores, type Tarea } from '../../types'
 import { findTareaContinuableMecanica } from '../../utils/findTareaContinuable'
 import type { ContinueTaskOptions } from '../../utils/tareaEjecutor'
+import {
+  labelResponsableCampo,
+  normalizeResponsable,
+  type OrigenEjecucion,
+} from '../../utils/origenEjecucion'
+import {
+  loadSugerenciasResponsable,
+  rememberSugerenciaResponsable,
+} from '../../utils/mobileLocalMemory'
 import CuadroSelector from './CuadroSelector'
 import ContinueTaskBanner from './ContinueTaskBanner'
+import AutocompleteTextField from './AutocompleteTextField'
 
 interface Props {
   fincaId: string
   fincaNombre: string
+  operadorNombre: string
   tareasActivas: Tarea[]
   partesAbiertos: ParteDeLabores[]
   onSubmit: (data: {
@@ -21,6 +32,8 @@ interface Props {
     cuadros: string[]
     cuadroIds: string[]
     ordenCuraRef?: string
+    responsable: string
+    origenEjecucion: OrigenEjecucion
   }) => Promise<boolean>
   onContinue: (
     tareaId: string,
@@ -31,8 +44,19 @@ interface Props {
   onBack: () => void
 }
 
-export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas, partesAbiertos, onSubmit, onContinue, onBack }: Props) {
+export default function MechanicalTaskForm({
+  fincaId,
+  fincaNombre,
+  operadorNombre,
+  tareasActivas,
+  partesAbiertos,
+  onSubmit,
+  onContinue,
+  onBack,
+}: Props) {
   const [tarea, setTarea] = useState('')
+  const [origenEjecucion, setOrigenEjecucion] = useState<OrigenEjecucion | ''>('')
+  const [responsable, setResponsable] = useState('')
   const [persona, setPersona] = useState('')
   const [maquinariaId, setMaquinariaId] = useState('')
   const [cuadroSelection, setCuadroSelection] = useState<CuadroSelection>(emptyCuadroSelection)
@@ -46,30 +70,52 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
     [tareasActivas, tarea],
   )
 
-  const ejecutorActualLabel = useMemo(() => {
-    if (!persona || !maquinariaId) return undefined
-    const tractor = maquinariasFinca.find(m => m.id === maquinariaId)
-    if (!tractor) return persona
-    return tractor.modelo
-      ? `${persona} · ${tractor.nombre} (${tractor.modelo})`
-      : `${persona} · ${tractor.nombre}`
-  }, [persona, maquinariaId, maquinariasFinca])
+  const sugerencias = useMemo(() => {
+    if (!origenEjecucion || !operadorNombre.trim()) return []
+    return loadSugerenciasResponsable(operadorNombre, origenEjecucion)
+  }, [origenEjecucion, operadorNombre, responsable])
 
-  const isValid = tarea && persona && maquinariaId && cuadroSelection.cuadroIds.length > 0
+  const responsableOk = normalizeResponsable(responsable).length > 0
+
+  const ejecutorActualLabel = useMemo(() => {
+    if (!origenEjecucion || !responsableOk || !persona || !maquinariaId) return undefined
+    const tractor = maquinariasFinca.find(m => m.id === maquinariaId)
+    const maq = tractor
+      ? tractor.modelo
+        ? `${persona} · ${tractor.nombre} (${tractor.modelo})`
+        : `${persona} · ${tractor.nombre}`
+      : persona
+    const origenLabel = origenEjecucion === 'externa' ? 'Externa' : 'Propia'
+    return `${origenLabel} · ${normalizeResponsable(responsable)} · ${maq}`
+  }, [origenEjecucion, responsableOk, responsable, persona, maquinariaId, maquinariasFinca])
+
+  const isValid =
+    Boolean(
+      tarea &&
+        origenEjecucion &&
+        responsableOk &&
+        persona &&
+        maquinariaId &&
+        cuadroSelection.cuadroIds.length > 0,
+    )
 
   const handleSubmit = async () => {
-    if (!isValid || saving) return
+    if (!isValid || saving || !origenEjecucion) return
     const tractor = maquinariasFinca.find(m => m.id === maquinariaId)
     if (!tractor) return
+    const resp = normalizeResponsable(responsable)
 
     setSaving(true)
     try {
+      rememberSugerenciaResponsable(operadorNombre, origenEjecucion, resp)
       if (tareaContinuable) {
         await onContinue(tareaContinuable.id, cuadroSelection.cuadros, cuadroSelection.cuadroIds, {
           persona,
           maquinaria: tractor.nombre,
           maquinariaModelo: tractor.modelo,
           maquinariaId: tractor.id,
+          responsable: resp,
+          origenEjecucion,
         })
       } else {
         await onSubmit({
@@ -80,6 +126,8 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
           maquinariaId: tractor.id,
           cuadros: cuadroSelection.cuadros,
           cuadroIds: cuadroSelection.cuadroIds,
+          responsable: resp,
+          origenEjecucion,
           ...(ordenCuraRef.trim() ? { ordenCuraRef: ordenCuraRef.trim() } : {}),
         })
       }
@@ -116,7 +164,38 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
         </div>
 
         <div className="form-group">
-          <label className="form-label">Persona que realiza</label>
+          <label className="form-label">Tipo de servicio</label>
+          <select
+            className="form-select"
+            value={origenEjecucion}
+            onChange={e => {
+              setOrigenEjecucion(e.target.value as OrigenEjecucion | '')
+              setResponsable('')
+            }}
+          >
+            <option value="">Seleccionar...</option>
+            <option value="propia">Propio</option>
+            <option value="externa">Externo</option>
+          </select>
+        </div>
+
+        {origenEjecucion && (
+          <AutocompleteTextField
+            id="mecanica-responsable"
+            label={labelResponsableCampo(origenEjecucion)}
+            value={responsable}
+            suggestions={sugerencias}
+            placeholder={
+              origenEjecucion === 'externa'
+                ? 'Nombre de la empresa...'
+                : 'Nombre del responsable...'
+            }
+            onChange={setResponsable}
+          />
+        )}
+
+        <div className="form-group">
+          <label className="form-label">Operario de la máquina</label>
           <input
             type="text"
             className="form-input"
@@ -176,6 +255,8 @@ export default function MechanicalTaskForm({ fincaId, fincaNombre, tareasActivas
           partesAbiertos={partesAbiertos}
           ejecutorActual={ejecutorActualLabel}
           ejecutorClave={persona || undefined}
+          responsableClave={responsableOk ? normalizeResponsable(responsable) : undefined}
+          origenEjecucion={origenEjecucion || undefined}
         />
       )}
 

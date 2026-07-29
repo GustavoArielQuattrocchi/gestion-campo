@@ -104,12 +104,35 @@ export function parseParteDeLabores(
     const cuadrilla = typeof raw.cuadrilla === 'string' ? raw.cuadrilla.trim() : ''
     const cantidadPersonas = typeof raw.cantidadPersonas === 'number' ? raw.cantidadPersonas : NaN
     if (!cuadrilla || !Number.isFinite(cantidadPersonas) || cantidadPersonas < 1) return null
-    return { ...base, cuadrilla, cantidadPersonas }
+    const responsable =
+      typeof raw.responsable === 'string' && raw.responsable.trim()
+        ? raw.responsable.trim()
+        : undefined
+    const origenEjecucion =
+      raw.origenEjecucion === 'propia' || raw.origenEjecucion === 'externa'
+        ? raw.origenEjecucion
+        : undefined
+    return {
+      ...base,
+      cuadrilla,
+      cantidadPersonas,
+      ...(responsable ? { responsable } : {}),
+      ...(origenEjecucion ? { origenEjecucion } : {}),
+    }
   }
 
   const persona = typeof raw.persona === 'string' ? raw.persona.trim() : ''
   const maquinaria = typeof raw.maquinaria === 'string' ? raw.maquinaria.trim() : ''
   if (!persona || !maquinaria) return null
+
+  const responsable =
+    typeof raw.responsable === 'string' && raw.responsable.trim()
+      ? raw.responsable.trim()
+      : undefined
+  const origenEjecucion =
+    raw.origenEjecucion === 'propia' || raw.origenEjecucion === 'externa'
+      ? raw.origenEjecucion
+      : undefined
 
   return {
     ...base,
@@ -121,6 +144,8 @@ export function parseParteDeLabores(
     ...(typeof raw.maquinariaId === 'string' && raw.maquinariaId.trim()
       ? { maquinariaId: raw.maquinariaId.trim() }
       : {}),
+    ...(responsable ? { responsable } : {}),
+    ...(origenEjecucion ? { origenEjecucion } : {}),
   }
 }
 
