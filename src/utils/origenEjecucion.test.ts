@@ -31,7 +31,7 @@ describe('parteEjecutorKey con responsable', () => {
     tipo: 'manual',
     cuadrilla: 'Cuadrilla Propia',
     cantidadPersonas: 4,
-  } as TareaManual
+  } as unknown as TareaManual
 
   it('distingue misma cuadrilla con distinto responsable', () => {
     const a = parteEjecutorKey({
