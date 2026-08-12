@@ -15,6 +15,8 @@ function base(overrides: Partial<AccidentReportInput> = {}): AccidentReportInput
     parteCuerpoOtro: '',
     naturalezasLesion: ['contusion'],
     naturalezaLesionOtro: '',
+    tipo: 'manual',
+    tarea: 'Podando',
     ...overrides,
   }
 }
@@ -55,6 +57,14 @@ describe('validateAccidentReport', () => {
       partesCuerpo: ['otros'],
       parteCuerpoOtro: 'Hombro izquierdo',
     }))
+    assert.equal(ok.success, true)
+  })
+
+  it('exige tipo y tarea del catálogo', () => {
+    assert.equal(validateAccidentReport(base({ tipo: '' })).success, false)
+    assert.equal(validateAccidentReport(base({ tarea: '' })).success, false)
+    assert.equal(validateAccidentReport(base({ tipo: 'manual', tarea: 'Curacion' })).success, false)
+    const ok = validateAccidentReport(base({ tipo: 'mecanica', tarea: 'Curacion' }))
     assert.equal(ok.success, true)
   })
 })

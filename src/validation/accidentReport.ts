@@ -1,5 +1,13 @@
+import { tareasManuales, tareasMecanicas } from '../data/catalog'
 import { ACCIDENTE_OTROS_ID, NATURALEZAS_LESION, PARTES_CUERPO } from '../data/accidenteChecklist'
 import type { ValidationResult } from './tareaCreate'
+
+export type AccidenteTipoTarea = 'manual' | 'mecanica'
+
+const TAREAS_POR_TIPO: Record<AccidenteTipoTarea, Set<string>> = {
+  manual: new Set(tareasManuales.map(t => t.nombre)),
+  mecanica: new Set(tareasMecanicas.map(t => t.nombre)),
+}
 
 const PARTE_IDS = new Set(PARTES_CUERPO.map(i => i.id))
 const NATURALEZA_IDS = new Set(NATURALEZAS_LESION.map(i => i.id))
@@ -16,6 +24,8 @@ export interface AccidentReportInput {
   parteCuerpoOtro: string
   naturalezasLesion: string[]
   naturalezaLesionOtro: string
+  tipo: AccidenteTipoTarea | ''
+  tarea: string
 }
 
 export function normalizeDni(raw: string): string {
@@ -53,6 +63,13 @@ export function validateAccidentReport(input: AccidentReportInput): ValidationRe
   if (!afectadoNombre) return { success: false, reason: 'Ingresá el nombre del operario afectado' }
   if (!isValidDni(afectadoDni)) return { success: false, reason: 'Ingresá un DNI válido (7 u 8 dígitos)' }
 
+  const tipo = input.tipo === 'manual' || input.tipo === 'mecanica' ? input.tipo : null
+  const tarea = input.tarea?.trim() ?? ''
+  if (!tipo) return { success: false, reason: 'Seleccioná si la labor era manual o mecánica' }
+  if (!tarea || !TAREAS_POR_TIPO[tipo].has(tarea)) {
+    return { success: false, reason: 'Seleccioná la tarea del catálogo' }
+  }
+
   const partesCuerpo = uniqueKnownIds(input.partesCuerpo, PARTE_IDS)
   if (!partesCuerpo || partesCuerpo.length === 0) {
     return { success: false, reason: 'Seleccioná al menos una parte del cuerpo lesionada' }
@@ -83,6 +100,8 @@ export function validateAccidentReport(input: AccidentReportInput): ValidationRe
       parteCuerpoOtro: partesCuerpo.includes(ACCIDENTE_OTROS_ID) ? parteCuerpoOtro : '',
       naturalezasLesion,
       naturalezaLesionOtro: naturalezasLesion.includes(ACCIDENTE_OTROS_ID) ? naturalezaLesionOtro : '',
+      tipo,
+      tarea,
     },
   }
 }

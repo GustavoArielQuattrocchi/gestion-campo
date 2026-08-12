@@ -20,6 +20,8 @@ export async function saveAccidentReport(input: AccidentReportInput): Promise<st
     parteCuerpoOtro: validated.data.parteCuerpoOtro,
     naturalezasLesion: validated.data.naturalezasLesion,
     naturalezaLesionOtro: validated.data.naturalezaLesionOtro,
+    tipo: validated.data.tipo,
+    tarea: validated.data.tarea,
     creadoEn: Timestamp.now(),
   })
 

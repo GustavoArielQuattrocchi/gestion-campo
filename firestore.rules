@@ -251,6 +251,9 @@ service cloud.firestore {
           || request.resource.data.parteCuerpoOtro.size() > 0)
         && (!request.resource.data.naturalezasLesion.hasAny(['otros'])
           || request.resource.data.naturalezaLesionOtro.size() > 0)
+        && request.resource.data.tipo in ['manual', 'mecanica']
+        && request.resource.data.tarea is string
+        && request.resource.data.tarea.size() > 0
         && request.resource.data.creadoEn is timestamp;
       allow update, delete: if false;
     }

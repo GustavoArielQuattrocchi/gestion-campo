@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useMemo } from 'react'
 import Webcam from 'react-webcam'
 import { jsPDF } from 'jspdf'
 import { ChevronLeft, Camera, RotateCcw, AlertTriangle, X, Loader, Share2, Download, Image as ImageIcon } from 'lucide-react'
-import { fincas } from '../../data/catalog'
+import { fincas, tareasManuales, tareasMecanicas } from '../../data/catalog'
 import {
   ACCIDENTE_OTROS_ID,
   NATURALEZAS_LESION,
@@ -13,7 +13,7 @@ import {
 } from '../../data/accidenteChecklist'
 import { useMobileAppContext } from '../../contexts/MobileAppContext'
 import { saveAccidentReport } from '../../utils/saveAccidentReport'
-import { validateAccidentReport, type AccidentReportInput } from '../../validation/accidentReport'
+import { validateAccidentReport, type AccidentReportInput, type AccidenteTipoTarea } from '../../validation/accidentReport'
 
 interface Props {
   operadorNombre: string
@@ -142,6 +142,8 @@ export default function AccidentReportForm({
   const [parteCuerpoOtro, setParteCuerpoOtro] = useState('')
   const [naturalezasLesion, setNaturalezasLesion] = useState<string[]>([])
   const [naturalezaLesionOtro, setNaturalezaLesionOtro] = useState('')
+  const [tipo, setTipo] = useState<AccidenteTipoTarea | ''>('')
+  const [tarea, setTarea] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState('')
 
@@ -157,6 +159,8 @@ export default function AccidentReportForm({
     parteCuerpoOtro,
     naturalezasLesion,
     naturalezaLesionOtro,
+    tipo,
+    tarea,
   })
 
   const capturarFoto = useCallback(() => {
@@ -274,7 +278,7 @@ export default function AccidentReportForm({
     }
 
     doc.setFillColor(240, 253, 244)
-    doc.roundedRect(10, y - 5, 190, 42, 3, 3, 'F')
+    doc.roundedRect(10, y - 5, 190, 50, 3, 3, 'F')
     doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
     doc.text('Datos del reporte', 15, y + 3)
@@ -282,9 +286,10 @@ export default function AccidentReportForm({
     doc.setFontSize(10)
     doc.text(`Reportado por: ${operadorNombre}`, 15, y + 12)
     doc.text(`Finca: ${fincaNombreSel}`, 15, y + 20)
-    doc.text(`Afectado: ${afectadoNombre}`, 15, y + 28)
-    doc.text(`DNI: ${afectadoDni}`, 110, y + 28)
-    y += 50
+    doc.text(`Tarea: ${tarea} (${tipo === 'mecanica' ? 'Mecánica' : 'Manual'})`, 15, y + 28)
+    doc.text(`Afectado: ${afectadoNombre}`, 15, y + 36)
+    doc.text(`DNI: ${afectadoDni}`, 110, y + 36)
+    y += 58
 
     writeBlock(
       'Parte del cuerpo lesionada:',
@@ -449,6 +454,39 @@ export default function AccidentReportForm({
             <option value="">Seleccionar finca...</option>
             {fincas.map(f => (
               <option key={f.id} value={f.id}>{f.nombre}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-title">Labor</div>
+        <div className="form-group">
+          <label className="form-label">Tipo de tarea</label>
+          <select
+            className="form-select"
+            value={tipo}
+            onChange={e => {
+              setTipo(e.target.value as AccidenteTipoTarea | '')
+              setTarea('')
+            }}
+          >
+            <option value="">Seleccionar tipo...</option>
+            <option value="manual">Manual</option>
+            <option value="mecanica">Mecánica</option>
+          </select>
+        </div>
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label className="form-label">Tarea</label>
+          <select
+            className="form-select"
+            value={tarea}
+            onChange={e => setTarea(e.target.value)}
+            disabled={!tipo}
+          >
+            <option value="">{tipo ? 'Seleccionar tarea...' : 'Elegí el tipo primero'}</option>
+            {(tipo === 'mecanica' ? tareasMecanicas : tipo === 'manual' ? tareasManuales : []).map(t => (
+              <option key={`${tipo}-${t.id}`} value={t.nombre}>{t.nombre}</option>
             ))}
           </select>
         </div>
