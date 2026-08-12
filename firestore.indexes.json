@@ -76,6 +76,40 @@
         { "fieldPath": "fincaId", "order": "ASCENDING" },
         { "fieldPath": "estado", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "partes_labores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fincaId", "order": "ASCENDING" },
+        { "fieldPath": "abiertoEn", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "partes_labores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tipo", "order": "ASCENDING" },
+        { "fieldPath": "abiertoEn", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "partes_labores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fincaId", "order": "ASCENDING" },
+        { "fieldPath": "tipo", "order": "ASCENDING" },
+        { "fieldPath": "abiertoEn", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tareas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fincaId", "order": "ASCENDING" },
+        { "fieldPath": "cuadroIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "fechaInicio", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

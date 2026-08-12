@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { collection, onSnapshot } from 'firebase/firestore'
+import { onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Tarea } from '../types'
 import { parseTareasFromSnapshot } from '../utils/parseTarea'
@@ -9,6 +9,7 @@ import {
   type CuadroTareasAgrupadas,
 } from '../utils/cuadroTareas'
 import { sortByFechaInicio } from '../utils/dashboardFilters'
+import { buildCuadroTareasQuery } from '../utils/firestoreDashboardQueries'
 
 interface UseCuadroTareasResult {
   loading: boolean
@@ -21,12 +22,15 @@ export function useCuadroTareas(fincaId: string, cuadroId: string): UseCuadroTar
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const decodedFinca = decodeURIComponent(fincaId)
+  const decodedCuadro = decodeURIComponent(cuadroId)
+
   useEffect(() => {
     setLoading(true)
     setError(null)
 
     const unsubscribe = onSnapshot(
-      collection(db, 'tareas'),
+      buildCuadroTareasQuery(db, decodedFinca, decodedCuadro),
       snapshot => {
         const { tareas } = parseTareasFromSnapshot(
           snapshot.docs.map(d => ({ id: d.id, data: () => d.data() as Record<string, unknown> })),
@@ -44,14 +48,13 @@ export function useCuadroTareas(fincaId: string, cuadroId: string): UseCuadroTar
     )
 
     return unsubscribe
-  }, [])
+  }, [decodedFinca, decodedCuadro])
 
   const grupos = useMemo(() => {
-    const decodedFinca = decodeURIComponent(fincaId)
-    const decodedCuadro = decodeURIComponent(cuadroId)
+    // Defensa: por si hay docs legacy sin fincaId alineado.
     const filtradas = filterTareasPorCuadro(allTareas, decodedFinca, decodedCuadro)
     return agruparTareasCuadro(filtradas)
-  }, [allTareas, fincaId, cuadroId])
+  }, [allTareas, decodedFinca, decodedCuadro])
 
   return { loading, error, grupos }
 }

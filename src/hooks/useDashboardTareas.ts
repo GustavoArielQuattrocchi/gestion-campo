@@ -1,6 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { arrayUnion, arrayRemove, collection, deleteField, doc, onSnapshot, Timestamp, updateDoc } from 'firebase/firestore'
+import {
+  arrayUnion,
+  arrayRemove,
+  deleteField,
+  doc,
+  onSnapshot,
+  Timestamp,
+  updateDoc,
+  type Unsubscribe,
+} from 'firebase/firestore'
 import type { UpdateData } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Tarea, ParteDeLabores } from '../types'
@@ -24,6 +33,12 @@ import {
   readFilterParam,
 } from '../utils/dashboardState'
 import { listMapTareasDisponibles, normalizeMapTareaParam } from '../utils/mapTaskFilter'
+import {
+  buildTareasEnProgresoQuery,
+  buildTareasHistoricoQuery,
+  DASHBOARD_LOOKBACK_DAYS,
+  tareasQueryModes,
+} from '../utils/firestoreDashboardQueries'
 
 export type DashboardPanelKey = 'resumen' | 'filtros' | 'tareas' | 'qr_cuadros'
 
@@ -58,6 +73,11 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
   const [parseWarning, setParseWarning] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
 
+  const bucketsRef = useRef<{ enProgreso: Tarea[]; historico: Tarea[] }>({
+    enProgreso: [],
+    historico: [],
+  })
+
   useEffect(() => {
     const params = buildFilterSearchParams(filtroFinca, filtroTipo, filtroEstado, filtroTareaMapa)
     setSearchParams(params, { replace: true })
@@ -68,6 +88,9 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
   }, [filtroFinca, filtroTipo, filtroEstado])
 
   useEffect(() => {
+    setLoading(true)
+    bucketsRef.current = { enProgreso: [], historico: [] }
+
     const loadingTimeout = window.setTimeout(() => {
       setLoading(current => {
         if (!current) return current
@@ -78,36 +101,91 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
       })
     }, 30_000)
 
-    const unsubscribe = onSnapshot(
-      collection(db, 'tareas'),
-      snapshot => {
+    const modes = tareasQueryModes(filtroEstado)
+    const filters = { finca: filtroFinca, tipo: filtroTipo, estado: filtroEstado }
+    const unsubs: Unsubscribe[] = []
+    let pending = (modes.enProgreso ? 1 : 0) + (modes.historico ? 1 : 0)
+
+    const finishOne = () => {
+      pending -= 1
+      if (pending <= 0) {
         window.clearTimeout(loadingTimeout)
-        const { tareas: data, invalid } = parseTareasFromSnapshot(
-          snapshot.docs.map(d => ({ id: d.id, data: () => d.data() as Record<string, unknown> })),
-        )
-        setAllTareas(sortByFechaInicio(data))
-        setParseWarning(buildInvalidDocsWarning(invalid.length))
         setLoading(false)
         setError(null)
         setIndexCreateUrl(null)
-      },
-      err => {
-        window.clearTimeout(loadingTimeout)
-        console.error('[Dashboard] Error en onSnapshot:', err)
-        const parsed = parseFirestoreError(err.message ?? 'Error desconocido al leer tareas')
-        setError(parsed.message)
-        setIndexCreateUrl(parsed.indexCreateUrl)
-        setParseWarning(null)
-        setAllTareas([])
-        setLoading(false)
-      },
-    )
+      }
+    }
+
+    const mergeAndPublish = () => {
+      const byId = new Map<string, Tarea>()
+      for (const t of bucketsRef.current.historico) byId.set(t.id, t)
+      for (const t of bucketsRef.current.enProgreso) byId.set(t.id, t)
+      setAllTareas(sortByFechaInicio([...byId.values()]))
+    }
+
+    const onBucket = (
+      key: 'enProgreso' | 'historico',
+      docs: { id: string; data: () => Record<string, unknown> }[],
+      isFirst: { current: boolean },
+    ) => {
+      const { tareas: data, invalid } = parseTareasFromSnapshot(docs)
+      bucketsRef.current[key] = data
+      mergeAndPublish()
+      setParseWarning(buildInvalidDocsWarning(invalid.length))
+      if (isFirst.current) {
+        isFirst.current = false
+        finishOne()
+      }
+    }
+
+    const onErr = (err: Error) => {
+      window.clearTimeout(loadingTimeout)
+      console.error('[Dashboard] Error en onSnapshot:', err)
+      const parsed = parseFirestoreError(err.message ?? 'Error desconocido al leer tareas')
+      setError(parsed.message)
+      setIndexCreateUrl(parsed.indexCreateUrl)
+      setParseWarning(null)
+      setAllTareas([])
+      setLoading(false)
+    }
+
+    if (modes.enProgreso) {
+      const first = { current: true }
+      unsubs.push(
+        onSnapshot(
+          buildTareasEnProgresoQuery(db, filters),
+          snap =>
+            onBucket(
+              'enProgreso',
+              snap.docs.map(d => ({ id: d.id, data: () => d.data() as Record<string, unknown> })),
+              first,
+            ),
+          onErr,
+        ),
+      )
+    }
+
+    if (modes.historico) {
+      const first = { current: true }
+      unsubs.push(
+        onSnapshot(
+          buildTareasHistoricoQuery(db, filters),
+          snap =>
+            onBucket(
+              'historico',
+              snap.docs.map(d => ({ id: d.id, data: () => d.data() as Record<string, unknown> })),
+              first,
+            ),
+          onErr,
+        ),
+      )
+    }
 
     return () => {
       window.clearTimeout(loadingTimeout)
-      unsubscribe()
+      for (const u of unsubs) u()
     }
-  }, [])
+  }, [filtroFinca, filtroTipo, filtroEstado])
 
   const tareasFiltradas = useMemo(
     () => applyDashboardFilters(allTareas, filtroFinca, filtroTipo, filtroEstado),
@@ -154,7 +232,8 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
     setVisibleCount(count => nextVisibleCount(count, tareasFiltradas.length))
   }, [hasMore, tareasFiltradas.length])
 
-  const metricsNote = buildMetricsNote(tareasEnTabla.length, tareasFiltradas.length, hasMore)
+  const baseNote = buildMetricsNote(tareasEnTabla.length, tareasFiltradas.length, hasMore)
+  const metricsNote = `${baseNote} Histórico: ${DASHBOARD_LOOKBACK_DAYS} días (+ en progreso).`
 
   const togglePanel = useCallback((key: DashboardPanelKey) => {
     setPanelsOpen(prev => ({ ...prev, [key]: !prev[key] }))

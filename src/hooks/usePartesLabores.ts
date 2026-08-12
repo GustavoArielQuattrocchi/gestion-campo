@@ -1,18 +1,33 @@
 import { useEffect, useMemo, useState } from 'react'
-import { collection, onSnapshot } from 'firebase/firestore'
+import { useSearchParams } from 'react-router-dom'
+import { onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { ParteDeLabores } from '../types'
 import { parsePartesFromSnapshot } from '../utils/parseParteDeLabores'
+import { getFincaNombres } from '../data/catalog'
+import { readFilterParam } from '../utils/dashboardState'
+import { buildPartesDashboardQuery } from '../utils/firestoreDashboardQueries'
 
 export function usePartesLabores() {
+  const [searchParams] = useSearchParams()
+  const fincasAllowed = useMemo(() => new Set(['todas', ...getFincaNombres()]), [])
+  const filtroFinca = readFilterParam(searchParams, 'finca', 'todas', fincasAllowed)
+  const filtroTipo = readFilterParam(
+    searchParams,
+    'tipo',
+    'todos',
+    new Set(['todos', 'manual', 'mecanica']),
+  )
+
   const [partes, setPartes] = useState<ParteDeLabores[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [parseWarning, setParseWarning] = useState<string | null>(null)
 
   useEffect(() => {
+    setLoading(true)
     const unsubscribe = onSnapshot(
-      collection(db, 'partes_labores'),
+      buildPartesDashboardQuery(db, { finca: filtroFinca, tipo: filtroTipo }),
       snapshot => {
         const { partes: data, invalid } = parsePartesFromSnapshot(
           snapshot.docs.map(d => ({ id: d.id, data: () => d.data() as Record<string, unknown> })),
@@ -36,7 +51,7 @@ export function usePartesLabores() {
     )
 
     return unsubscribe
-  }, [])
+  }, [filtroFinca, filtroTipo])
 
   const fincasDisponibles = useMemo(() => {
     const set = new Set(partes.map(p => p.fincaNombre))

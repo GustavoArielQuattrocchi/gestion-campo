@@ -31,6 +31,7 @@ const testFiles = [
   'src/utils/findTareaContinuable.test.ts',
   'src/utils/analyticsAggregations.test.ts',
   'src/utils/origenEjecucion.test.ts',
+  'src/utils/firestoreDashboardQueryConfig.test.ts',
 ]
 
 const outDir = mkdtempSync(join(tmpdir(), 'gestion-campo-tests-'))
