@@ -164,7 +164,7 @@ export default function TaskMenu({
           </div>
           <div className="option-card-content">
             <h3>Informe de Accidente</h3>
-            <p>Registrar un incidente o accidente</p>
+            <p>Registrar un accidente</p>
           </div>
         </button>
       </div>

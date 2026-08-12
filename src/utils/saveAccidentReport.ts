@@ -14,6 +14,12 @@ export async function saveAccidentReport(input: AccidentReportInput): Promise<st
     fincaNombre: validated.data.fincaNombre,
     descripcion: validated.data.descripcion,
     tieneFoto: validated.data.tieneFoto,
+    afectadoNombre: validated.data.afectadoNombre,
+    afectadoDni: validated.data.afectadoDni,
+    partesCuerpo: validated.data.partesCuerpo,
+    parteCuerpoOtro: validated.data.parteCuerpoOtro,
+    naturalezasLesion: validated.data.naturalezasLesion,
+    naturalezaLesionOtro: validated.data.naturalezaLesionOtro,
     creadoEn: Timestamp.now(),
   })
 

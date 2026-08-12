@@ -236,6 +236,21 @@ service cloud.firestore {
         && request.resource.data.descripcion is string
         && request.resource.data.descripcion.size() > 0
         && request.resource.data.tieneFoto is bool
+        && request.resource.data.afectadoNombre is string
+        && request.resource.data.afectadoNombre.size() > 0
+        && request.resource.data.afectadoDni is string
+        && request.resource.data.afectadoDni.size() >= 7
+        && request.resource.data.afectadoDni.size() <= 8
+        && request.resource.data.partesCuerpo is list
+        && request.resource.data.partesCuerpo.size() > 0
+        && request.resource.data.parteCuerpoOtro is string
+        && request.resource.data.naturalezasLesion is list
+        && request.resource.data.naturalezasLesion.size() > 0
+        && request.resource.data.naturalezaLesionOtro is string
+        && (!request.resource.data.partesCuerpo.hasAny(['otros'])
+          || request.resource.data.parteCuerpoOtro.size() > 0)
+        && (!request.resource.data.naturalezasLesion.hasAny(['otros'])
+          || request.resource.data.naturalezaLesionOtro.size() > 0)
         && request.resource.data.creadoEn is timestamp;
       allow update, delete: if false;
     }

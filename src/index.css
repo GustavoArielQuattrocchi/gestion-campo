@@ -4256,6 +4256,22 @@ button.task-list-item {
   margin-bottom: 24px;
 }
 
+.accident-check-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.accident-check-grid .checkbox-item {
+  margin: 0;
+  min-height: 44px;
+}
+
+.accident-check-grid .checkbox-item span {
+  font-size: 13px;
+  line-height: 1.3;
+}
+
 .btn-whatsapp {
   background: linear-gradient(135deg, #25d366, #128c7e);
   color: white;

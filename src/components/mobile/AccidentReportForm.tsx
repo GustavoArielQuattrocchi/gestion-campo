@@ -1,11 +1,19 @@
 import { useState, useRef, useCallback, useMemo } from 'react'
 import Webcam from 'react-webcam'
 import { jsPDF } from 'jspdf'
-import { ChevronLeft, Camera, RotateCcw, AlertTriangle, X, Loader, Share2, Download } from 'lucide-react'
+import { ChevronLeft, Camera, RotateCcw, AlertTriangle, X, Loader, Share2, Download, Image as ImageIcon } from 'lucide-react'
 import { fincas } from '../../data/catalog'
+import {
+  ACCIDENTE_OTROS_ID,
+  NATURALEZAS_LESION,
+  PARTES_CUERPO,
+  formatChecklistLabels,
+  toggleChecklistId,
+  type AccidenteChecklistItem,
+} from '../../data/accidenteChecklist'
 import { useMobileAppContext } from '../../contexts/MobileAppContext'
 import { saveAccidentReport } from '../../utils/saveAccidentReport'
-import { validateAccidentReport } from '../../validation/accidentReport'
+import { validateAccidentReport, type AccidentReportInput } from '../../validation/accidentReport'
 
 interface Props {
   operadorNombre: string
@@ -58,6 +66,54 @@ function puedeCompartirArchivo(file: File): boolean {
   }
 }
 
+function ChecklistGroup({
+  title,
+  items,
+  selected,
+  otroTexto,
+  onToggle,
+  onOtroChange,
+}: {
+  title: string
+  items: AccidenteChecklistItem[]
+  selected: string[]
+  otroTexto: string
+  onToggle: (id: string) => void
+  onOtroChange: (value: string) => void
+}) {
+  const showOtro = selected.includes(ACCIDENTE_OTROS_ID)
+  return (
+    <div className="card">
+      <div className="card-title">{title}</div>
+      <div className="accident-check-grid">
+        {items.map(item => (
+          <label
+            key={item.id}
+            className={`checkbox-item ${selected.includes(item.id) ? 'selected' : ''}`}
+          >
+            <input
+              type="checkbox"
+              checked={selected.includes(item.id)}
+              onChange={() => onToggle(item.id)}
+            />
+            <span>{item.label}</span>
+          </label>
+        ))}
+      </div>
+      {showOtro && (
+        <div className="form-group" style={{ marginTop: 12, marginBottom: 0 }}>
+          <input
+            className="form-input"
+            value={otroTexto}
+            onChange={e => onOtroChange(e.target.value)}
+            placeholder="Especificá Otros..."
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function AccidentReportForm({
   operadorNombre,
   fincaId,
@@ -67,7 +123,8 @@ export default function AccidentReportForm({
 }: Props) {
   const { showToast } = useMobileAppContext()
   const webcamRef = useRef<Webcam>(null)
-  const inputFotoRef = useRef<HTMLInputElement>(null)
+  const inputCamaraRef = useRef<HTMLInputElement>(null)
+  const inputGaleriaRef = useRef<HTMLInputElement>(null)
 
   const usarCamaraEnVivo = useMemo(() => puedeUsarCamaraEnVivo(), [])
   const contextoSeguro = useMemo(() => window.isSecureContext, [])
@@ -79,8 +136,28 @@ export default function AccidentReportForm({
   const [descripcion, setDescripcion] = useState('')
   const [fincaSeleccionada, setFincaSeleccionada] = useState(fincaId)
   const [fincaNombreSel, setFincaNombreSel] = useState(fincaNombre)
+  const [afectadoNombre, setAfectadoNombre] = useState(operadorNombre)
+  const [afectadoDni, setAfectadoDni] = useState('')
+  const [partesCuerpo, setPartesCuerpo] = useState<string[]>([])
+  const [parteCuerpoOtro, setParteCuerpoOtro] = useState('')
+  const [naturalezasLesion, setNaturalezasLesion] = useState<string[]>([])
+  const [naturalezaLesionOtro, setNaturalezaLesionOtro] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState('')
+
+  const buildInput = (): AccidentReportInput => ({
+    operador: operadorNombre,
+    fincaId: fincaSeleccionada,
+    fincaNombre: fincaNombreSel,
+    descripcion,
+    tieneFoto: Boolean(foto),
+    afectadoNombre,
+    afectadoDni,
+    partesCuerpo,
+    parteCuerpoOtro,
+    naturalezasLesion,
+    naturalezaLesionOtro,
+  })
 
   const capturarFoto = useCallback(() => {
     if (!webcamRef.current) return
@@ -99,8 +176,14 @@ export default function AccidentReportForm({
       setMostrarCamara(true)
       return
     }
-    inputFotoRef.current?.click()
+    inputCamaraRef.current?.click()
   }, [usarCamaraEnVivo])
+
+  const abrirGaleria = useCallback(() => {
+    setErrorCamara('')
+    setMostrarCamara(false)
+    inputGaleriaRef.current?.click()
+  }, [])
 
   const handleFotoDesdeArchivo = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,9 +212,9 @@ export default function AccidentReportForm({
   const handleWebcamError = useCallback(() => {
     setMostrarCamara(false)
     setErrorCamara(
-      'No se pudo acceder a la cámara. Usá el botón para abrir la cámara del teléfono.'
+      'No se pudo acceder a la cámara. Usá “Tomar foto” o elegí una imagen de la galería.'
     )
-    inputFotoRef.current?.click()
+    inputCamaraRef.current?.click()
   }, [])
 
   const handleFincaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -148,6 +231,12 @@ export default function AccidentReportForm({
       day: '2-digit', month: '2-digit', year: 'numeric',
       hour: '2-digit', minute: '2-digit',
     })
+    const partesLabels = formatChecklistLabels(partesCuerpo, PARTES_CUERPO, parteCuerpoOtro)
+    const naturalezaLabels = formatChecklistLabels(
+      naturalezasLesion,
+      NATURALEZAS_LESION,
+      naturalezaLesionOtro,
+    )
 
     doc.setFillColor(22, 101, 52)
     doc.rect(0, 0, 210, 40, 'F')
@@ -155,17 +244,37 @@ export default function AccidentReportForm({
     doc.setTextColor(255, 255, 255)
     doc.setFontSize(20)
     doc.setFont('helvetica', 'bold')
-    doc.text('INFORME DE ACCIDENTE /\nCONDICIÓN RIESGOSA', 15, 18)
+    doc.text('INFORME DE ACCIDENTE', 15, 22)
 
     doc.setFontSize(10)
     doc.setFont('helvetica', 'normal')
-    doc.text(`Fecha: ${fechaStr}`, 15, 35)
+    doc.text(`Fecha: ${fechaStr}`, 15, 33)
 
     doc.setTextColor(0, 0, 0)
-    let y = 55
+    let y = 52
+
+    const ensureSpace = (needed: number) => {
+      if (y + needed > 275) {
+        doc.addPage()
+        y = 20
+      }
+    }
+
+    const writeBlock = (title: string, lines: string[]) => {
+      const wrapped = lines.flatMap(line => doc.splitTextToSize(line, 180) as string[])
+      ensureSpace(14 + wrapped.length * 5)
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(11)
+      doc.text(title, 15, y)
+      y += 7
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(10)
+      doc.text(wrapped, 15, y)
+      y += wrapped.length * 5 + 8
+    }
 
     doc.setFillColor(240, 253, 244)
-    doc.roundedRect(10, y - 5, 190, 30, 3, 3, 'F')
+    doc.roundedRect(10, y - 5, 190, 42, 3, 3, 'F')
     doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
     doc.text('Datos del reporte', 15, y + 3)
@@ -173,24 +282,22 @@ export default function AccidentReportForm({
     doc.setFontSize(10)
     doc.text(`Reportado por: ${operadorNombre}`, 15, y + 12)
     doc.text(`Finca: ${fincaNombreSel}`, 15, y + 20)
-    y += 40
+    doc.text(`Afectado: ${afectadoNombre}`, 15, y + 28)
+    doc.text(`DNI: ${afectadoDni}`, 110, y + 28)
+    y += 50
 
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(11)
-    doc.text('Descripción del hecho o condición insegura:', 15, y)
-    y += 8
-
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(10)
-    const lineas = doc.splitTextToSize(descripcion, 180)
-    doc.text(lineas, 15, y)
-    y += lineas.length * 5 + 10
+    writeBlock(
+      'Parte del cuerpo lesionada:',
+      partesLabels.map(l => `• ${l}`),
+    )
+    writeBlock(
+      'Naturaleza de la lesión:',
+      naturalezaLabels.map(l => `• ${l}`),
+    )
+    writeBlock('Descripción del accidente:', [descripcion])
 
     if (foto) {
-      if (y + 90 > 280) {
-        doc.addPage()
-        y = 20
-      }
+      ensureSpace(98)
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(11)
       doc.text('Evidencia fotográfica:', 15, y)
@@ -208,13 +315,7 @@ export default function AccidentReportForm({
   }
 
   const validarFormulario = (): boolean => {
-    const validated = validateAccidentReport({
-      operador: operadorNombre,
-      fincaId: fincaSeleccionada,
-      fincaNombre: fincaNombreSel,
-      descripcion,
-      tieneFoto: Boolean(foto),
-    })
+    const validated = validateAccidentReport(buildInput())
     if (!validated.success) {
       setError(validated.reason)
       showToast(validated.reason, 'error')
@@ -226,13 +327,7 @@ export default function AccidentReportForm({
 
   const guardarEnFirestore = async (): Promise<boolean> => {
     try {
-      await saveAccidentReport({
-        operador: operadorNombre,
-        fincaId: fincaSeleccionada,
-        fincaNombre: fincaNombreSel,
-        descripcion,
-        tieneFoto: Boolean(foto),
-      })
+      await saveAccidentReport(buildInput())
       if (!navigator.onLine) {
         showToast('Informe guardado en el dispositivo. Se sincronizará al recuperar señal.', 'info')
       } else {
@@ -321,7 +416,7 @@ export default function AccidentReportForm({
     onSuccess('El PDF se descargó y el informe quedó registrado.')
   }
 
-  const formularioValido = descripcion.trim() && fincaSeleccionada
+  const formularioValido = validateAccidentReport(buildInput()).success
 
   return (
     <div className="container fade-in">
@@ -333,7 +428,7 @@ export default function AccidentReportForm({
           <AlertTriangle size={22} style={{ verticalAlign: 'middle', marginRight: 6 }} />
           Informe de Accidente
         </h1>
-        <p>Registrar accidente o condición riesgosa</p>
+        <p>Registrar un accidente</p>
       </div>
 
       {!contextoSeguro && (
@@ -360,13 +455,77 @@ export default function AccidentReportForm({
       </div>
 
       <div className="card">
+        <div className="card-title">Operario afectado</div>
+        <div className="form-group">
+          <label className="form-label">Nombre</label>
+          <input
+            className="form-input"
+            value={afectadoNombre}
+            onChange={e => setAfectadoNombre(e.target.value)}
+            placeholder="Nombre y apellido"
+            autoComplete="name"
+          />
+        </div>
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label className="form-label">DNI</label>
+          <input
+            className="form-input"
+            value={afectadoDni}
+            onChange={e => setAfectadoDni(e.target.value)}
+            placeholder="Ej: 32456789"
+            inputMode="numeric"
+            autoComplete="off"
+          />
+        </div>
+      </div>
+
+      <ChecklistGroup
+        title="Parte del cuerpo lesionada"
+        items={PARTES_CUERPO}
+        selected={partesCuerpo}
+        otroTexto={parteCuerpoOtro}
+        onToggle={id => {
+          setPartesCuerpo(prev => {
+            const next = toggleChecklistId(prev, id)
+            if (!next.includes(ACCIDENTE_OTROS_ID)) setParteCuerpoOtro('')
+            return next
+          })
+        }}
+        onOtroChange={setParteCuerpoOtro}
+      />
+
+      <ChecklistGroup
+        title="Naturaleza de la lesión"
+        items={NATURALEZAS_LESION}
+        selected={naturalezasLesion}
+        otroTexto={naturalezaLesionOtro}
+        onToggle={id => {
+          setNaturalezasLesion(prev => {
+            const next = toggleChecklistId(prev, id)
+            if (!next.includes(ACCIDENTE_OTROS_ID)) setNaturalezaLesionOtro('')
+            return next
+          })
+        }}
+        onOtroChange={setNaturalezaLesionOtro}
+      />
+
+      <div className="card">
         <div className="card-title">Evidencia fotográfica</div>
 
         <input
-          ref={inputFotoRef}
+          ref={inputCamaraRef}
           type="file"
           accept="image/*"
           capture="environment"
+          className="camera-file-input"
+          onChange={handleFotoDesdeArchivo}
+          aria-hidden
+          tabIndex={-1}
+        />
+        <input
+          ref={inputGaleriaRef}
+          type="file"
+          accept="image/*"
           className="camera-file-input"
           onChange={handleFotoDesdeArchivo}
           aria-hidden
@@ -403,11 +562,11 @@ export default function AccidentReportForm({
           <div className="photo-preview-container">
             <img src={foto} alt="Evidencia" className="photo-preview" />
             <div className="camera-actions">
-              <button
-                className="btn btn-secondary camera-btn"
-                onClick={abrirCamara}
-              >
+              <button className="btn btn-secondary camera-btn" onClick={abrirCamara}>
                 <RotateCcw size={16} /> Tomar otra
+              </button>
+              <button className="btn btn-secondary camera-btn" onClick={abrirGaleria}>
+                <ImageIcon size={16} /> Galería
               </button>
               <button
                 className="btn btn-secondary camera-btn"
@@ -424,12 +583,17 @@ export default function AccidentReportForm({
 
         {!foto && !mostrarCamara && (
           <>
-            <button className="btn btn-secondary" onClick={abrirCamara}>
-              <Camera size={18} /> Tomar foto
-            </button>
+            <div className="camera-actions">
+              <button className="btn btn-secondary camera-btn" onClick={abrirCamara}>
+                <Camera size={18} /> Tomar foto
+              </button>
+              <button className="btn btn-secondary camera-btn" onClick={abrirGaleria}>
+                <ImageIcon size={18} /> Galería
+              </button>
+            </div>
             {!usarCamaraEnVivo && (
               <p className="camera-hint">
-                En el iPhone se abrirá la cámara del sistema (funciona sin conexión segura).
+                En el iPhone, “Tomar foto” abre la cámara; “Galería” deja elegir una imagen guardada.
               </p>
             )}
           </>
@@ -444,11 +608,11 @@ export default function AccidentReportForm({
       </div>
 
       <div className="card">
-        <div className="card-title">Descripción del hecho</div>
+        <div className="card-title">Descripción del accidente</div>
         <div className="form-group">
           <textarea
             className="form-input accident-textarea"
-            placeholder="Describí el accidente o la condición riesgosa detectada..."
+            placeholder="Describí cómo ocurrió el accidente..."
             value={descripcion}
             onChange={e => setDescripcion(e.target.value)}
             rows={5}
