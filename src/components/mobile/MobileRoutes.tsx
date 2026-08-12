@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { Clock } from 'lucide-react'
 import { Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMobileAppContext } from '../../contexts/MobileAppContext'
@@ -23,8 +23,9 @@ import EndTaskList from './EndTaskList'
 import EndTaskForm from './EndTaskForm'
 import SuccessScreen from './SuccessScreen'
 import MobileRequireSession from './MobileRequireSession'
+import { lazyWithRetry } from '../../utils/lazyWithRetry'
 
-const AccidentReportForm = lazy(() => import('./AccidentReportForm'))
+const AccidentReportForm = lazyWithRetry(() => import('./AccidentReportForm'), 'accident-form')
 const VENCIDOS_BANNER_KEY = 'campo-vencidos-banner-dismissed'
 
 function CampoIndexRedirect() {
