@@ -1,19 +1,22 @@
 import { useState, useRef, useCallback, useMemo } from 'react'
 import Webcam from 'react-webcam'
-import { jsPDF } from 'jspdf'
 import { ChevronLeft, Camera, RotateCcw, AlertTriangle, X, Loader, Share2, Download, Image as ImageIcon } from 'lucide-react'
 import { fincas, tareasManuales, tareasMecanicas } from '../../data/catalog'
 import {
   ACCIDENTE_OTROS_ID,
   NATURALEZAS_LESION,
   PARTES_CUERPO,
-  formatChecklistLabels,
   toggleChecklistId,
   type AccidenteChecklistItem,
 } from '../../data/accidenteChecklist'
 import { useMobileAppContext } from '../../contexts/MobileAppContext'
 import { saveAccidentReport } from '../../utils/saveAccidentReport'
 import { validateAccidentReport, type AccidentReportInput, type AccidenteTipoTarea } from '../../validation/accidentReport'
+import {
+  accidentReportFileName,
+  buildAccidentReportPdf,
+  downloadBlob,
+} from '../../utils/buildAccidentReportPdf'
 
 interface Props {
   operadorNombre: string
@@ -47,13 +50,6 @@ function leerImagenComoDataUrl(file: File): Promise<string> {
     reader.onerror = () => reject(reader.error ?? new Error('Error al leer la imagen'))
     reader.readAsDataURL(file)
   })
-}
-
-function generarNombreArchivo(finca: string): string {
-  const fecha = new Date().toLocaleDateString('es-AR', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-  }).replace(/\//g, '-')
-  return `Informe_Accidente_${finca}_${fecha}.pdf`
 }
 
 function puedeCompartirArchivo(file: File): boolean {
@@ -229,94 +225,23 @@ export default function AccidentReportForm({
   }
 
   const generarPDFBlob = (): Blob => {
-    const doc = new jsPDF()
-    const now = new Date()
-    const fechaStr = now.toLocaleDateString('es-AR', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
+    const validated = validateAccidentReport(buildInput())
+    if (!validated.success) throw new Error(validated.reason)
+    return buildAccidentReportPdf({
+      operador: validated.data.operador,
+      fincaNombre: validated.data.fincaNombre,
+      tipo: validated.data.tipo,
+      tarea: validated.data.tarea,
+      afectadoNombre: validated.data.afectadoNombre,
+      afectadoDni: validated.data.afectadoDni,
+      partesCuerpo: validated.data.partesCuerpo,
+      parteCuerpoOtro: validated.data.parteCuerpoOtro,
+      naturalezasLesion: validated.data.naturalezasLesion,
+      naturalezaLesionOtro: validated.data.naturalezaLesionOtro,
+      descripcion: validated.data.descripcion,
+      fecha: new Date(),
+      foto,
     })
-    const partesLabels = formatChecklistLabels(partesCuerpo, PARTES_CUERPO, parteCuerpoOtro)
-    const naturalezaLabels = formatChecklistLabels(
-      naturalezasLesion,
-      NATURALEZAS_LESION,
-      naturalezaLesionOtro,
-    )
-
-    doc.setFillColor(22, 101, 52)
-    doc.rect(0, 0, 210, 40, 'F')
-
-    doc.setTextColor(255, 255, 255)
-    doc.setFontSize(20)
-    doc.setFont('helvetica', 'bold')
-    doc.text('INFORME DE ACCIDENTE', 15, 22)
-
-    doc.setFontSize(10)
-    doc.setFont('helvetica', 'normal')
-    doc.text(`Fecha: ${fechaStr}`, 15, 33)
-
-    doc.setTextColor(0, 0, 0)
-    let y = 52
-
-    const ensureSpace = (needed: number) => {
-      if (y + needed > 275) {
-        doc.addPage()
-        y = 20
-      }
-    }
-
-    const writeBlock = (title: string, lines: string[]) => {
-      const wrapped = lines.flatMap(line => doc.splitTextToSize(line, 180) as string[])
-      ensureSpace(14 + wrapped.length * 5)
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(11)
-      doc.text(title, 15, y)
-      y += 7
-      doc.setFont('helvetica', 'normal')
-      doc.setFontSize(10)
-      doc.text(wrapped, 15, y)
-      y += wrapped.length * 5 + 8
-    }
-
-    doc.setFillColor(240, 253, 244)
-    doc.roundedRect(10, y - 5, 190, 50, 3, 3, 'F')
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'bold')
-    doc.text('Datos del reporte', 15, y + 3)
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(10)
-    doc.text(`Reportado por: ${operadorNombre}`, 15, y + 12)
-    doc.text(`Finca: ${fincaNombreSel}`, 15, y + 20)
-    doc.text(`Tarea: ${tarea} (${tipo === 'mecanica' ? 'Mecánica' : 'Manual'})`, 15, y + 28)
-    doc.text(`Afectado: ${afectadoNombre}`, 15, y + 36)
-    doc.text(`DNI: ${afectadoDni}`, 110, y + 36)
-    y += 58
-
-    writeBlock(
-      'Parte del cuerpo lesionada:',
-      partesLabels.map(l => `• ${l}`),
-    )
-    writeBlock(
-      'Naturaleza de la lesión:',
-      naturalezaLabels.map(l => `• ${l}`),
-    )
-    writeBlock('Descripción del accidente:', [descripcion])
-
-    if (foto) {
-      ensureSpace(98)
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(11)
-      doc.text('Evidencia fotográfica:', 15, y)
-      y += 8
-      doc.addImage(foto, 'JPEG', 15, y, 120, 80)
-    }
-
-    doc.setDrawColor(200, 200, 200)
-    doc.line(10, 280, 200, 280)
-    doc.setFontSize(8)
-    doc.setTextColor(150, 150, 150)
-    doc.text('Generado automáticamente por Sistema de Gestión de Campo', 105, 286, { align: 'center' })
-
-    return doc.output('blob')
   }
 
   const validarFormulario = (): boolean => {
@@ -346,21 +271,9 @@ export default function AccidentReportForm({
     }
   }
 
-  const descargarPdfBlob = (pdfBlob: Blob, fileName: string) => {
-    const url = URL.createObjectURL(pdfBlob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = fileName
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
-
-  /** Abre el menú del sistema con el PDF adjunto (foto incluida). Elegí WhatsApp en la lista. */
   const compartirPdfAdjunto = async (): Promise<'ok' | 'abort' | 'fallback'> => {
     const pdfBlob = generarPDFBlob()
-    const fileName = generarNombreArchivo(fincaNombreSel)
+    const fileName = accidentReportFileName(fincaNombreSel, new Date(), afectadoDni)
     const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' })
 
     if (!contextoSeguro) {
@@ -371,7 +284,7 @@ export default function AccidentReportForm({
     }
 
     if (!puedeCompartirArchivo(pdfFile)) {
-      descargarPdfBlob(pdfBlob, fileName)
+      downloadBlob(pdfBlob, fileName)
       setError(
         'Este navegador no permite adjuntar el PDF automáticamente. Se descargó el archivo: en WhatsApp usá + → Documento.'
       )
@@ -387,7 +300,7 @@ export default function AccidentReportForm({
       console.error('navigator.share PDF:', e)
     }
 
-    descargarPdfBlob(pdfBlob, fileName)
+    downloadBlob(pdfBlob, fileName)
     setError(
       'No se abrió el menú para compartir. El PDF se descargó: en WhatsApp usá + → Documento.'
     )
@@ -416,8 +329,8 @@ export default function AccidentReportForm({
 
     await guardarEnFirestore()
     const pdfBlob = blob ?? generarPDFBlob()
-    const fileName = nombre ?? generarNombreArchivo(fincaNombreSel)
-    descargarPdfBlob(pdfBlob, fileName)
+    const fileName = nombre ?? accidentReportFileName(fincaNombreSel, new Date(), afectadoDni)
+    downloadBlob(pdfBlob, fileName)
     onSuccess('El PDF se descargó y el informe quedó registrado.')
   }
 
