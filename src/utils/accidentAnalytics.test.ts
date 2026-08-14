@@ -3,10 +3,12 @@ import { describe, it } from 'node:test'
 import type { Timestamp } from 'firebase/firestore'
 import {
   countAccidentesPorFinca,
+  countAccidentesPorLabor,
   countNaturalezasLesion,
   countPartesCuerpo,
   filterInformesCompletos,
   formatYearMonthLabel,
+  laborAccidenteLabel,
   rankAfectados,
   yearMonthKey,
 } from './accidentAnalytics'
@@ -83,6 +85,8 @@ describe('accidentAnalytics', () => {
       fincaNombre: 'Finca Los Árboles',
       partesCuerpo: ['manos'],
       naturalezasLesion: ['corte'],
+      tipo: 'mecanica',
+      tarea: 'Desmalezado',
     }),
     completo({
       id: '3',
@@ -109,6 +113,15 @@ describe('accidentAnalytics', () => {
     assert.equal(partes.find(p => p.label === 'Manos')?.value, 2)
     assert.equal(partes.find(p => p.label === 'Ojos')?.value, 1)
     assert.equal(countNaturalezasLesion(ago).find(p => p.label === 'Corte')?.value, 1)
+  })
+
+  it('cuenta labores por tipo y tarea', () => {
+    const ago = filterInformesCompletos(informes, 'todas', '2026-08')
+    const labores = countAccidentesPorLabor(ago)
+    assert.deepEqual(labores.map(p => [p.label, p.value]), [
+      [laborAccidenteLabel('mecanica', 'Desmalezado'), 1],
+      [laborAccidenteLabel('manual', 'Podando'), 1],
+    ])
   })
 
   it('rankea por DNI y resalta reiteraciones', () => {

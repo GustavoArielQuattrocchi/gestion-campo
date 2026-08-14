@@ -1,4 +1,4 @@
-import { addDoc, collection, Timestamp } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, Timestamp } from 'firebase/firestore'
 import { db } from '../firebase'
 import { validateAccidentReport, type AccidentReportInput } from '../validation/accidentReport'
 
@@ -26,4 +26,10 @@ export async function saveAccidentReport(input: AccidentReportInput): Promise<st
   })
 
   return docRef.id
+}
+
+export async function deleteAccidentReport(informeId: string): Promise<void> {
+  const id = informeId.trim()
+  if (!id) throw new Error('Falta el identificador del informe')
+  await deleteDoc(doc(db, 'informes_accidente', id))
 }

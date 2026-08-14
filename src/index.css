@@ -4568,7 +4568,7 @@ button.task-list-item {
 /* Safety panel */
 .safety-kpis {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 12px;
   margin-bottom: 20px;
 }
@@ -4647,6 +4647,21 @@ button.task-list-item {
   line-height: 1.5;
 }
 
+.safety-item-labor {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin: 0 0 4px;
+}
+
+.safety-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
 .safety-photo-badge {
   display: inline-flex;
   align-items: center;
@@ -4697,7 +4712,6 @@ button.task-list-item {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-top: 6px;
   font-size: 12px;
   padding: 4px 0;
 }

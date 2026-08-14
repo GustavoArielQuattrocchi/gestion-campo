@@ -4,6 +4,7 @@ import {
   formatChecklistLabels,
   type AccidenteChecklistItem,
 } from '../data/accidenteChecklist'
+import type { AccidenteTipoTarea } from '../validation/accidentReport'
 import type { InformeAccidente, InformeAccidenteCompleto } from './parseInformeAccidente'
 import { isInformeCompleto } from './parseInformeAccidente'
 
@@ -60,6 +61,20 @@ export function countAccidentesPorFinca(informes: InformeAccidenteCompleto[]): A
   const counts = new Map<string, number>()
   for (const i of informes) {
     counts.set(i.fincaNombre, (counts.get(i.fincaNombre) ?? 0) + 1)
+  }
+  return countMapToPoints(counts)
+}
+
+export function laborAccidenteLabel(tipo: AccidenteTipoTarea, tarea: string): string {
+  const tipoLabel = tipo === 'mecanica' ? 'Mecánica' : 'Manual'
+  return `${tarea} (${tipoLabel})`
+}
+
+export function countAccidentesPorLabor(informes: InformeAccidenteCompleto[]): AccidentChartPoint[] {
+  const counts = new Map<string, number>()
+  for (const i of informes) {
+    const label = laborAccidenteLabel(i.tipo, i.tarea)
+    counts.set(label, (counts.get(label) ?? 0) + 1)
   }
   return countMapToPoints(counts)
 }

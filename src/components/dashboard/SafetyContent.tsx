@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react'
-import { Download } from 'lucide-react'
+import { Download, Trash2 } from 'lucide-react'
 import type { InformeAccidente } from '../../hooks/useInformesAccidente'
 import {
   countAccidentesPorFinca,
+  countAccidentesPorLabor,
   countNaturalezasLesion,
   countPartesCuerpo,
   filterInformesCompletos,
   formatYearMonthLabel,
+  laborAccidenteLabel,
   listYearMonths,
   rankAfectados,
   yearMonthKey,
@@ -17,6 +19,7 @@ import {
   buildAccidentReportPdf,
   downloadBlob,
 } from '../../utils/buildAccidentReportPdf'
+import { deleteAccidentReport } from '../../utils/saveAccidentReport'
 import { formatTimestamp } from '../../utils/formatTimestamp'
 import BarChart from './charts/BarChart'
 
@@ -55,6 +58,8 @@ export default function SafetyContent({
   const months = useMemo(() => listYearMonths(informes), [informes])
   const [filtroFinca, setFiltroFinca] = useState('todas')
   const [filtroMes, setFiltroMes] = useState(() => yearMonthKey(new Date()))
+  const [busyId, setBusyId] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const completos = useMemo(
     () => filterInformesCompletos(informes, filtroFinca, filtroMes),
@@ -62,15 +67,36 @@ export default function SafetyContent({
   )
 
   const porFinca = useMemo(() => countAccidentesPorFinca(completos), [completos])
+  const porLabor = useMemo(() => countAccidentesPorLabor(completos), [completos])
   const porParte = useMemo(() => countPartesCuerpo(completos), [completos])
   const porNaturaleza = useMemo(() => countNaturalezasLesion(completos), [completos])
   const ranking = useMemo(() => rankAfectados(completos), [completos])
   const topPersona = ranking.find(r => r.isTop)
+  const laborFrecuente = porLabor[0]
 
   const sorted = useMemo(
     () => [...completos].sort((a, b) => b.creadoEn.toDate().getTime() - a.creadoEn.toDate().getTime()),
     [completos],
   )
+
+  const confirmDelete = async (informe: InformeAccidenteCompleto) => {
+    if (busyId) return
+    const ok = window.confirm(
+      `¿Eliminar el informe de ${informe.afectadoNombre} (DNI ${informe.afectadoDni})?\n\n` +
+        'Se borra de Firestore y deja de aparecer en los indicadores. Esta acción no se puede deshacer.',
+    )
+    if (!ok) return
+    setBusyId(informe.id)
+    setActionError(null)
+    try {
+      await deleteAccidentReport(informe.id)
+    } catch (err) {
+      console.error('Error al eliminar informe de accidente:', err)
+      setActionError('No se pudo eliminar el informe. Revisá la conexión y las reglas de Firestore.')
+    } finally {
+      setBusyId(null)
+    }
+  }
 
   if (loading) {
     return <p className="dashboard-panel-empty">Cargando informes de accidentes...</p>
@@ -119,6 +145,16 @@ export default function SafetyContent({
             {topPersona ? `Más accidentado · ${topPersona.count} informes` : 'Sin reiteraciones'}
           </div>
         </div>
+        <div className="safety-kpi">
+          <div className="safety-kpi-value" style={{ fontSize: laborFrecuente ? 16 : 24 }}>
+            {laborFrecuente ? laborFrecuente.label : '—'}
+          </div>
+          <div className="safety-kpi-label">
+            {laborFrecuente
+              ? `Labor más frecuente · ${laborFrecuente.value} inf.`
+              : 'Labor más frecuente'}
+          </div>
+        </div>
       </div>
 
       {completos.length === 0 ? (
@@ -132,6 +168,15 @@ export default function SafetyContent({
           </div>
           {porFinca.length > 0 ? (
             <BarChart data={porFinca.slice(0, 12)} unit="acc." barColor="#ef4444" maxBars={12} height={220} />
+          ) : (
+            <p className="analytics-empty">Sin datos para este filtro.</p>
+          )}
+
+          <div className="analytics-chart-header" style={{ marginTop: 20 }}>
+            <h4>Labor al momento del accidente</h4>
+          </div>
+          {porLabor.length > 0 ? (
+            <BarChart data={porLabor.slice(0, 16)} unit="" barColor="#ef4444" maxBars={16} height={240} />
           ) : (
             <p className="analytics-empty">Sin datos para este filtro.</p>
           )}
@@ -183,6 +228,9 @@ export default function SafetyContent({
           </div>
 
           <h4 className="safety-list-title">Informes</h4>
+          {actionError && (
+            <p className="dashboard-panel-empty dashboard-panel-empty--error">{actionError}</p>
+          )}
           <ul className="safety-timeline">
             {sorted.map(informe => (
               <li key={informe.id} className="safety-item">
@@ -195,16 +243,28 @@ export default function SafetyContent({
                     <span className="safety-item-finca">{informe.fincaNombre}</span>
                     <span className="safety-item-finca">DNI {informe.afectadoDni}</span>
                   </div>
-                  <p className="safety-item-desc">
-                    {informe.tarea} · {informe.descripcion}
+                  <p className="safety-item-labor">
+                    {laborAccidenteLabel(informe.tipo, informe.tarea)}
                   </p>
-                  <button
-                    type="button"
-                    className="btn-ghost safety-pdf-btn"
-                    onClick={() => downloadInformePdf(informe)}
-                  >
-                    <Download size={14} /> Descargar PDF
-                  </button>
+                  <p className="safety-item-desc">{informe.descripcion}</p>
+                  <div className="safety-item-actions">
+                    <button
+                      type="button"
+                      className="btn-ghost safety-pdf-btn"
+                      onClick={() => downloadInformePdf(informe)}
+                    >
+                      <Download size={14} /> Descargar PDF
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-icon btn-icon--danger"
+                      onClick={() => void confirmDelete(informe)}
+                      disabled={busyId === informe.id}
+                      title="Eliminar informe"
+                    >
+                      <Trash2 size={14} /> {busyId === informe.id ? 'Eliminando…' : 'Eliminar'}
+                    </button>
+                  </div>
                 </div>
               </li>
             ))}
