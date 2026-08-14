@@ -28,6 +28,10 @@ export interface AccidentReportInput {
   tarea: string
 }
 
+export type ValidatedAccidentReport = Omit<AccidentReportInput, 'tipo'> & {
+  tipo: AccidenteTipoTarea
+}
+
 export function normalizeDni(raw: string): string {
   return (raw ?? '').replace(/\D/g, '')
 }
@@ -48,7 +52,7 @@ function requireOtrosTexto(ids: string[], texto: string, campo: string): string 
   return null
 }
 
-export function validateAccidentReport(input: AccidentReportInput): ValidationResult<AccidentReportInput> {
+export function validateAccidentReport(input: AccidentReportInput): ValidationResult<ValidatedAccidentReport> {
   const operador = input.operador?.trim() ?? ''
   const fincaId = input.fincaId?.trim() ?? ''
   const fincaNombre = input.fincaNombre?.trim() ?? ''
