@@ -18,17 +18,23 @@ export function parseLeadingNumber(value: string): number | null {
   return Number.isFinite(n) ? n : null
 }
 
-/** Formatea un número quitando ceros finales (hasta 3 decimales). */
+/** Formatea un número a 1 decimal. */
 export function formatNumber(value: number): string {
-  return Number.parseFloat(value.toFixed(3)).toString()
+  return value.toFixed(1)
 }
 
 /** Calcula la dosis maquinada (dosis/ha × factor) como texto, o '' si no aplica. */
-export function computeDosisMaquinada(dosisHa: string, factor: number | null): string {
+export function computeDosisMaquinada(
+  dosisHa: string,
+  factor: number | null,
+  presentacion = '',
+): string {
   if (factor === null) return ''
   const dosis = parseLeadingNumber(dosisHa)
   if (dosis === null) return ''
-  return formatNumber(dosis * factor)
+  const cantidad = formatNumber(dosis * factor)
+  const unidad = presentacion.trim()
+  return unidad ? `${cantidad} ${unidad}` : cantidad
 }
 
 /** Texto para el chip de factor. */

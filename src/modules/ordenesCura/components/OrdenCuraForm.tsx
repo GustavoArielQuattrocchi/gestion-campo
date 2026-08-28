@@ -202,7 +202,7 @@ export default function OrdenCuraForm({
             <button type="button" className="oc-btn oc-btn--small oc-btn--slate" onClick={onOpenCatalogo}>
               ⚙️ Catálogo
             </button>
-            <button type="button" className="oc-btn oc-btn--small oc-btn--light" onClick={onAddItem}>
+            <button type="button" className="oc-btn oc-btn--small oc-btn--slate" onClick={onAddItem}>
               + Item
             </button>
             <button type="button" className="oc-btn oc-btn--small oc-btn--danger" onClick={onClearItems}>

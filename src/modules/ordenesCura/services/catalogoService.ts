@@ -4,6 +4,7 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  updateDoc,
   type DocumentData,
 } from 'firebase/firestore'
 import { db } from '../../../firebase'
@@ -14,6 +15,7 @@ export interface ProductoCatalogo {
   nombre: string
   ia: string
   presentacion: string
+  dosis_ha: string
 }
 
 const CATALOGO_COLLECTION = 'catalogoProductos'
@@ -32,6 +34,7 @@ function mapProducto(id: string, data: DocumentData): ProductoCatalogo {
     nombre: toStr(data.nombre),
     ia: toStr(data.ia),
     presentacion: toStr(data.presentacion),
+    dosis_ha: toStr(data.dosis_ha),
   }
 }
 
@@ -52,31 +55,41 @@ interface ProductoInput {
   nombre: string
   ia: string
   presentacion: string
+  dosis_ha: string
 }
 
 /**
- * Agrega al catálogo los productos cuyo nombre todavía no existe (comparación
- * insensible a mayúsculas y espacios). No duplica los ya presentes.
+ * Crea o actualiza productos en el catálogo por nombre (insensible a
+ * mayúsculas y espacios). Recuerda IA, presentación y dosis/ha.
  */
 export async function ensureProductosEnCatalogo(
   productos: ProductoInput[],
 ): Promise<void> {
   const existentes = await getCatalogo()
-  const conocidos = new Set(existentes.map(p => p.nombre.trim().toLowerCase()))
+  const porNombre = new Map(existentes.map(p => [p.nombre.trim().toLowerCase(), p]))
 
-  const nuevos: ProductoInput[] = []
+  const writes: Promise<unknown>[] = []
   for (const producto of productos) {
     const nombre = producto.nombre.trim()
     if (!nombre) continue
-    const clave = nombre.toLowerCase()
-    if (conocidos.has(clave)) continue
-    conocidos.add(clave)
-    nuevos.push({ nombre, ia: producto.ia.trim(), presentacion: producto.presentacion.trim() })
+    const payload = {
+      nombre,
+      ia: producto.ia.trim(),
+      presentacion: producto.presentacion.trim(),
+      dosis_ha: producto.dosis_ha.trim(),
+    }
+    const actual = porNombre.get(nombre.toLowerCase())
+    if (actual) {
+      const patch: Record<string, string> = { nombre }
+      if (payload.ia) patch.ia = payload.ia
+      if (payload.presentacion) patch.presentacion = payload.presentacion
+      if (payload.dosis_ha) patch.dosis_ha = payload.dosis_ha
+      writes.push(updateDoc(doc(db, CATALOGO_COLLECTION, actual.id), patch))
+      continue
+    }
+    porNombre.set(nombre.toLowerCase(), { id: '', ...payload })
+    writes.push(addDoc(catalogoRef(), payload))
   }
 
-  await Promise.all(
-    nuevos.map(p =>
-      addDoc(catalogoRef(), { nombre: p.nombre, ia: p.ia, presentacion: p.presentacion }),
-    ),
-  )
+  await Promise.all(writes)
 }

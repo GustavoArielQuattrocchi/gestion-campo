@@ -161,7 +161,10 @@ export function useOrdenCuraEditor() {
   // Recalcula dosis maquinada de cada fila cuando cambia el factor.
   useEffect(() => {
     setItems(prev =>
-      prev.map(row => ({ ...row, dosis_maquinada: computeDosisMaquinada(row.dosis_ha, factor) })),
+      prev.map(row => ({
+        ...row,
+        dosis_maquinada: computeDosisMaquinada(row.dosis_ha, factor, row.presentacion),
+      })),
     )
   }, [factor])
 
@@ -184,14 +187,23 @@ export function useOrdenCuraEditor() {
         prev.map(row => {
           if (row.localId !== localId) return row
           const next = { ...row, [field]: value }
-          if (field === 'dosis_ha') {
-            next.dosis_maquinada = computeDosisMaquinada(value, factor)
+          if (field === 'producto') {
+            const clave = value.trim().toLowerCase()
+            const match = catalogo.find(p => p.nombre.trim().toLowerCase() === clave)
+            if (match) {
+              next.ia = match.ia
+              next.presentacion = match.presentacion
+              if (match.dosis_ha) next.dosis_ha = match.dosis_ha
+            }
+          }
+          if (field === 'dosis_ha' || field === 'presentacion' || field === 'producto') {
+            next.dosis_maquinada = computeDosisMaquinada(next.dosis_ha, factor, next.presentacion)
           }
           return next
         }),
       )
     },
-    [factor],
+    [factor, catalogo],
   )
 
   const addItem = useCallback(() => {
@@ -303,7 +315,12 @@ export function useOrdenCuraEditor() {
       }
 
       await ensureProductosEnCatalogo(
-        itemPayload.map(item => ({ nombre: item.producto, ia: item.ia, presentacion: item.presentacion })),
+        itemPayload.map(item => ({
+          nombre: item.producto,
+          ia: item.ia,
+          presentacion: item.presentacion,
+          dosis_ha: item.dosis_ha,
+        })),
       )
 
       await Promise.all([refreshOrdenes(), refreshCatalogo()])

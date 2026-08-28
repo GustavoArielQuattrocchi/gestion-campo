@@ -24,6 +24,7 @@ const testFiles = [
   'src/utils/parteEstado.test.ts',
   'src/utils/partesLaboresSync.test.ts',
   'src/modules/ordenesCura/utils/ocNumber.test.ts',
+  'src/modules/ordenesCura/utils/factor.test.ts',
   'src/validation/tareaCreate.test.ts',
   'src/validation/accidentReport.test.ts',
   'src/features/mapRelevamiento/escritorioTareaConflicts.test.ts',
