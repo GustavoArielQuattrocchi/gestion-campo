@@ -30,7 +30,7 @@ export default function OrdenesCuraPage() {
             type="button"
             className="oc-btn oc-btn--light"
             onClick={editor.guardar}
-            disabled={editor.saving}
+            disabled={editor.saving || editor.readOnly}
           >
             {editor.saving ? 'Guardando…' : 'Guardar'}
           </button>
@@ -39,7 +39,7 @@ export default function OrdenesCuraPage() {
             className="oc-btn oc-btn--light"
             onClick={() => editor.setListadoOpen(true)}
           >
-            Buscar
+            Órdenes
           </button>
           <button type="button" className="oc-btn oc-btn--warning" onClick={editor.exportarPdf}>
             Vista PDF
@@ -59,6 +59,7 @@ export default function OrdenesCuraPage() {
         items={editor.items}
         factor={editor.factor}
         catalogo={editor.catalogo}
+        readOnly={editor.readOnly}
         onField={editor.setField}
         onItemChange={editor.updateItem}
         onAddItem={editor.addItem}
@@ -70,8 +71,10 @@ export default function OrdenesCuraPage() {
       {editor.listadoOpen ? (
         <ListadoModal
           ordenes={editor.ordenes}
-          onAbrir={editor.abrirOrden}
-          onEliminar={editor.eliminarOrden}
+          busyPdfId={editor.busyPdfId}
+          onVer={editor.abrirOrden}
+          onPdf={ordenId => void editor.vistaPdfOrden(ordenId)}
+          onEliminar={ordenId => void editor.eliminarOrden(ordenId)}
           onClose={() => editor.setListadoOpen(false)}
         />
       ) : null}

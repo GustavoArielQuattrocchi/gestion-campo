@@ -361,7 +361,7 @@ select.oc-input {
   border-radius: var(--radius-lg);
   padding: 24px;
   width: 100%;
-  max-width: 640px;
+  max-width: 860px;
   max-height: 85vh;
   overflow-y: auto;
   box-shadow: var(--shadow-lg);
@@ -387,8 +387,49 @@ select.oc-input {
   font-size: 14px;
 }
 
+.oc-fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.oc-fieldset:disabled {
+  opacity: 0.92;
+}
+
+.oc-listado-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.oc-listado-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.oc-listado-filter span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-500);
+}
+
+.oc-listado-filter--grow {
+  flex: 1;
+  min-width: 180px;
+}
+
 .oc-listado-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 

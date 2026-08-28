@@ -14,6 +14,7 @@ interface Props {
   items: ItemRow[]
   factor: number | null
   catalogo: ProductoCatalogo[]
+  readOnly: boolean
   onField: (field: keyof Omit<OrdenFormState, 'id'>, value: string) => void
   onItemChange: (localId: string, field: ItemField, value: string) => void
   onAddItem: () => void
@@ -27,6 +28,7 @@ export default function OrdenCuraForm({
   items,
   factor,
   catalogo,
+  readOnly,
   onField,
   onItemChange,
   onAddItem,
@@ -36,6 +38,7 @@ export default function OrdenCuraForm({
 }: Props) {
   return (
     <div className="oc-main">
+      <fieldset className="oc-fieldset" disabled={readOnly}>
       <div className="oc-grid">
         <section className="oc-card">
           <h2>Datos principales</h2>
@@ -44,13 +47,15 @@ export default function OrdenCuraForm({
               <label>N° OC</label>
               <input className="oc-input" type="text" value={form.oc} readOnly />
               <div className="oc-hint">
-                {form.finca ? (
-                  <>
-                    Auto: <strong>{form.oc || '—'}</strong>
-                  </>
-                ) : (
-                  'Seleccioná una finca para generar el N° OC'
-                )}
+                {readOnly
+                  ? 'Orden guardada · solo lectura. Usá Nueva para cargar otra receta.'
+                  : form.finca ? (
+                    <>
+                      Auto: <strong>{form.oc || '—'}</strong>
+                    </>
+                  ) : (
+                    'Seleccioná una finca para generar el N° OC'
+                  )}
               </div>
             </div>
             <div>
@@ -299,6 +304,7 @@ export default function OrdenCuraForm({
           onChange={e => onField('indicaciones', e.target.value)}
         />
       </section>
+      </fieldset>
     </div>
   )
 }

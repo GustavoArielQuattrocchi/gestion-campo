@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf'
+import type { OrdenCuraWithItems } from '../types'
 
 export interface OrdenExport {
   oc: string
@@ -341,6 +342,57 @@ export function createOrdenPdfBlob(orden: OrdenExport, items: ItemExport[]): Blo
 /** Descarga el PDF al dispositivo. */
 export function downloadOrdenPdf(orden: OrdenExport, items: ItemExport[]): void {
   buildOrdenPdf(orden, items).save(`${safeName(orden.oc)}.pdf`)
+}
+
+/** Descarga un blob de PDF ya generado. */
+export function downloadPdfBlob(blob: Blob, oc: string): void {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${safeName(oc)}.pdf`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+function fechaToInput(fecha: OrdenCuraWithItems['fecha']): string {
+  const d = fecha.toDate()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${mm}-${dd}`
+}
+
+/** Arma el payload de exportación desde una orden persistida. */
+export function ordenGuardadaToExport(orden: OrdenCuraWithItems): {
+  orden: OrdenExport
+  items: ItemExport[]
+} {
+  return {
+    orden: {
+      oc: orden.oc,
+      fecha: fechaToInput(orden.fecha),
+      finca: orden.finca,
+      cultivo: orden.cultivo,
+      manejo: orden.manejo,
+      tecnico: orden.tecnico,
+      tractorista: orden.tractorista,
+      tractor: orden.tractor,
+      maquinaria: orden.maquinaria,
+      volMaquinaria: orden.vol_maquinaria ? String(orden.vol_maquinaria) : '',
+      volAplicacion: orden.vol_aplicacion ? String(orden.vol_aplicacion) : '',
+      cuartel: orden.cuartel,
+      indicaciones: orden.indicaciones,
+    },
+    items: orden.items.map(item => ({
+      producto: item.producto,
+      ia: item.ia,
+      presentacion: item.presentacion,
+      dosis_ha: item.dosis_ha,
+      dosis_maquinada: item.dosis_maquinada,
+      obs: item.obs,
+    })),
+  }
 }
 
 function csvCell(value: string): string {

@@ -18,7 +18,7 @@ import {
 import type { OrdenCura, OrdenCuraCreate, OrderItem } from '../types'
 import { generateOcNumber } from '../utils/ocNumber'
 import { computeDosisMaquinada, computeFactor } from '../utils/factor'
-import { createOrdenPdfBlob, downloadOrdenPdf, exportOrdenCsv, type ItemExport, type OrdenExport } from '../utils/export'
+import { createOrdenPdfBlob, downloadPdfBlob, exportOrdenCsv, ordenGuardadaToExport, type ItemExport, type OrdenExport } from '../utils/export'
 
 export interface OrdenFormState {
   id: string | null
@@ -118,8 +118,10 @@ export function useOrdenCuraEditor() {
   const [catalogo, setCatalogo] = useState<ProductoCatalogo[]>([])
   const [listadoOpen, setListadoOpen] = useState(false)
   const [catalogoOpen, setCatalogoOpen] = useState(false)
-  const [pdfPreview, setPdfPreview] = useState<{ url: string; oc: string } | null>(null)
+  const [pdfPreview, setPdfPreview] = useState<{ url: string; oc: string; blob: Blob } | null>(null)
   const [saving, setSaving] = useState(false)
+  const [readOnly, setReadOnly] = useState(false)
+  const [busyPdfId, setBusyPdfId] = useState<string | null>(null)
   const [banner, setBanner] = useState<Banner>(null)
 
   const factor = useMemo(
@@ -158,15 +160,16 @@ export function useOrdenCuraEditor() {
     })
   }, [ready, userId, refreshOrdenes, refreshCatalogo])
 
-  // Recalcula dosis maquinada de cada fila cuando cambia el factor.
+  // Recalcula dosis maquinada de cada fila cuando cambia el factor (no en solo lectura).
   useEffect(() => {
+    if (readOnly) return
     setItems(prev =>
       prev.map(row => ({
         ...row,
         dosis_maquinada: computeDosisMaquinada(row.dosis_ha, factor, row.presentacion),
       })),
     )
-  }, [factor])
+  }, [factor, readOnly])
 
   const setField = useCallback(
     (field: keyof Omit<OrdenFormState, 'id'>, value: string) => {
@@ -222,6 +225,7 @@ export function useOrdenCuraEditor() {
   }, [])
 
   const nueva = useCallback(() => {
+    setReadOnly(false)
     setForm(emptyForm())
     setItems([emptyRow()])
     setBanner(null)
@@ -266,6 +270,7 @@ export function useOrdenCuraEditor() {
   }, [form, items])
 
   const guardar = useCallback(async () => {
+    if (readOnly) return
     if (!userId) {
       setBanner({ type: 'error', text: 'No hay sesión activa de Firebase.' })
       return
@@ -331,11 +336,12 @@ export function useOrdenCuraEditor() {
     } finally {
       setSaving(false)
     }
-  }, [userId, form, items, refreshOrdenes, refreshCatalogo])
+  }, [readOnly, userId, form, items, refreshOrdenes, refreshCatalogo])
 
   const abrirOrden = useCallback(async (ordenId: string) => {
     try {
       const orden = await getOrdenById(ordenId)
+      setReadOnly(true)
       setForm({
         id: orden.id,
         oc: orden.oc,
@@ -358,7 +364,10 @@ export function useOrdenCuraEditor() {
           : [emptyRow()],
       )
       setListadoOpen(false)
-      setBanner(null)
+      setBanner({
+        type: 'success',
+        text: `Estás viendo ${orden.oc} (solo lectura). Usá Nueva para cargar otra receta.`,
+      })
     } catch (err) {
       console.error('[OrdenesCura] Error al abrir la orden:', err)
       setBanner({ type: 'error', text: 'No se pudo abrir la orden.' })
@@ -367,15 +376,17 @@ export function useOrdenCuraEditor() {
 
   const eliminarOrden = useCallback(
     async (ordenId: string) => {
+      const objetivo = ordenes.find(o => o.id === ordenId)
+      const ok = window.confirm(
+        `¿Eliminar la orden ${objetivo?.oc ?? ''}? Esta acción no se puede deshacer.`,
+      )
+      if (!ok) return
       try {
         await deleteOrden(ordenId)
-        const updated = await refreshOrdenes()
+        await refreshOrdenes()
         if (form.id === ordenId) {
-          const finca = form.finca.trim()
-          setForm({
-            ...emptyForm(),
-            ...(finca ? { finca, oc: generateOcNumber(updated, finca) } : {}),
-          })
+          setReadOnly(false)
+          setForm(emptyForm())
           setItems([emptyRow()])
         }
         setBanner({ type: 'success', text: 'Orden eliminada.' })
@@ -384,7 +395,7 @@ export function useOrdenCuraEditor() {
         setBanner({ type: 'error', text: 'No se pudo eliminar la orden.' })
       }
     },
-    [refreshOrdenes, form.id, form.finca],
+    [refreshOrdenes, form.id, ordenes],
   )
 
   const eliminarProducto = useCallback(
@@ -399,15 +410,32 @@ export function useOrdenCuraEditor() {
     [refreshCatalogo],
   )
 
-  const exportarPdf = useCallback(() => {
-    const data = buildExport()
-    const blob = createOrdenPdfBlob(data.orden, data.items)
+  const mostrarPdf = useCallback((blob: Blob, oc: string) => {
     const url = URL.createObjectURL(blob)
     setPdfPreview(prev => {
       if (prev?.url) URL.revokeObjectURL(prev.url)
-      return { url, oc: data.orden.oc }
+      return { url, oc, blob }
     })
-  }, [buildExport])
+  }, [])
+
+  const exportarPdf = useCallback(() => {
+    const data = buildExport()
+    mostrarPdf(createOrdenPdfBlob(data.orden, data.items), data.orden.oc)
+  }, [buildExport, mostrarPdf])
+
+  const vistaPdfOrden = useCallback(async (ordenId: string) => {
+    setBusyPdfId(ordenId)
+    try {
+      const orden = await getOrdenById(ordenId)
+      const data = ordenGuardadaToExport(orden)
+      mostrarPdf(createOrdenPdfBlob(data.orden, data.items), data.orden.oc)
+    } catch (err) {
+      console.error('[OrdenesCura] Error al generar PDF:', err)
+      setBanner({ type: 'error', text: 'No se pudo generar el PDF de esa orden.' })
+    } finally {
+      setBusyPdfId(null)
+    }
+  }, [mostrarPdf])
 
   const cerrarVistaPdf = useCallback(() => {
     setPdfPreview(prev => {
@@ -417,9 +445,13 @@ export function useOrdenCuraEditor() {
   }, [])
 
   const descargarPdf = useCallback(() => {
+    if (pdfPreview) {
+      downloadPdfBlob(pdfPreview.blob, pdfPreview.oc)
+      return
+    }
     const data = buildExport()
-    downloadOrdenPdf(data.orden, data.items)
-  }, [buildExport])
+    downloadPdfBlob(createOrdenPdfBlob(data.orden, data.items), data.orden.oc)
+  }, [pdfPreview, buildExport])
 
   useEffect(() => {
     return () => {
@@ -439,6 +471,8 @@ export function useOrdenCuraEditor() {
     catalogo,
     factor,
     saving,
+    readOnly,
+    busyPdfId,
     banner,
     listadoOpen,
     catalogoOpen,
@@ -455,6 +489,7 @@ export function useOrdenCuraEditor() {
     nueva,
     guardar,
     abrirOrden,
+    vistaPdfOrden,
     eliminarOrden,
     eliminarProducto,
     exportarPdf,
