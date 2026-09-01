@@ -75,6 +75,10 @@ function buildEntry(id, description) {
     variedad: variedadFromDatos(datos),
     vinedo: vinedoFromDatos(datos),
     hectareas: parseHectareas(datos.Hectareas),
+    canopia_ha: 0,
+    canopia_hil: 0,
+    claro_ha: 0,
+    claros_hil: 0,
   }
   if (Object.keys(extras).length > 0) {
     return { ...entry, extras }

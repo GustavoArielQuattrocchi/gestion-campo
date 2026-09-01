@@ -12,6 +12,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 10,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "2"
       }
@@ -22,6 +26,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 8.14,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "4"
       }
@@ -32,6 +40,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Inculto",
       "vinedo": "—",
       "hectareas": 39.4,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "1000"
       }
@@ -42,6 +54,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C16553",
       "hectareas": 2.75,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "169",
@@ -61,6 +77,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 3.93,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco-101-14",
         "Año de plantacion": "2013",
@@ -79,6 +99,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 5.53,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4-101-14",
         "Año de plantacion": "2013",
@@ -97,6 +121,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 3.68,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4 (1 año)+SO4 (2 años)",
         "Año de plantacion": "2013",
@@ -115,6 +143,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 3.98,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4 (2 años)",
         "Año de plantacion": "2013",
@@ -133,6 +165,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C16553",
       "hectareas": 2.71,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "169",
@@ -152,6 +188,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C16553",
       "hectareas": 3.86,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "169",
@@ -171,6 +211,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C16553",
       "hectareas": 1.66,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "169",
@@ -190,6 +234,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C16553",
       "hectareas": 3.62,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "169",
@@ -209,6 +257,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C16553",
       "hectareas": 3.91,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "169",
@@ -228,6 +280,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "B64134",
       "hectareas": 3.71,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2008",
@@ -246,6 +302,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "B64134",
       "hectareas": 3.82,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "R8",
@@ -265,6 +325,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "B64134",
       "hectareas": 1.77,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2008",
@@ -283,6 +347,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 8.14,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "4"
       }
@@ -293,6 +361,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 8.14,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "4"
       }
@@ -303,6 +375,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 8,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "4"
       }
@@ -313,6 +389,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 6.25,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "4"
       }
@@ -323,6 +403,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 7.25,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "4"
       }
@@ -333,6 +417,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "B64134",
       "hectareas": 7.47,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "R8\tHileras: 40",
@@ -351,6 +439,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 7.51,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "4"
       }
@@ -361,6 +453,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 8.4,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "2"
       }
@@ -371,6 +467,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 5.14,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "4"
       }
@@ -381,6 +481,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet franc",
       "vinedo": "B64134",
       "hectareas": 1.99,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "R9",
@@ -400,6 +504,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "B64134",
       "hectareas": 6.34,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2008",
@@ -418,6 +526,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "B64134",
       "hectareas": 6.02,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2008",
@@ -436,6 +548,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 6.32,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "35"
       }
@@ -446,6 +562,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 6.32,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "35"
       }
@@ -456,6 +576,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 6.16,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "35"
       }
@@ -466,6 +590,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "inculto",
       "vinedo": "—",
       "hectareas": 4.25,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -476,6 +604,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "inculto",
       "vinedo": "—",
       "hectareas": 4.57,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -486,6 +618,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 0.48,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -496,6 +632,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 9.9,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "2"
       }
@@ -506,6 +646,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 3.8,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -516,6 +660,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "inculto",
       "vinedo": "—",
       "hectareas": 0.31,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -526,6 +674,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "inculto",
       "vinedo": "—",
       "hectareas": 3.23,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -536,6 +688,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 1.19,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -546,6 +702,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 4.24,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -556,6 +716,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "inculto",
       "vinedo": "—",
       "hectareas": 1.93,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -566,6 +730,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 2.66,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -576,6 +744,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "inculto",
       "vinedo": "—",
       "hectareas": 4.8,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -586,6 +758,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 10.6,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "2"
       }
@@ -596,6 +772,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "inculto",
       "vinedo": "—",
       "hectareas": 4.6,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -606,6 +786,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "B64134",
       "hectareas": 4.53,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2000",
@@ -624,6 +808,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Aspirant Bouchet",
       "vinedo": "B64134",
       "hectareas": 1.97,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Año de plantacion": "2007",
@@ -642,6 +830,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 1.53,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -652,6 +844,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "B64134",
       "hectareas": 2.16,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "101-14",
         "Año de plantacion": "2008",
@@ -670,6 +866,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "inculto",
       "vinedo": "—",
       "hectareas": 4.18,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -680,6 +880,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 2.11,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -690,6 +894,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "B64134",
       "hectareas": 3.16,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "101-14",
         "Año de plantacion": "2008",
@@ -708,6 +916,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "inculto",
       "vinedo": "—",
       "hectareas": 4.12,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "70"
       }
@@ -718,6 +930,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chandler-Cisco",
       "vinedo": "—",
       "hectareas": 0.96,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "4"
       }
@@ -728,6 +944,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "B64134",
       "hectareas": 10.22,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "R8",
@@ -747,6 +967,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C18464",
       "hectareas": 4.72,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P\tHileras: 79",
         "Clon": "R3",
@@ -765,6 +989,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C18464",
       "hectareas": 4.27,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "3309\tHileras: 47",
         "Clon": "297",
@@ -783,6 +1011,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C18464",
       "hectareas": 4.4,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "316\tHileras: 39",
@@ -801,6 +1033,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C18464",
       "hectareas": 4.81,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "240\tHileras: 79\tAño: 1999",
@@ -818,6 +1054,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C18464",
       "hectareas": 4.72,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "76",
@@ -837,6 +1077,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C18464",
       "hectareas": 4.27,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "R8\tHileras: 36",
@@ -855,6 +1099,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C18464",
       "hectareas": 4.4,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "R4\tHileras: 28",
@@ -873,6 +1121,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C18464",
       "hectareas": 4.81,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "R4",
@@ -892,6 +1144,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C18464",
       "hectareas": 5.14,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P\tHileras: 70",
         "Clon": "R5",
@@ -910,6 +1166,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C18464",
       "hectareas": 4.59,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "R5",
@@ -929,6 +1189,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C18464",
       "hectareas": 4.8,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "R5",
@@ -948,6 +1212,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C18464",
       "hectareas": 5.2,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "R5",
@@ -967,6 +1235,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C18464",
       "hectareas": 5.14,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "R8",
@@ -986,6 +1258,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C18464",
       "hectareas": 4.59,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "R8",
@@ -1005,6 +1281,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C18464",
       "hectareas": 4.71,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "R8",
@@ -1024,6 +1304,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C18464",
       "hectareas": 5.07,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "R8",
@@ -1043,6 +1327,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "B64134",
       "hectareas": 5.14,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "598",
@@ -1062,6 +1350,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "B64134",
       "hectareas": 2.36,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "R4",
@@ -1081,6 +1373,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Syrah",
       "vinedo": "B64134",
       "hectareas": 3.32,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "99",
@@ -1100,6 +1396,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C18464",
       "hectareas": 4.9,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1999",
@@ -1118,6 +1418,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C18464",
       "hectareas": 4.57,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1999",
@@ -1136,6 +1440,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C18464",
       "hectareas": 4.49,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1999",
@@ -1154,6 +1462,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C18464",
       "hectareas": 5.54,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1999",
@@ -1172,6 +1484,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C18464",
       "hectareas": 4.9,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1999",
@@ -1190,6 +1506,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C18464",
       "hectareas": 4.58,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1999",
@@ -1208,6 +1528,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C18464",
       "hectareas": 4.49,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1999",
@@ -1226,6 +1550,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C18464",
       "hectareas": 5.35,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1999",
@@ -1244,6 +1572,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 5,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "600"
       }
@@ -1254,6 +1586,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C18464",
       "hectareas": 4.65,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -1272,6 +1608,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C1846",
       "hectareas": 4.6,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -1290,6 +1630,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 5.3,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "600"
       }
@@ -1300,6 +1644,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 5,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "600"
       }
@@ -1310,6 +1658,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C1846",
       "hectareas": 4.3,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -1328,6 +1680,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C18464",
       "hectareas": 4.36,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -1346,6 +1702,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 5.1,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "600"
       }
@@ -1356,6 +1716,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "B64134",
       "hectareas": 9.05,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -1373,6 +1737,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 3.97,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1999",
@@ -1391,6 +1759,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 3.71,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1999",
@@ -1409,6 +1781,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 3.64,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1999",
@@ -1427,6 +1803,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 4.01,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1999",
@@ -1445,6 +1825,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 3.34,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1999",
@@ -1463,6 +1847,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 3.21,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2003",
@@ -1481,6 +1869,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C16553",
       "hectareas": 3.74,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "R5",
@@ -1500,6 +1892,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet franc",
       "vinedo": "C16553",
       "hectareas": 1.34,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "101-14",
         "Clon": "396\tHileras: 9",
@@ -1518,6 +1914,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C16553",
       "hectareas": 2.16,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "10\tHileras: 2",
@@ -1536,6 +1936,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet franc",
       "vinedo": "C16553",
       "hectareas": 0.03,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "341\tHileras: 59",
@@ -1555,6 +1959,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet franc",
       "vinedo": "C16553",
       "hectareas": 3.78,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "10\tHileras: 80",
@@ -1573,6 +1981,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 1.59,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1999",
@@ -1591,6 +2003,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet franc",
       "vinedo": "C16553",
       "hectareas": 1.56,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "214",
@@ -1610,6 +2026,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C16553",
       "hectareas": 3.26,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "337",
@@ -1629,6 +2049,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 4.37,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "101-14",
         "Año de plantacion": "2003",
@@ -1647,6 +2071,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C16553",
       "hectareas": 4.08,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "337",
@@ -1666,6 +2094,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C16553",
       "hectareas": 4.02,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "337",
@@ -1685,6 +2117,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 4.4,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "101-14",
         "Año de plantacion": "2003",
@@ -1703,6 +2139,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Petit verdot",
       "vinedo": "C16553",
       "hectareas": 2.53,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "400",
@@ -1722,6 +2162,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Petit verdot",
       "vinedo": "C16553",
       "hectareas": 2.23,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "400",
@@ -1741,6 +2185,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 4.4,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "101-14",
         "Año de plantacion": "2003",
@@ -1759,6 +2207,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C16553",
       "hectareas": 4.1,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "337",
@@ -1778,6 +2230,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C16553",
       "hectareas": 4.02,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "169",
@@ -1797,6 +2253,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet sauvignon",
       "vinedo": "C16553",
       "hectareas": 5.3,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "169",
@@ -1816,6 +2276,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "B64134",
       "hectareas": 9.4,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "108+R3\tHileras: 90\tAño: 1995",
@@ -1833,6 +2297,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 6.95,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -1851,6 +2319,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 5.23,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -1869,6 +2341,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 4.41,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -1887,6 +2363,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 3.92,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -1905,6 +2385,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 2.37,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -1923,6 +2407,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 1.54,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -1941,6 +2429,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Merlot",
       "vinedo": "C16553",
       "hectareas": 3.91,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "181",
@@ -1960,6 +2452,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Merlot",
       "vinedo": "C16553",
       "hectareas": 3.64,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "181",
@@ -1979,6 +2475,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 3.68,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2003",
@@ -1997,6 +2497,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 4.02,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2003",
@@ -2015,6 +2519,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet Sauvignon",
       "vinedo": "C16553",
       "hectareas": 3.33,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "337",
@@ -2034,6 +2542,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet Sauvignon",
       "vinedo": "C16553",
       "hectareas": 3.23,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "337",
@@ -2053,6 +2565,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Merlot",
       "vinedo": "C16553",
       "hectareas": 3.99,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "181",
@@ -2072,6 +2588,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Merlot",
       "vinedo": "C16553",
       "hectareas": 3.72,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2003",
@@ -2090,6 +2610,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 3.65,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2003",
@@ -2108,6 +2632,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 4.02,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2003",
@@ -2126,6 +2654,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "CVabernet Sauvignon",
       "vinedo": "C16553",
       "hectareas": 3.33,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "337",
@@ -2145,6 +2677,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet Sauvignon",
       "vinedo": "C16553",
       "hectareas": 3.23,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "337",
@@ -2164,6 +2700,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 8.13,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "4"
       }
@@ -2174,6 +2714,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 4.05,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "101-14",
         "Año de plantacion": "2004",
@@ -2192,6 +2736,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 4.46,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "101-14",
         "Año de plantacion": "2004",
@@ -2210,6 +2758,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 4.09,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "101-14",
         "Año de plantacion": "2004",
@@ -2228,6 +2780,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 3.43,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "101-14",
         "Año de plantacion": "2004",
@@ -2246,6 +2802,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 2.92,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "101-14",
         "Año de plantacion": "2004",
@@ -2264,6 +2824,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 2.35,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "101-14",
         "Año de plantacion": "2004",
@@ -2282,6 +2846,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 3.07,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103 P",
         "Año de plantacion": "2007",
@@ -2300,6 +2868,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 2.97,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -2318,6 +2890,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 3.01,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -2336,6 +2912,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 2.74,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -2354,6 +2934,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 2.87,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -2372,6 +2956,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 2.27,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -2390,6 +2978,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C16553",
       "hectareas": 2.89,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "76\tHileras: 54",
@@ -2408,6 +3000,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C16553",
       "hectareas": 2.79,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "96",
@@ -2427,6 +3023,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C16553",
       "hectareas": 2.69,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "96",
@@ -2446,6 +3046,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C16553",
       "hectareas": 1.26,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "130",
@@ -2464,6 +3068,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C16553",
       "hectareas": 3.94,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "R110",
         "Clon": "95",
@@ -2483,6 +3091,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C16553",
       "hectareas": 2.48,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P\tHileras: 15",
         "Clon": "96",
@@ -2501,6 +3113,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C16553",
       "hectareas": 2.44,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "96",
@@ -2520,6 +3136,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C16553",
       "hectareas": 2.35,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "96",
@@ -2539,6 +3159,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 0.33,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2008",
@@ -2557,6 +3181,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 1.88,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2008",
@@ -2575,6 +3203,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 2.56,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2008",
@@ -2593,6 +3225,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16553",
       "hectareas": 0.23,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "R110",
         "Clon": "95",
@@ -2613,6 +3249,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C13249",
       "hectareas": 3.83,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "777",
@@ -2632,6 +3272,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C13249",
       "hectareas": 3.82,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "5B-17\tHileras: 22",
@@ -2650,6 +3294,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Garnacha",
       "vinedo": "—",
       "hectareas": 0.5,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "no",
@@ -2662,6 +3310,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -2673,6 +3325,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -2684,6 +3340,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.76,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2013",
@@ -2702,6 +3362,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.76,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2013",
@@ -2720,6 +3384,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.76,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2013",
@@ -2738,6 +3406,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.76,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2013",
@@ -2756,6 +3428,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Semillon",
       "vinedo": "—",
       "hectareas": 1,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Equipo de Riego": "1100"
@@ -2767,6 +3443,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -2779,6 +3459,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -2790,6 +3474,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13.249",
       "hectareas": 2.79,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2013",
@@ -2808,6 +3496,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.79,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2013",
@@ -2826,6 +3518,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.79,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2013",
@@ -2844,6 +3540,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.79,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2013",
@@ -2862,6 +3562,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -2873,6 +3577,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -2884,6 +3592,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -2895,6 +3607,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -2906,6 +3622,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -2917,6 +3637,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -2928,6 +3652,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -2939,6 +3667,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -2950,6 +3682,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -2961,6 +3697,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -2972,6 +3712,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -2983,6 +3727,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -2994,6 +3742,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -3005,6 +3757,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1100"
@@ -3016,6 +3772,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C13249",
       "hectareas": 3.79,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "115\t\tHileras: 38",
@@ -3034,6 +3794,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet Sauvignon",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3046,6 +3810,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet Sauvignon",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3058,6 +3826,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Carmenere",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3069,6 +3841,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3081,6 +3857,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.51,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2013",
@@ -3099,6 +3879,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.51,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2013",
@@ -3117,6 +3901,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.51,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2013",
@@ -3135,6 +3923,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.51,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2013",
@@ -3153,6 +3945,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3165,6 +3961,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3177,6 +3977,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3189,6 +3993,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3201,6 +4009,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.53,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2013",
@@ -3219,6 +4031,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.53,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2013",
@@ -3237,6 +4053,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.53,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2013",
@@ -3255,6 +4075,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3266,6 +4090,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3277,6 +4105,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3288,6 +4120,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3299,6 +4135,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3310,6 +4150,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3321,6 +4165,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3332,6 +4180,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3343,6 +4195,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3354,6 +4210,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3365,6 +4225,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3376,6 +4240,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3387,6 +4255,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3398,6 +4270,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3409,6 +4285,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3420,6 +4300,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1200"
@@ -3431,6 +4315,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Merlot",
       "vinedo": "C13249",
       "hectareas": 3.8,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "348\tHileras: 8",
@@ -3449,6 +4337,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.83,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2019",
@@ -3466,6 +4358,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.83,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2019",
@@ -3483,6 +4379,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.83,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2019",
@@ -3500,6 +4400,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.83,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2019",
@@ -3517,6 +4421,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet Franc",
       "vinedo": "C13249",
       "hectareas": 2.81,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "VCR 10",
@@ -3535,6 +4443,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet Franc",
       "vinedo": "C13249",
       "hectareas": 2.81,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "VCR 10",
@@ -3553,6 +4465,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet Franc",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3565,6 +4481,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet Franc",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3577,6 +4497,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.83,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2019",
@@ -3594,6 +4518,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.83,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2019",
@@ -3611,6 +4539,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.83,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2019",
@@ -3628,6 +4560,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.83,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2019",
@@ -3645,6 +4581,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet Franc",
       "vinedo": "C13249",
       "hectareas": 2.81,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "VCR 10",
@@ -3663,6 +4603,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet Sauvignon",
       "vinedo": "C13249",
       "hectareas": 1.48,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "169",
@@ -3681,6 +4625,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet Franc",
       "vinedo": "C13249",
       "hectareas": 1.33,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "VCR 10",
@@ -3699,6 +4647,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet Sauvignon",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3711,6 +4663,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet Sauvignon",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3723,6 +4679,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3734,6 +4694,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3745,6 +4709,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3756,6 +4724,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3767,6 +4739,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3778,6 +4754,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3789,6 +4769,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3800,6 +4784,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3811,6 +4799,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3822,6 +4814,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3833,6 +4829,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3844,6 +4844,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3855,6 +4859,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3866,6 +4874,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3877,6 +4889,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3888,6 +4904,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Malla Antigranizo": "n",
         "Equipo de Riego": "1300"
@@ -3899,6 +4919,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C13249",
       "hectareas": 3.8,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "R4",
@@ -3918,6 +4942,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3930,6 +4958,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3942,6 +4974,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3954,6 +4990,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3966,6 +5006,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Marco de plantacion": "2x1",
         "Malla Antigranizo": "n",
@@ -3978,6 +5022,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "1400"
       }
@@ -3988,6 +5036,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "1400"
       }
@@ -3998,6 +5050,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "1400"
       }
@@ -4008,6 +5064,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "1400"
       }
@@ -4018,6 +5078,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "1400"
       }
@@ -4028,6 +5092,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "1400"
       }
@@ -4038,6 +5106,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "1400"
       }
@@ -4048,6 +5120,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "1400"
       }
@@ -4058,6 +5134,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "1400"
       }
@@ -4068,6 +5148,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "1400"
       }
@@ -4078,6 +5162,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "—",
       "vinedo": "—",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "1400"
       }
@@ -4088,6 +5176,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 2.01,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "297",
@@ -4107,6 +5199,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 2.01,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "297",
@@ -4126,6 +5222,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 1.84,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "108\tHileras: 54\tMarco Pl: 2x1",
@@ -4143,6 +5243,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 1.84,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "297",
@@ -4162,6 +5266,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Merlot",
       "vinedo": "C13249",
       "hectareas": 3.79,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "R3",
@@ -4181,6 +5289,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Merlot",
       "vinedo": "C13249",
       "hectareas": 2,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "Videla",
@@ -4200,6 +5312,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Ancellota",
       "vinedo": "C13249",
       "hectareas": 1.83,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2008",
@@ -4218,6 +5334,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 3.82,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1997",
@@ -4236,6 +5356,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 3.84,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "1997",
@@ -4254,6 +5378,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Aspirant Bouchet",
       "vinedo": "C13240",
       "hectareas": 1.8,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Año de plantacion": "2002",
@@ -4272,6 +5400,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Tempranillo",
       "vinedo": "C13249",
       "hectareas": 2.04,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Año de plantacion": "2002",
@@ -4290,6 +5422,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 3.83,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "111\tHileras: 1",
@@ -4308,6 +5444,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 2,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "UCD 1",
@@ -4327,6 +5467,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 2,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "UCD 1",
@@ -4346,6 +5490,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 3.67,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "297",
@@ -4365,6 +5513,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 0.35,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103",
         "Clon": "242",
@@ -4384,6 +5536,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Cabernet Franc",
       "vinedo": "C13249",
       "hectareas": 0.89,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "214",
@@ -4402,6 +5558,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 1.72,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2020",
@@ -4419,6 +5579,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C13249",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "115",
@@ -4435,6 +5599,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 3.01,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103\tClon: R3",
         "Hileras": "13\tHectareas: 0,35",
@@ -4453,6 +5621,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 1.25,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "242",
@@ -4472,6 +5644,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 3.36,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "316",
@@ -4491,6 +5667,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 4.28,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "108",
@@ -4510,6 +5690,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C13249",
       "hectareas": 2.84,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103",
         "Clon": "R8",
@@ -4529,6 +5713,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C13249",
       "hectareas": 3.22,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103",
         "Clon": "R8",
@@ -4548,6 +5736,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 1.95,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "317",
@@ -4567,6 +5759,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 1.95,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "317",
@@ -4586,6 +5782,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 3.43,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "297",
@@ -4605,6 +5805,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C13249",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "115",
@@ -4621,6 +5825,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 3.97,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "242\tHileras: 11",
@@ -4639,6 +5847,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 4.07,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103",
         "Clon": "316",
@@ -4658,6 +5870,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 1.46,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "242",
@@ -4677,6 +5893,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C13249",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "R20",
@@ -4693,6 +5913,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C13249",
       "hectareas": 3.48,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103",
         "Clon": "R8",
@@ -4712,6 +5936,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C13249",
       "hectareas": 3.2,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "R8",
@@ -4731,6 +5959,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Merlot",
       "vinedo": "C13249",
       "hectareas": 2.05,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "R3",
@@ -4750,6 +5982,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Merlot",
       "vinedo": "C13249",
       "hectareas": 1.81,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "R3",
@@ -4769,6 +6005,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 2.79,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "297",
@@ -4788,6 +6028,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C13249",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "777",
@@ -4804,6 +6048,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 3.59,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103-R110",
         "Clon": "242",
@@ -4823,6 +6071,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 4.67,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103",
         "Clon": "316",
@@ -4842,6 +6094,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C13249",
       "hectareas": 4.2,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103",
         "Clon": "R4",
@@ -4861,6 +6117,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C.13249",
       "hectareas": 1.37,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "242",
@@ -4880,6 +6140,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C13249",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4\t\tClon: 777   Año: 2008",
         "Año de plantacion": "2007",
@@ -4897,6 +6161,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C13249",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "R110\tClon: 95\t\tAño: 2007",
         "Marco de plantacion": "2x1",
@@ -4913,6 +6181,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 2.34,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "297",
@@ -4932,6 +6204,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 3.44,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "297",
@@ -4951,6 +6227,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 3.7,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "240",
@@ -4970,6 +6250,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 5.07,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103/R110",
         "Clon": "242",
@@ -4989,6 +6273,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 4.34,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103",
         "Clon": "316",
@@ -5008,6 +6296,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C13249",
       "hectareas": 4.46,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "R4",
@@ -5027,6 +6319,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C13249",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "R110\t\tClon: 870",
         "Año de plantacion": "2007",
@@ -5044,6 +6340,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C13249",
       "hectareas": 2.48,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "101-14",
         "Hileras": "39\tHectareas: 0,79",
@@ -5063,6 +6363,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 1.4,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "242",
@@ -5082,6 +6386,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C13249",
       "hectareas": 1.84,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Clon": "R4",
@@ -5101,6 +6409,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Merlot",
       "vinedo": "C13249",
       "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4\t\tClon: Videla",
         "Año de plantacion": "1997",
@@ -5118,6 +6430,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C13249",
       "hectareas": 2.34,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Clon": "598",
@@ -5137,6 +6453,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 2,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "240",
@@ -5156,6 +6476,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 1.88,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "297",
@@ -5175,6 +6499,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Merlot",
       "vinedo": "C13249",
       "hectareas": 1,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103",
         "Clon": "181",
@@ -5192,6 +6520,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C13249",
       "hectareas": 1,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103",
         "Clon": "777",
@@ -5207,14 +6539,22 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 72",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 9.1
+      "hectareas": 9.1,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FLP-73",
       "nombre": "Cuartel 73",
       "variedad": "Nogales",
       "vinedo": "—",
-      "hectareas": 2.56
+      "hectareas": 2.56,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FLP-74",
@@ -5222,6 +6562,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Inculto",
       "vinedo": "—",
       "hectareas": 5.1,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "4"
       }
@@ -5232,6 +6576,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "centeno",
       "vinedo": "—",
       "hectareas": 3.2,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Equipo de Riego": "4"
       }
@@ -5241,28 +6589,44 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 76",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 2.63
+      "hectareas": 2.63,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FLP-77",
       "nombre": "Cuartel 77",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 3.45
+      "hectareas": 3.45,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FLP-78",
       "nombre": "Cuartel 78",
       "variedad": "centeno",
       "vinedo": "—",
-      "hectareas": 5.17
+      "hectareas": 5.17,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FLP-79",
       "nombre": "Cuartel 79",
       "variedad": "centeno",
       "vinedo": "—",
-      "hectareas": 4.36
+      "hectareas": 4.36,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FLP-8",
@@ -5270,6 +6634,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C13249",
       "hectareas": 1.88,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "297",
@@ -5289,6 +6657,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Merlot",
       "vinedo": "C13249",
       "hectareas": 3.79,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "R3",
@@ -5310,6 +6682,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C16565",
       "hectareas": 1.5,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "SO4",
         "Año de plantacion": "2000",
@@ -5325,7 +6701,11 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 10",
       "variedad": "Criolla-Franquette",
       "vinedo": "—",
-      "hectareas": 4
+      "hectareas": 4,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-11",
@@ -5333,6 +6713,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chandler-Cisco",
       "vinedo": "—",
       "hectareas": 2.59,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Hileras": "89",
         "Marco de plantacion": "8x6"
@@ -5343,7 +6727,11 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 12",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 1.33
+      "hectareas": 1.33,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-13",
@@ -5351,6 +6739,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chandler-Cisco",
       "vinedo": "—",
       "hectareas": 2.86,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Hileras": "97",
         "Marco de plantacion": "8x6"
@@ -5362,6 +6754,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Gewurztraminer",
       "vinedo": "C16565",
       "hectareas": 1.6,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Año de plantacion": "2007",
         "Marco de plantacion": "1,8x1",
@@ -5377,6 +6773,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16565",
       "hectareas": 1,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -5393,6 +6793,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C16565",
       "hectareas": 1.6,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "UCD",
@@ -5410,6 +6814,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chandler-Cisco",
       "vinedo": "—",
       "hectareas": 3.99,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Hileras": "87",
         "Marco de plantacion": "8x6"
@@ -5420,7 +6828,11 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 16",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 5.87
+      "hectareas": 5.87,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-17",
@@ -5428,6 +6840,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chandler-Cisco",
       "vinedo": "—",
       "hectareas": 4.55,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Hileras": "142",
         "Marco de plantacion": "8x6"
@@ -5438,7 +6854,11 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 18",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 5.16
+      "hectareas": 5.16,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-19",
@@ -5446,6 +6866,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chandler-Cisco",
       "vinedo": "—",
       "hectareas": 4.82,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Hileras": "87",
         "Marco de plantacion": "8x6"
@@ -5457,6 +6881,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C16565",
       "hectareas": 0.5,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2002",
@@ -5473,6 +6901,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot meunier",
       "vinedo": "C16565",
       "hectareas": 0.5,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2002",
@@ -5489,6 +6921,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C16565",
       "hectareas": 0.5,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2002",
@@ -5504,7 +6940,11 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 20",
       "variedad": "centeno",
       "vinedo": "—",
-      "hectareas": 5.38
+      "hectareas": 5.38,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-21",
@@ -5512,6 +6952,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chandler-Cisco",
       "vinedo": "—",
       "hectareas": 5.45,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Hileras": "92",
         "Marco de plantacion": "8x6"
@@ -5522,7 +6966,11 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 22",
       "variedad": "centeno",
       "vinedo": "—",
-      "hectareas": 5.81
+      "hectareas": 5.81,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-23",
@@ -5530,6 +6978,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chandler-Cisco",
       "vinedo": "—",
       "hectareas": 4.86,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Hileras": "77",
         "Marco de plantacion": "8x6"
@@ -5540,7 +6992,11 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 24",
       "variedad": "centeno",
       "vinedo": "—",
-      "hectareas": 6.8
+      "hectareas": 6.8,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-25",
@@ -5548,6 +7004,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chandler-Cisco",
       "vinedo": "—",
       "hectareas": 4.92,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Hileras": "16",
         "Marco de plantacion": "8x6"
@@ -5558,7 +7018,11 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 26",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 5.46
+      "hectareas": 5.46,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-27-Mal",
@@ -5566,6 +7030,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16565",
       "hectareas": 1.5,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2016",
@@ -5582,6 +7050,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C16565",
       "hectareas": 1.42,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "franco",
         "Año de plantacion": "2016",
@@ -5597,7 +7069,11 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 28",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 5
+      "hectareas": 5,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-29",
@@ -5605,6 +7081,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chandler-Cisco",
       "vinedo": "—",
       "hectareas": 5.08,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Hileras": "94",
         "Marco de plantacion": "8x6"
@@ -5615,7 +7095,11 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 30",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 5.51
+      "hectareas": 5.51,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-31",
@@ -5623,6 +7107,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chandler-Cisco",
       "vinedo": "—",
       "hectareas": 7.14,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Hileras": "94",
         "Marco de plantacion": "8x6"
@@ -5633,7 +7121,11 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 32",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 6.15
+      "hectareas": 6.15,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-33",
@@ -5641,6 +7133,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chandler-Cisco",
       "vinedo": "—",
       "hectareas": 9.24,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Hileras": "94",
         "Marco de plantacion": "8x6"
@@ -5651,7 +7147,11 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 34",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 6.23
+      "hectareas": 6.23,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-35",
@@ -5659,6 +7159,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chandler-Cisco",
       "vinedo": "—",
       "hectareas": 11.44,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Hileras": "94",
         "Marco de plantacion": "8x6"
@@ -5669,42 +7173,66 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 36",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 8.1
+      "hectareas": 8.1,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-37",
       "nombre": "Cuartel 37",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 5.38
+      "hectareas": 5.38,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-38",
       "nombre": "Cuartel 38",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 6.8
+      "hectareas": 6.8,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-39",
       "nombre": "Cuartel 39",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 6.89
+      "hectareas": 6.89,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-4",
       "nombre": "Cuartel 4",
       "variedad": "Criolla-Franquette",
       "vinedo": "—",
-      "hectareas": 3.21
+      "hectareas": 3.21,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-40",
       "nombre": "Cuartel 40",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 4.71
+      "hectareas": 4.71,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-5-Chard",
@@ -5712,6 +7240,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Chardonnay",
       "vinedo": "C16565",
       "hectareas": 0.5,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Año de plantacion": "2002",
         "Marco de plantacion": "1,8x1",
@@ -5726,6 +7258,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Pinot noir",
       "vinedo": "C16565",
       "hectareas": 0.3,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2002",
@@ -5740,7 +7276,11 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 6",
       "variedad": "Criolla-Franquette",
       "vinedo": "—",
-      "hectareas": 1.6
+      "hectareas": 1.6,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FSP-7",
@@ -5748,6 +7288,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Sauvignon blanc",
       "vinedo": "C16565",
       "hectareas": 1.5,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Clon": "R3",
@@ -5764,7 +7308,11 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 8",
       "variedad": "Criolla-Franquette",
       "vinedo": "—",
-      "hectareas": 2.5
+      "hectareas": 2.5,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     }
   ],
   "FET": [
@@ -5774,6 +7322,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C19457",
       "hectareas": 4.95,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "101-14",
         "Año de plantacion": "2008",
@@ -5791,6 +7343,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C19457",
       "hectareas": 4.44,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "101-14",
         "Año de plantacion": "2008",
@@ -5809,49 +7365,77 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 1",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 0.17
+      "hectareas": 0.17,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FC2-2",
       "nombre": "Cuartel 2",
       "variedad": "—",
       "vinedo": "—",
-      "hectareas": 0
+      "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FC2-2-Mal",
       "nombre": "Cuartel 2-Mal",
       "variedad": "—",
       "vinedo": "—",
-      "hectareas": 0
+      "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FC2-3",
       "nombre": "Cuartel 3",
       "variedad": "—",
       "vinedo": "—",
-      "hectareas": 0
+      "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FC2-3-Mal",
       "nombre": "Cuartel 3-Mal",
       "variedad": "—",
       "vinedo": "—",
-      "hectareas": 0
+      "hectareas": 0,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FC2-4",
       "nombre": "Cuartel 4",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 7.44
+      "hectareas": 7.44,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FC2-5",
       "nombre": "Cuartel 5",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 7.97
+      "hectareas": 7.97,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FC2-6",
@@ -5859,6 +7443,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C19455",
       "hectareas": 6.55,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -5877,28 +7465,44 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "nombre": "Cuartel 1",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 3.74
+      "hectareas": 3.74,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FC3-2",
       "nombre": "Cuartel 2",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 3.78
+      "hectareas": 3.78,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FC3-3",
       "nombre": "Cuartel 3",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 5
+      "hectareas": 5,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FC3-4",
       "nombre": "Cuartel 4",
       "variedad": "inculto",
       "vinedo": "—",
-      "hectareas": 9
+      "hectareas": 9,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
     },
     {
       "id": "FC3-5",
@@ -5906,6 +7510,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C19456",
       "hectareas": 8.36,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
@@ -5923,6 +7531,10 @@ export const CUADROS_CATALOGO_MAPA: Record<string, CuadroCatalogo[]> = {
       "variedad": "Malbec",
       "vinedo": "C19456",
       "hectareas": 8.66,
+      "canopia_ha": 0,
+      "canopia_hil": 0,
+      "claro_ha": 0,
+      "claros_hil": 0,
       "extras": {
         "Pie": "1103P",
         "Año de plantacion": "2007",
