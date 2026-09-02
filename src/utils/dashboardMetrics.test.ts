@@ -7,6 +7,8 @@ import {
   computeDashboardStats,
   computePersonasPorDia,
   countDiasConActividad,
+  countDiasConTrabajoTarea,
+  formatDiasConTrabajo,
   getManuales,
 } from './dashboardMetrics'
 
@@ -124,6 +126,26 @@ describe('countDiasConActividad', () => {
       manual({ id: '3', fechaInicio: mockTs('2024-06-03T10:00:00') }),
     ]
     assert.equal(countDiasConActividad(tareas), 2)
+  })
+})
+
+describe('countDiasConTrabajoTarea', () => {
+  it('une días de partes y rendimientos sin duplicar el mismo día', () => {
+    const tarea = manual({
+      id: '1',
+      rendimientosDiarios: [
+        { fecha: mockTs('2024-06-01T18:00:00'), texto: '10 hileras', operador: 'Juan' },
+        { fecha: mockTs('2024-06-03T18:00:00'), texto: '8 hileras', operador: 'Juan' },
+      ],
+    })
+    const partes = [
+      parteManual({ id: 'p1', tareaId: '1', abiertoEn: mockTs('2024-06-01T08:00:00') }),
+      parteManual({ id: 'p2', tareaId: '1', abiertoEn: mockTs('2024-06-02T08:00:00') }),
+    ]
+    assert.equal(countDiasConTrabajoTarea(tarea, partes), 3)
+    assert.equal(formatDiasConTrabajo(3), '3 días')
+    assert.equal(formatDiasConTrabajo(1), '1 día')
+    assert.equal(formatDiasConTrabajo(0), '—')
   })
 })
 

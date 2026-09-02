@@ -20,6 +20,9 @@ const tareas: Tarea[] = [
     fechaInicio: mockTs('2024-06-01T10:00:00'),
     fechaFin: mockTs('2024-06-01T18:00:00'),
     rendimiento: '95%',
+    rendimientosDiarios: [
+      { fecha: mockTs('2024-06-01T18:00:00'), texto: '95%', operador: 'Juan' },
+    ],
     tipo: 'manual',
     cuadrilla: 'Cuadrilla 1',
     cantidadPersonas: 8,
@@ -51,6 +54,8 @@ describe('getMetricDetail', () => {
     const detail = getMetricDetail('finalizadas', tareas)
     assert.equal(detail.rows.length, 1)
     assert.equal(detail.rows[0].rendimiento, '95%')
+    assert.equal(detail.rows[0].diasTrabajo, '1 día')
+    assert.ok(detail.columns.some(c => c.key === 'diasTrabajo'))
   })
 
   it('filtra en progreso', () => {

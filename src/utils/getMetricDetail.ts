@@ -1,6 +1,8 @@
 import type { ParteDeLabores, Tarea } from '../types'
 import { formatTimestamp } from './formatTimestamp'
 import {
+  countDiasConTrabajoTarea,
+  formatDiasConTrabajo,
   getConRendimiento,
   getEnProgreso,
   getFinalizadas,
@@ -44,12 +46,13 @@ function tareaRowBase(t: Tarea): Record<string, string> {
   }
 }
 
-function filaFinalizada(t: Tarea): Record<string, string> {
+function filaFinalizada(t: Tarea, partes: ParteDeLabores[] = []): Record<string, string> {
   return {
     tarea: t.tarea,
     responsable: responsable(t),
     finca: t.fincaNombre,
     fechaCierre: formatTimestamp(t.fechaFin ?? t.fechaInicio),
+    diasTrabajo: formatDiasConTrabajo(countDiasConTrabajoTarea(t, partes)),
     rendimiento: t.rendimiento?.trim() || '—',
   }
 }
@@ -57,7 +60,7 @@ function filaFinalizada(t: Tarea): Record<string, string> {
 export function getMetricDetail(
   metric: MetricKey,
   tareas: Tarea[],
-  _partes: ParteDeLabores[] = [],
+  partes: ParteDeLabores[] = [],
 ): MetricDetailResult {
   switch (metric) {
     case 'total':
@@ -83,9 +86,10 @@ export function getMetricDetail(
           { key: 'responsable', label: 'Responsable' },
           { key: 'finca', label: 'Finca' },
           { key: 'fechaCierre', label: 'Fecha de cierre' },
+          { key: 'diasTrabajo', label: 'Días de trabajo' },
           { key: 'rendimiento', label: 'Rendimiento' },
         ],
-        rows: list.map(filaFinalizada),
+        rows: list.map(t => filaFinalizada(t, partes)),
       }
     }
 
@@ -123,7 +127,7 @@ export function getMetricDetail(
           { key: 'fechaCierre', label: 'Fecha de cierre' },
           { key: 'rendimiento', label: 'Rendimiento' },
         ],
-        rows: list.map(filaFinalizada),
+        rows: list.map(t => filaFinalizada(t, partes)),
         summary:
           list.length === 0
             ? 'Ninguna tarea tiene rendimiento registrado.'

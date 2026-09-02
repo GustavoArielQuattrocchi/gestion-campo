@@ -109,6 +109,37 @@ export function countDiasConActividad(
   return dias || 1
 }
 
+function addDayKey(days: Set<string>, ts: { toDate?: () => Date } | undefined) {
+  if (!ts?.toDate) return
+  const d = ts.toDate()
+  if (Number.isNaN(d.getTime())) return
+  days.add(format(d, 'yyyy-MM-dd'))
+}
+
+/**
+ * Días distintos con jornada en una tarea: cierres diarios y/o apertura de partes.
+ * Dos partes el mismo día cuentan uno.
+ */
+export function countDiasConTrabajoTarea(
+  tarea: Tarea,
+  partes: ParteDeLabores[] = [],
+): number {
+  const days = new Set<string>()
+  for (const rd of tarea.rendimientosDiarios ?? []) {
+    addDayKey(days, rd.fecha)
+  }
+  for (const parte of partes) {
+    if (parte.tareaId !== tarea.id) continue
+    addDayKey(days, parte.abiertoEn)
+  }
+  return days.size
+}
+
+export function formatDiasConTrabajo(n: number): string {
+  if (n <= 0) return '—'
+  return n === 1 ? '1 día' : `${n} días`
+}
+
 export interface PersonasPorDiaResult {
   personasDias: number
   dias: number
