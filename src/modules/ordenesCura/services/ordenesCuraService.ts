@@ -5,10 +5,8 @@ import {
   doc,
   getDoc,
   getDocs,
-  query,
   Timestamp,
   updateDoc,
-  where,
   writeBatch,
   type DocumentData,
 } from 'firebase/firestore'
@@ -47,6 +45,7 @@ function mapOrden(id: string, data: DocumentData): OrdenCura {
   return {
     id,
     owner_id: toStr(data.owner_id),
+    owner_email: toStr(data.owner_email),
     oc: toStr(data.oc),
     fecha: toTs(data.fecha),
     finca: toStr(data.finca),
@@ -89,10 +88,9 @@ function itemToData(item: Omit<OrderItem, 'id'>): DocumentData {
   }
 }
 
-/** Lista las órdenes del usuario, ordenadas por fecha de creación descendente. */
-export async function getOrdenes(userId: string): Promise<OrdenCura[]> {
-  // Se filtra por owner_id y se ordena en cliente para no requerir índice compuesto.
-  const snap = await getDocs(query(ordenesRef(), where('owner_id', '==', userId)))
+/** Lista todas las órdenes de los admins, más recientes primero. */
+export async function getOrdenes(): Promise<OrdenCura[]> {
+  const snap = await getDocs(ordenesRef())
   const ordenes = snap.docs.map(d => mapOrden(d.id, d.data()))
   ordenes.sort((a, b) => b.created_at.toMillis() - a.created_at.toMillis())
   return ordenes
@@ -140,9 +138,17 @@ export async function updateOrden(
   ordenId: string,
   data: Partial<OrdenCura>,
 ): Promise<void> {
-  const { id: _id, created_at: _createdAt, ...rest } = data
+  const {
+    id: _id,
+    created_at: _createdAt,
+    owner_id: _ownerId,
+    owner_email: _ownerEmail,
+    ...rest
+  } = data
   void _id
   void _createdAt
+  void _ownerId
+  void _ownerEmail
   await updateDoc(doc(db, ORDENES_COLLECTION, ordenId), {
     ...rest,
     updated_at: Timestamp.now(),

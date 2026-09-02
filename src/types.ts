@@ -11,6 +11,10 @@ export interface Cuadro {
   variedad: string
   vinedo: string
   hectareas: number
+  canopia_ha?: number
+  canopia_hil?: number
+  claro_ha?: number
+  claros_hil?: number
 }
 
 export interface Cuadrilla {

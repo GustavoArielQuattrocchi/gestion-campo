@@ -6,6 +6,10 @@ import { lazyWithRetry } from './utils/lazyWithRetry'
 const MobileApp = lazyWithRetry(() => import('./pages/MobileApp'), 'mobile')
 const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'), 'dashboard')
 const OrdenesCuraPage = lazyWithRetry(() => import('./modules/ordenesCura/OrdenesCuraPage'), 'ordenes-cura')
+const AplicacionesFitosanitariasPage = lazyWithRetry(
+  () => import('./modules/aplicacionesFitosanitarias/AplicacionesFitosanitariasPage'),
+  'aplicaciones-fitosanitarias',
+)
 const CuadroPublicPage = lazyWithRetry(() => import('./pages/CuadroPublicPage'), 'cuadro-public')
 
 function RouteFallback() {
@@ -44,6 +48,14 @@ export default function App() {
           element={
             <AdminGate>
               <OrdenesCuraPage />
+            </AdminGate>
+          }
+        />
+        <Route
+          path="/aplicaciones-fitosanitarias"
+          element={
+            <AdminGate>
+              <AplicacionesFitosanitariasPage />
             </AdminGate>
           }
         />

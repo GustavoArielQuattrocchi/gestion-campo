@@ -1,30 +1,31 @@
 import { useMemo, useState } from 'react'
-import type { OrdenCura } from '../types'
-import { formatOwnerLabel } from '../utils/ownerLabel'
+import type { OrdenCura } from '../../ordenesCura/types'
+import { formatOwnerLabel } from '../../ordenesCura/utils/ownerLabel'
+import type { AplicacionFitosanitaria } from '../types'
+import GastoAcumulado from './GastoAcumulado'
 
 interface Props {
   ordenes: OrdenCura[]
-  busyPdfId: string | null
-  onVer: (ordenId: string) => void
-  onPdf: (ordenId: string) => void
-  onEliminar: (ordenId: string) => void
-  onClose: () => void
+  aplicaciones: AplicacionFitosanitaria[]
+  loading: boolean
+  onSelect: (ordenId: string) => void
 }
 
 function formatFecha(orden: OrdenCura): string {
   return orden.fecha.toDate().toLocaleDateString('es-AR')
 }
 
-export default function ListadoModal({
-  ordenes,
-  busyPdfId,
-  onVer,
-  onPdf,
-  onEliminar,
-  onClose,
-}: Props) {
+export default function OrdenPicker({ ordenes, aplicaciones, loading, onSelect }: Props) {
   const [q, setQ] = useState('')
   const [filtroFinca, setFiltroFinca] = useState('todas')
+
+  const counts = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const app of aplicaciones) {
+      map.set(app.ordenId, (map.get(app.ordenId) ?? 0) + 1)
+    }
+    return map
+  }, [aplicaciones])
 
   const fincas = useMemo(() => {
     return [...new Set(ordenes.map(o => o.finca).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'))
@@ -41,13 +42,22 @@ export default function ListadoModal({
     })
   }, [ordenes, filtroFinca, q])
 
+  const appsFiltradas = useMemo(() => {
+    if (filtroFinca === 'todas') return aplicaciones
+    return aplicaciones.filter(a => a.finca === filtroFinca)
+  }, [aplicaciones, filtroFinca])
+
   return (
-    <div className="oc-modal" role="dialog" aria-modal="true" aria-label="Órdenes guardadas">
-      <div className="oc-sheet">
-        <h3>Órdenes anteriores</h3>
+    <div className="oc-main">
+      <GastoAcumulado
+        titulo={filtroFinca === 'todas' ? 'Gastado en todas las fincas' : `Gastado en ${filtroFinca}`}
+        turnos={appsFiltradas}
+      />
+      <section className="oc-card">
+        <h2>Elegí una orden de cura</h2>
         <p className="oc-muted">
-          Historial compartido entre cuentas @salentein.com. Filtrá por finca, abrí para ver o
-          descargá el PDF. Eliminar no se puede deshacer.
+          Historial compartido: ves las OC de todos los admins. Cada turno se guarda aparte; el gasto
+          se infiere de la receta.
         </p>
         <div className="oc-listado-filters">
           <label className="oc-listado-filter">
@@ -73,9 +83,6 @@ export default function ListadoModal({
               onChange={e => setQ(e.target.value)}
             />
           </label>
-          <button type="button" className="oc-btn oc-btn--slate" onClick={onClose}>
-            Cerrar
-          </button>
         </div>
         <div className="oc-table-responsive">
           <table className="oc-table">
@@ -86,15 +93,18 @@ export default function ListadoModal({
                 <th>Finca</th>
                 <th>Cultivo</th>
                 <th>Cargó</th>
+                <th>Turnos</th>
                 <th>Acción</th>
               </tr>
             </thead>
             <tbody>
-              {filtradas.length === 0 ? (
+              {loading ? (
                 <tr>
-                  <td colSpan={6} className="oc-empty">
-                    Sin órdenes
-                  </td>
+                  <td colSpan={7} className="oc-empty">Cargando órdenes…</td>
+                </tr>
+              ) : filtradas.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="oc-empty">No hay órdenes guardadas</td>
                 </tr>
               ) : (
                 filtradas.map(orden => (
@@ -104,31 +114,15 @@ export default function ListadoModal({
                     <td>{orden.finca}</td>
                     <td>{orden.cultivo || '—'}</td>
                     <td>{formatOwnerLabel(orden.owner_email)}</td>
+                    <td>{counts.get(orden.id) ?? 0}</td>
                     <td>
-                      <div className="oc-listado-actions">
-                        <button
-                          type="button"
-                          className="oc-btn oc-btn--small oc-btn--slate"
-                          onClick={() => onVer(orden.id)}
-                        >
-                          Ver
-                        </button>
-                        <button
-                          type="button"
-                          className="oc-btn oc-btn--small oc-btn--slate"
-                          onClick={() => onPdf(orden.id)}
-                          disabled={busyPdfId === orden.id}
-                        >
-                          {busyPdfId === orden.id ? 'PDF…' : 'PDF'}
-                        </button>
-                        <button
-                          type="button"
-                          className="oc-btn oc-btn--small oc-btn--danger"
-                          onClick={() => onEliminar(orden.id)}
-                        >
-                          Eliminar
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        className="oc-btn oc-btn--small oc-btn--slate"
+                        onClick={() => onSelect(orden.id)}
+                      >
+                        Cargar turno
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -136,7 +130,7 @@ export default function ListadoModal({
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

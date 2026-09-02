@@ -1,4 +1,4 @@
-import { Sprout, Smartphone, FileText, LogOut } from 'lucide-react'
+import { Sprout, Smartphone, FileText, Droplets, LogOut } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../providers/AuthProvider'
 
@@ -46,6 +46,16 @@ export default function DashboardSidebarHeader() {
           >
             <FileText size={14} />
             Órdenes de Cura
+          </button>
+        </Link>
+        <Link to="/aplicaciones-fitosanitarias" style={{ textDecoration: 'none', flex: 1 }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            style={{ width: '100%', padding: '8px 12px', fontSize: 13 }}
+          >
+            <Droplets size={14} />
+            Aplicaciones
           </button>
         </Link>
       </div>

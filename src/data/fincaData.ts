@@ -7,6 +7,10 @@ export interface CuadroDetalle extends Cuadro {
   vinedo: string
   hectareas: number
   finca: string
+  canopia_ha: number
+  canopia_hil: number
+  claro_ha: number
+  claros_hil: number
   extras?: Record<string, string>
 }
 

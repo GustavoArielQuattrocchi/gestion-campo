@@ -16,6 +16,8 @@ export interface OrdenCura {
   id: string
   /** uid del usuario autenticado en Firebase Auth. */
   owner_id: string
+  /** Email de quien cargó la orden. Vacío en órdenes viejas. */
+  owner_email: string
   oc: string
   fecha: Timestamp
   finca: string

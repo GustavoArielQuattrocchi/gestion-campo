@@ -364,19 +364,26 @@ service cloud.firestore {
     }
 
     match /ordenesCura/{ordenId} {
-      allow read: if isSignedIn() && resource.data.owner_id == request.auth.uid;
-      allow create: if isSignedIn()
+      allow read: if esAdmin();
+      allow create: if esAdmin()
         && request.resource.data.owner_id == request.auth.uid;
-      allow update, delete: if isSignedIn()
-        && resource.data.owner_id == request.auth.uid;
+      allow update: if esAdmin()
+        && request.resource.data.owner_id == resource.data.owner_id;
+      allow delete: if esAdmin();
 
       match /items/{itemId} {
-        allow read: if isSignedIn()
-          && get(/databases/$(database)/documents/ordenesCura/$(ordenId)).data.owner_id == request.auth.uid;
-        // getAfter permite crear items en el mismo batch que la orden padre.
-        allow create, update, delete: if isSignedIn()
-          && getAfter(/databases/$(database)/documents/ordenesCura/$(ordenId)).data.owner_id == request.auth.uid;
+        allow read: if esAdmin();
+        allow create, update, delete: if esAdmin();
       }
+    }
+
+    match /aplicacionesFitosanitarias/{aplicacionId} {
+      allow read: if esAdmin();
+      allow create: if esAdmin()
+        && request.resource.data.owner_id == request.auth.uid;
+      allow update: if esAdmin()
+        && request.resource.data.owner_id == resource.data.owner_id;
+      allow delete: if esAdmin();
     }
 
     match /catalogoProductos/{productoId} {

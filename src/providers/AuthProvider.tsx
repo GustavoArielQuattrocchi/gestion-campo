@@ -29,7 +29,11 @@ export function isAdminUser(user: User | null): boolean {
 
 function isAdminRoute(): boolean {
   const path = window.location.pathname
-  return path.startsWith('/escritorio') || path.startsWith('/ordenes-de-cura')
+  return (
+    path.startsWith('/escritorio')
+    || path.startsWith('/ordenes-de-cura')
+    || path.startsWith('/aplicaciones-fitosanitarias')
+  )
 }
 
 const AUTH_INIT_TIMEOUT_MS = 12_000

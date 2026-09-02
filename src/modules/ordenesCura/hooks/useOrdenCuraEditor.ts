@@ -131,7 +131,7 @@ export function useOrdenCuraEditor() {
 
   const refreshOrdenes = useCallback(async () => {
     if (!userId) return [] as OrdenCura[]
-    const data = await getOrdenes(userId)
+    const data = await getOrdenes()
     setOrdenes(data)
     return data
   }, [userId])
@@ -284,6 +284,7 @@ export function useOrdenCuraEditor() {
     try {
       const data: OrdenCuraCreate = {
         owner_id: userId,
+        owner_email: user?.email ?? '',
         oc: form.oc,
         fecha: inputToTs(form.fecha),
         finca: form.finca,
@@ -336,7 +337,7 @@ export function useOrdenCuraEditor() {
     } finally {
       setSaving(false)
     }
-  }, [readOnly, userId, form, items, refreshOrdenes, refreshCatalogo])
+  }, [readOnly, userId, user?.email, form, items, refreshOrdenes, refreshCatalogo])
 
   const abrirOrden = useCallback(async (ordenId: string) => {
     try {

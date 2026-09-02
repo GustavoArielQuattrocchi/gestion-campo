@@ -25,6 +25,7 @@ const testFiles = [
   'src/utils/partesLaboresSync.test.ts',
   'src/modules/ordenesCura/utils/ocNumber.test.ts',
   'src/modules/ordenesCura/utils/factor.test.ts',
+  'src/modules/ordenesCura/utils/ownerLabel.test.ts',
   'src/validation/tareaCreate.test.ts',
   'src/validation/accidentReport.test.ts',
   'src/features/mapRelevamiento/escritorioTareaConflicts.test.ts',
@@ -34,6 +35,7 @@ const testFiles = [
   'src/utils/origenEjecucion.test.ts',
   'src/utils/firestoreDashboardQueryConfig.test.ts',
   'src/utils/accidentAnalytics.test.ts',
+  'src/utils/aplicacionFitosanitaria.test.ts',
 ]
 
 const outDir = mkdtempSync(join(tmpdir(), 'gestion-campo-tests-'))

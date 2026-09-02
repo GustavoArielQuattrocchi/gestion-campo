@@ -47,6 +47,9 @@ export default function OrdenesCuraPage() {
           <button type="button" className="oc-btn oc-btn--excel" onClick={editor.exportarExcel}>
             Excel 💾
           </button>
+          <Link to="/aplicaciones-fitosanitarias" className="oc-btn oc-btn--light" style={{ textDecoration: 'none' }}>
+            Aplicaciones
+          </Link>
         </div>
       </header>
 

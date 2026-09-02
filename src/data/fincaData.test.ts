@@ -17,6 +17,12 @@ describe('getCuadroDetalleById', () => {
     assert.equal(cuadro?.finca, 'FOA')
   })
 
+  it('expone canopia del catálogo', () => {
+    const cuadro = getCuadroDetalleById('FOA-5')
+    assert.equal(cuadro?.canopia_ha, 4000)
+    assert.equal(cuadro?.canopia_hil, 150)
+  })
+
   it('devuelve null si no existe', () => {
     assert.equal(getCuadroDetalleById('NO-EXISTE'), null)
   })
