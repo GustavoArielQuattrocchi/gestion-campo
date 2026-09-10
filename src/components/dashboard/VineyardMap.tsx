@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { MapContainer, TileLayer, GeoJSON, LayersControl, useMap } from 'react-leaflet'
+import { BarChart3, Layers } from 'lucide-react'
 import type { LatLngBoundsExpression, Layer, PathOptions } from 'leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -374,16 +375,24 @@ export default function VineyardMap({
 
         <div className="map-view-toggle">
           <button
+            type="button"
             className={viewMode === 'estado' ? 'active' : ''}
             onClick={() => setViewMode('estado')}
+            aria-label="Estado de cuadros"
+            title="Estado de cuadros"
           >
-            Estado
+            <Layers size={16} />
+            <span className="map-view-toggle-label">Estado</span>
           </button>
           <button
+            type="button"
             className={viewMode === 'rendimiento' ? 'active' : ''}
             onClick={() => setViewMode('rendimiento')}
+            aria-label="Rendimiento por hectárea"
+            title="Rendimiento por hectárea"
           >
-            Rendimiento
+            <BarChart3 size={16} />
+            <span className="map-view-toggle-label">Rendimiento</span>
           </button>
         </div>
 

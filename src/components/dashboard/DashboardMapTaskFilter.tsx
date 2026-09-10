@@ -24,6 +24,7 @@ export default function DashboardMapTaskFilter({
       className={`dashboard-map-task-filter ${activo ? 'is-active' : ''}`}
       role="group"
       aria-label="Filtrar labor en el mapa"
+      title={selectTitle}
     >
       <span className="dashboard-map-task-filter-icon" aria-hidden>
         <Sprout size={18} />
