@@ -11,7 +11,6 @@ import {
 import { useNavigate } from 'react-router-dom'
 import {
   collection,
-  addDoc,
   doc,
   query,
   where,
@@ -55,7 +54,6 @@ import {
 import {
   buildParteAbiertoPayload,
   buildParteCierreUpdate,
-  type ParteCuadrosScope,
   type ParteEjecutorOverride,
 } from '../utils/buildParteDeLaboresPayload'
 import {
@@ -183,36 +181,6 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
 
   const partesAbiertosRef = useRef(partesAbiertos)
   partesAbiertosRef.current = partesAbiertos
-  const openingParteByKeyRef = useRef(new Map<string, Promise<string | null>>())
-
-  const abrirParteDeLabores = useCallback(async (
-    tarea: Tarea,
-    ejecutor?: ParteEjecutorOverride,
-    scope?: ParteCuadrosScope,
-  ): Promise<string | null> => {
-    const key = ejecutorKeyFromTareaOrOverride(tarea, ejecutor)
-    const lockKey = `${tarea.id}:${key}`
-    const existente = findParteAbiertoParaEjecutor(partesAbiertosRef.current, tarea.id, key)
-    if (existente) return existente.id
-
-    const inflight = openingParteByKeyRef.current.get(lockKey)
-    if (inflight) return inflight
-
-    const promise = (async () => {
-      const stillOpen = findParteAbiertoParaEjecutor(partesAbiertosRef.current, tarea.id, key)
-      if (stillOpen) return stillOpen.id
-      const docRef = await addDoc(
-        collection(db, 'partes_labores'),
-        buildParteAbiertoPayload(tarea, operadorNombre, Timestamp.now(), ejecutor, scope),
-      )
-      return docRef.id
-    })().finally(() => {
-      openingParteByKeyRef.current.delete(lockKey)
-    })
-
-    openingParteByKeyRef.current.set(lockKey, promise)
-    return promise
-  }, [operadorNombre])
 
   useEffect(() => {
     if (!fincaId) {
@@ -562,20 +530,6 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         updates.cantidadPersonas = Math.max(tarea.cantidadPersonas, options.cantidadPersonas)
       }
 
-      await updateDoc(doc(db, 'tareas', tareaId), updates)
-
-      const tareaActualizada: Tarea = {
-        ...tarea,
-        cuadros: [...new Set([...(tarea.cuadros ?? []), ...cuadros])],
-        cuadroIds: [...new Set([...(tarea.cuadroIds ?? []), ...cuadroIds])],
-        ...(Object.keys(ejecutorPatch).length > 0
-          ? { ejecutorPorCuadro: mergeEjecutorPorCuadro(tarea.ejecutorPorCuadro, ejecutorPatch) }
-          : {}),
-        ...(options.cantidadPersonas !== undefined && tarea.tipo === 'manual'
-          ? { cantidadPersonas: Math.max(tarea.cantidadPersonas, options.cantidadPersonas) }
-          : {}),
-      }
-
       const parteEjecutor: ParteEjecutorOverride | undefined =
         tarea.tipo === 'manual'
           ? {
@@ -593,10 +547,46 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
               origenEjecucion: options.origenEjecucion,
             }
 
-      const parteId = await abrirParteDeLabores(tareaActualizada, parteEjecutor, {
-        cuadros,
-        cuadroIds,
-      })
+      const key = ejecutorKeyFromTareaOrOverride(tarea, parteEjecutor)
+      const parteExistente = findParteAbiertoParaEjecutor(
+        partesAbiertosRef.current,
+        tareaId,
+        key,
+      )
+
+      const tareaActualizada: Tarea = {
+        ...tarea,
+        cuadros: [...new Set([...(tarea.cuadros ?? []), ...cuadros])],
+        cuadroIds: [...new Set([...(tarea.cuadroIds ?? []), ...cuadroIds])],
+        ...(Object.keys(ejecutorPatch).length > 0
+          ? { ejecutorPorCuadro: mergeEjecutorPorCuadro(tarea.ejecutorPorCuadro, ejecutorPatch) }
+          : {}),
+        ...(options.cantidadPersonas !== undefined && tarea.tipo === 'manual'
+          ? { cantidadPersonas: Math.max(tarea.cantidadPersonas, options.cantidadPersonas) }
+          : {}),
+      }
+
+      let parteId: string | null
+      if (parteExistente) {
+        await updateDoc(doc(db, 'tareas', tareaId), updates)
+        parteId = parteExistente.id
+      } else {
+        const parteRef = doc(collection(db, 'partes_labores'))
+        const batch = writeBatch(db)
+        batch.update(doc(db, 'tareas', tareaId), updates)
+        batch.set(
+          parteRef,
+          buildParteAbiertoPayload(
+            tareaActualizada,
+            operadorNombre,
+            Timestamp.now(),
+            parteEjecutor,
+            { cuadros, cuadroIds },
+          ),
+        )
+        await batch.commit()
+        parteId = parteRef.id
+      }
       setFirestoreError(null)
       setLastCreatedTareaId(tareaId)
       setLastCreatedParteId(parteId)
@@ -621,7 +611,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     } finally {
       submittingRef.current = false
     }
-  }, [tareasActivas, abrirParteDeLabores, showToast, markPendingSync, navigate])
+  }, [tareasActivas, operadorNombre, showToast, markPendingSync, navigate])
 
   const handleRegisterRendimiento = useCallback(async (
     tareaId: string,
