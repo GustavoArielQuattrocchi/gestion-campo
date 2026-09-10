@@ -2,16 +2,29 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <script>
+      (function () {
+        var admin = /^\/(escritorio|ordenes-de-cura|aplicaciones-fitosanitarias)(\/|$)/.test(location.pathname)
+        if (admin) {
+          document.write('<link rel="icon" type="image/svg+xml" href="/favicon-escritorio.svg" />')
+          document.write('<link rel="apple-touch-icon" href="/icons/icon-escritorio-512.png" />')
+          document.write('<link rel="manifest" href="/manifest-escritorio.webmanifest" />')
+          document.write('<meta name="apple-mobile-web-app-title" content="Escritorio" />')
+          document.title = 'Escritorio · Gestión de Campo'
+        } else {
+          document.write('<link rel="icon" type="image/svg+xml" href="/favicon.svg" />')
+          document.write('<link rel="apple-touch-icon" href="/apple-touch-icon.png" />')
+          document.write('<link rel="manifest" href="/manifest.webmanifest" />')
+          document.write('<meta name="apple-mobile-web-app-title" content="Campo" />')
+        }
+      })()
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#16a34a" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Campo" />
     <meta name="description" content="Registro de tareas agrícolas en campo y panel de escritorio" />
-    <link rel="manifest" href="/manifest.webmanifest" />
     <title>Gestión de Campo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

@@ -51,6 +51,15 @@
             "value": "no-cache"
           }
         ]
+      },
+      {
+        "source": "/manifest-escritorio.webmanifest",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
       }
     ],
     "rewrites": [

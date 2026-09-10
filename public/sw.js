@@ -1,5 +1,12 @@
-const SHELL_CACHE = 'gestion-campo-shell-v6'
-const STATIC_SHELL = ['/', '/index.html', '/favicon.svg', '/manifest.webmanifest']
+const SHELL_CACHE = 'gestion-campo-shell-v7'
+const STATIC_SHELL = [
+  '/',
+  '/index.html',
+  '/favicon.svg',
+  '/favicon-escritorio.svg',
+  '/manifest.webmanifest',
+  '/manifest-escritorio.webmanifest',
+]
 
 function isSameOrigin(request) {
   try {
@@ -38,6 +45,7 @@ self.addEventListener('fetch', (event) => {
 
   const isIcon =
     url.pathname === '/favicon.svg' ||
+    url.pathname === '/favicon-escritorio.svg' ||
     url.pathname === '/apple-touch-icon.png' ||
     url.pathname.startsWith('/icons/')
 
