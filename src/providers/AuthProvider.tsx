@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import {
   onAuthStateChanged,
@@ -61,8 +61,6 @@ const AuthContext = createContext<AuthContextValue>({
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const location = useLocation()
-  const onAdminRoute = isAdminPath(location.pathname)
   const [state, setState] = useState<{ user: User | null; ready: boolean; error: string | null }>({
     user: null,
     ready: false,
@@ -165,6 +163,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signOut(auth)
   }, [])
 
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      user: state.user,
+      ready: state.ready,
+      error: state.error,
+      isAdmin: isAdminUser(state.user),
+      loginAdmin,
+      registerAdmin,
+      resendVerification,
+      logout,
+    }),
+    [state.user, state.ready, state.error, loginAdmin, registerAdmin, resendVerification, logout],
+  )
+
   if (!state.ready) {
     return (
       <div className="auth-shell">
@@ -173,27 +185,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     )
   }
 
-  // Un fallo del anónimo (Campo) no debe impedir el login de Escritorio.
-  if (state.error && !onAdminRoute) {
+  return (
+    <AuthContext.Provider value={value}>
+      <AuthErrorGate error={state.error}>{children}</AuthErrorGate>
+    </AuthContext.Provider>
+  )
+}
+
+/** Aísla useLocation: la UI de error de Campo sí depende de la ruta; el contexto de auth no. */
+function AuthErrorGate({ error, children }: { error: string | null; children: ReactNode }) {
+  const location = useLocation()
+  if (error && !isAdminPath(location.pathname)) {
     return (
       <div className="auth-shell auth-shell--error">
-        <p>{state.error}</p>
+        <p>{error}</p>
       </div>
     )
   }
-
-  const value: AuthContextValue = {
-    user: state.user,
-    ready: state.ready,
-    error: state.error,
-    isAdmin: isAdminUser(state.user),
-    loginAdmin,
-    registerAdmin,
-    resendVerification,
-    logout,
-  }
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return children
 }
 
 export function useAuth(): AuthContextValue {

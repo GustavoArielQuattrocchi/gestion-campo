@@ -225,7 +225,7 @@ export default function AccidentReportForm({
     setFincaNombreSel(finca?.nombre ?? '')
   }
 
-  const generarPDFBlob = (): Blob => {
+  const generarPDFBlob = async (): Promise<Blob> => {
     const validated = validateAccidentReport(buildInput())
     if (!validated.success) throw new Error(validated.reason)
     return buildAccidentReportPdf({
@@ -275,7 +275,7 @@ export default function AccidentReportForm({
   }
 
   const compartirPdfAdjunto = async (): Promise<'ok' | 'abort' | 'fallback'> => {
-    const pdfBlob = generarPDFBlob()
+    const pdfBlob = await generarPDFBlob()
     const fileName = accidentReportFileName(fincaNombreSel, new Date(), afectadoDni)
     const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' })
 
@@ -336,7 +336,7 @@ export default function AccidentReportForm({
     setError('')
     try {
       await guardarEnFirestore()
-      const pdfBlob = blob ?? generarPDFBlob()
+      const pdfBlob = blob ?? await generarPDFBlob()
       const fileName = nombre ?? accidentReportFileName(fincaNombreSel, new Date(), afectadoDni)
       downloadBlob(pdfBlob, fileName)
       onSuccess('El PDF se descargó y el informe quedó registrado.')

@@ -4,7 +4,6 @@ import { fincas, getCuadrosPorFinca } from '../../../data/fincaData'
 import type { CuadroDetalle } from '../../../data/fincaData'
 import { buildCuadroQrUrl } from '../../../utils/cuadroQr'
 import DashboardPanel from '../DashboardPanel'
-import QrCodeSvg from '../../qr/QrCodeSvg'
 import CuadroQrPrintSheet from './CuadroQrPrintSheet'
 
 interface Props {
@@ -158,8 +157,18 @@ export default function DashboardQrPanel({ open, onToggle }: Props) {
                       onChange={() => toggleSeleccion(cuadro.id)}
                     />
                   </label>
-                  <div className="dashboard-qr-item-preview">
-                    <QrCodeSvg value={url} size={72} />
+                  <div
+                    className="dashboard-qr-item-preview"
+                    style={{
+                      width: 72,
+                      height: 72,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    aria-hidden
+                  >
+                    <QrCode size={28} strokeWidth={1.75} color="#9ca3af" />
                   </div>
                   <div className="dashboard-qr-item-info">
                     <strong>{cuadro.nombre}</strong>

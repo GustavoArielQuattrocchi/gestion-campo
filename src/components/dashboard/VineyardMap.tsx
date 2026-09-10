@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, TileLayer, GeoJSON, LayersControl, useMap } from 'react-leaflet'
 import { BarChart3, Layers } from 'lucide-react'
-import type { LatLngBoundsExpression, Layer, PathOptions } from 'leaflet'
+import type { GeoJSON as LeafletGeoJSON, LatLngBoundsExpression, Layer, PathOptions } from 'leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { Feature, FeatureCollection } from 'geojson'
@@ -78,6 +78,44 @@ function FitBoundsOnFinca({ bounds }: { bounds: LatLngBoundsExpression | null })
 
 type MapViewMode = 'estado' | 'rendimiento'
 
+type RendimientoHeatData = {
+  perHa: Map<string, number>
+  maxVal: number
+}
+
+function bindCuadroTooltip(
+  layer: Layer,
+  feature: Feature,
+  viewMode: MapViewMode,
+  heat: RendimientoHeatData,
+) {
+  const props = feature.properties as CuadroFeatureProps
+  const cuadro = getCuadroDetalleById(props.name)
+  const variedad = cuadro?.variedad ?? '—'
+  const has = cuadro ? formatHectareas(cuadro.hectareas) : '—'
+
+  let tooltipHtml: string
+  if (viewMode === 'rendimiento') {
+    const rendHa = heat.perHa.get(props.name)
+    const rendLabel = rendHa != null ? `${rendHa.toFixed(1)} /ha` : 'Sin datos'
+    tooltipHtml = `
+        <div style="font-size:12px;line-height:1.35">
+          <strong>${cuadro?.nombre ?? props.name}</strong><br/>
+          Rendimiento: ${rendLabel}<br/>
+          ${variedad} · ${has}
+        </div>
+      `
+  } else {
+    tooltipHtml = `
+        <div style="font-size:12px;line-height:1.35">
+          <strong>${cuadro?.nombre ?? props.name}</strong><br/>
+          ${variedad} · ${has}
+        </div>
+      `
+  }
+  layer.bindTooltip(tooltipHtml, { sticky: true, direction: 'top' })
+}
+
 export default function VineyardMap({
   tareas,
   filtroFinca,
@@ -89,6 +127,9 @@ export default function VineyardMap({
 }: Props) {
   const [seleccionado, setSeleccionado] = useState<CuadroFeature | null>(null)
   const [viewMode, setViewMode] = useState<MapViewMode>('estado')
+  const geoJsonRef = useRef<LeafletGeoJSON | null>(null)
+  const styleFeatureRef = useRef<(feature?: Feature, hover?: boolean) => PathOptions>(() => ({}))
+  const tooltipStateRef = useRef({ viewMode, heat: { perHa: new Map<string, number>(), maxVal: 0 } })
 
   const tareasParaEstado = useMemo(() => {
     const source = allTareas ?? tareas
@@ -267,64 +308,38 @@ export default function VineyardMap({
     [estadoPorCuadroColor, viewMode, rendimientoHeatData]
   )
 
-  // Tooltip y click en cada feature.
-  const onEachFeature = (feature: Feature, layer: Layer) => {
-    const props = feature.properties as CuadroFeatureProps
-    const cuadro = getCuadroDetalleById(props.name)
-    const variedad = cuadro?.variedad ?? '—'
-    const has = cuadro ? formatHectareas(cuadro.hectareas) : '—'
+  styleFeatureRef.current = styleFeature
+  tooltipStateRef.current = { viewMode, heat: rendimientoHeatData }
 
-    let tooltipHtml: string
-    if (viewMode === 'rendimiento') {
-      const rendHa = rendimientoHeatData.perHa.get(props.name)
-      const rendLabel = rendHa != null ? `${rendHa.toFixed(1)} /ha` : 'Sin datos'
-      tooltipHtml = `
-        <div style="font-size:12px;line-height:1.35">
-          <strong>${cuadro?.nombre ?? props.name}</strong><br/>
-          Rendimiento: ${rendLabel}<br/>
-          ${variedad} · ${has}
-        </div>
-      `
-    } else {
-      tooltipHtml = `
-        <div style="font-size:12px;line-height:1.35">
-          <strong>${cuadro?.nombre ?? props.name}</strong><br/>
-          ${variedad} · ${has}
-        </div>
-      `
-    }
-    layer.bindTooltip(tooltipHtml, { sticky: true, direction: 'top' })
+  const onEachFeature = useCallback((feature: Feature, layer: Layer) => {
+    const { viewMode: mode, heat } = tooltipStateRef.current
+    bindCuadroTooltip(layer, feature, mode, heat)
 
     layer.on('click', () => {
       setSeleccionado(feature as CuadroFeature)
     })
 
-    const path = layer as L.Path
-    path.setStyle(styleFeature(feature))
-
     layer.on('mouseover', (e) => {
       const target = e.target as L.Path
-      target.setStyle(styleFeature(feature, true))
+      target.setStyle(styleFeatureRef.current(feature, true))
       target.bringToFront()
     })
 
     layer.on('mouseout', (e) => {
       const target = e.target as L.Path
-      target.setStyle(styleFeature(feature))
+      target.setStyle(styleFeatureRef.current(feature))
     })
-  }
+  }, [])
 
-  // Forzamos re-render del GeoJSON cuando cambia el set de features o el estado.
-  const geoKey = useMemo(() => {
-    const marcados = Array.from(estadoPorCuadroColor.entries())
-      .map(
-        ([k, v]) =>
-          `${k}:${v.multiplesLabores ? 'm' : ''}${v.pendiente ? 'p' : ''}${v.cuadroFinalizado ? 'f' : ''}`,
-      )
-      .sort()
-      .join(',')
-    return `${filtroFinca}|${filtroTarea}|${features.length}|${marcados}|${viewMode}`
-  }, [filtroFinca, filtroTarea, features, estadoPorCuadroColor, viewMode])
+  useEffect(() => {
+    const group = geoJsonRef.current
+    if (!group) return
+    group.eachLayer(layer => {
+      const feature = (layer as Layer & { feature?: Feature }).feature
+      if (!feature) return
+      bindCuadroTooltip(layer, feature, viewMode, rendimientoHeatData)
+    })
+  }, [viewMode, rendimientoHeatData, filtroFinca])
 
   const detallesSeleccion = useMemo(() => {
     if (!seleccionado) return null
@@ -364,7 +379,8 @@ export default function VineyardMap({
           </LayersControl>
 
           <GeoJSON
-            key={geoKey}
+            ref={geoJsonRef}
+            key={filtroFinca}
             data={geoJsonData}
             style={styleFeature}
             onEachFeature={onEachFeature}

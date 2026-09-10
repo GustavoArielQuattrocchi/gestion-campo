@@ -39,9 +39,8 @@ export default defineConfig({
           if (id.includes('node_modules/leaflet') || id.includes('node_modules/react-leaflet')) {
             return 'vendor-leaflet'
           }
-          if (id.includes('node_modules/jspdf') || id.includes('node_modules/html2canvas')) {
-            return 'vendor-pdf'
-          }
+          // jsPDF no va en manualChunks: import() dinámico + chunk forzado
+          // atrapa el helper de preload de Vite y arrastra ~600 kB al bundle inicial.
           if (id.includes('node_modules/firebase')) {
             return 'vendor-firebase'
           }

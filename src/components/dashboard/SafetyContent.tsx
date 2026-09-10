@@ -30,9 +30,9 @@ interface Props {
   fincasDisponibles: string[]
 }
 
-function downloadInformePdf(informe: InformeAccidenteCompleto) {
+async function downloadInformePdf(informe: InformeAccidenteCompleto) {
   const fecha = informe.creadoEn.toDate()
-  const blob = buildAccidentReportPdf({
+  const blob = await buildAccidentReportPdf({
     operador: informe.operador,
     fincaNombre: informe.fincaNombre,
     tipo: informe.tipo,
@@ -251,7 +251,7 @@ export default function SafetyContent({
                     <button
                       type="button"
                       className="btn-ghost safety-pdf-btn"
-                      onClick={() => downloadInformePdf(informe)}
+                      onClick={() => void downloadInformePdf(informe)}
                     >
                       <Download size={14} /> Descargar PDF
                     </button>

@@ -1,4 +1,4 @@
-import { jsPDF } from 'jspdf'
+import type { jsPDF } from 'jspdf'
 import type { OrdenCuraWithItems } from '../types'
 
 export interface OrdenExport {
@@ -42,6 +42,11 @@ const PAGE_W = 210
 const MARGIN = 14
 const CONTENT_W = PAGE_W - MARGIN * 2
 const FOOTER_Y = 287
+
+async function loadJsPdf() {
+  const { jsPDF: JsPdf } = await import('jspdf')
+  return JsPdf
+}
 
 const TABLE_COLS = [
   { key: 'producto', label: 'Producto', w: 42 },
@@ -281,8 +286,9 @@ function drawIndicaciones(pdf: jsPDF, orden: OrdenExport, y: number): number {
 }
 
 /** Genera el documento PDF con diseño actualizado. */
-export function buildOrdenPdf(orden: OrdenExport, items: ItemExport[]): jsPDF {
-  const pdf = new jsPDF({ unit: 'mm', format: 'a4' })
+export async function buildOrdenPdf(orden: OrdenExport, items: ItemExport[]): Promise<jsPDF> {
+  const JsPdf = await loadJsPdf()
+  const pdf = new JsPdf({ unit: 'mm', format: 'a4' })
   const productItems = items.filter(
     item => item.producto.trim() || item.ia.trim() || item.dosis_ha.trim(),
   )
@@ -335,13 +341,15 @@ export function buildOrdenPdf(orden: OrdenExport, items: ItemExport[]): jsPDF {
 }
 
 /** Devuelve el PDF como Blob (para previsualización). */
-export function createOrdenPdfBlob(orden: OrdenExport, items: ItemExport[]): Blob {
-  return buildOrdenPdf(orden, items).output('blob')
+export async function createOrdenPdfBlob(orden: OrdenExport, items: ItemExport[]): Promise<Blob> {
+  const pdf = await buildOrdenPdf(orden, items)
+  return pdf.output('blob')
 }
 
 /** Descarga el PDF al dispositivo. */
-export function downloadOrdenPdf(orden: OrdenExport, items: ItemExport[]): void {
-  buildOrdenPdf(orden, items).save(`${safeName(orden.oc)}.pdf`)
+export async function downloadOrdenPdf(orden: OrdenExport, items: ItemExport[]): Promise<void> {
+  const pdf = await buildOrdenPdf(orden, items)
+  pdf.save(`${safeName(orden.oc)}.pdf`)
 }
 
 /** Descarga un blob de PDF ya generado. */

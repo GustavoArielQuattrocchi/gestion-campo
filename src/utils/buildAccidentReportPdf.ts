@@ -1,4 +1,4 @@
-import { jsPDF } from 'jspdf'
+import type { jsPDF } from 'jspdf'
 import {
   NATURALEZAS_LESION,
   PARTES_CUERPO,
@@ -41,8 +41,9 @@ export function downloadBlob(blob: Blob, fileName: string) {
   URL.revokeObjectURL(url)
 }
 
-export function buildAccidentReportPdf(input: AccidentReportPdfInput): Blob {
-  const doc = new jsPDF()
+export async function buildAccidentReportPdf(input: AccidentReportPdfInput): Promise<Blob> {
+  const { jsPDF: JsPdf } = await import('jspdf')
+  const doc: jsPDF = new JsPdf()
   const fechaStr = input.fecha.toLocaleDateString('es-AR', {
     day: '2-digit', month: '2-digit', year: 'numeric',
     hour: '2-digit', minute: '2-digit',

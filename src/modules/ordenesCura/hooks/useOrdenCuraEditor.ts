@@ -420,9 +420,9 @@ export function useOrdenCuraEditor() {
     })
   }, [])
 
-  const exportarPdf = useCallback(() => {
+  const exportarPdf = useCallback(async () => {
     const data = buildExport()
-    mostrarPdf(createOrdenPdfBlob(data.orden, data.items), data.orden.oc)
+    mostrarPdf(await createOrdenPdfBlob(data.orden, data.items), data.orden.oc)
   }, [buildExport, mostrarPdf])
 
   const vistaPdfOrden = useCallback(async (ordenId: string) => {
@@ -430,7 +430,7 @@ export function useOrdenCuraEditor() {
     try {
       const orden = await getOrdenById(ordenId)
       const data = ordenGuardadaToExport(orden)
-      mostrarPdf(createOrdenPdfBlob(data.orden, data.items), data.orden.oc)
+      mostrarPdf(await createOrdenPdfBlob(data.orden, data.items), data.orden.oc)
     } catch (err) {
       console.error('[OrdenesCura] Error al generar PDF:', err)
       setBanner({ type: 'error', text: 'No se pudo generar el PDF de esa orden.' })
@@ -446,13 +446,13 @@ export function useOrdenCuraEditor() {
     })
   }, [])
 
-  const descargarPdf = useCallback(() => {
+  const descargarPdf = useCallback(async () => {
     if (pdfPreview) {
       downloadPdfBlob(pdfPreview.blob, pdfPreview.oc)
       return
     }
     const data = buildExport()
-    downloadPdfBlob(createOrdenPdfBlob(data.orden, data.items), data.orden.oc)
+    downloadPdfBlob(await createOrdenPdfBlob(data.orden, data.items), data.orden.oc)
   }, [pdfPreview, buildExport])
 
   useEffect(() => {
