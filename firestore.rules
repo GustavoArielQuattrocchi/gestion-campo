@@ -226,7 +226,7 @@ service cloud.firestore {
     }
 
     match /informes_accidente/{informeId} {
-      allow read: if isSignedIn();
+      allow read: if esAdmin();
       allow create: if operadorRegistrado()
         && request.resource.data.operador == nombreOperadorAutenticado()
         && request.resource.data.fincaId is string
@@ -387,8 +387,7 @@ service cloud.firestore {
     }
 
     match /catalogoProductos/{productoId} {
-      allow read, create, delete: if isSignedIn();
-      allow update: if isSignedIn();
+      allow read, create, update, delete: if esAdmin();
     }
   }
 }
