@@ -62,7 +62,9 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
     readFilterParam(searchParams, 'estado', 'todos', new Set(['todos', 'en_progreso', 'finalizada'])),
   )
   const [filtroTareaMapa, setFiltroTareaMapa] = useState(() => searchParams.get('tarea') ?? 'todas')
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(
+    () => typeof window === 'undefined' || window.innerWidth > 768,
+  )
   const [panelsOpen, setPanelsOpen] = useState<Record<DashboardPanelKey, boolean>>({
     resumen: true,
     filtros: true,

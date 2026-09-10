@@ -129,3 +129,24 @@
 .af-diff-down .af-diff-value {
   color: #1e40af;
 }
+
+@media (max-width: 640px) {
+  .af-meta,
+  .af-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .af-kpi strong {
+    font-size: 18px;
+  }
+
+  .af-save {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .af-save .oc-btn {
+    width: 100%;
+    min-height: var(--touch-min);
+  }
+}

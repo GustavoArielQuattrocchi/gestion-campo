@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import AdminGate from './components/auth/AdminGate'
+import PwaUpdateBanner from './components/pwa/PwaUpdateBanner'
 import { lazyWithRetry } from './utils/lazyWithRetry'
 
 const MobileApp = lazyWithRetry(() => import('./pages/MobileApp'), 'mobile')
@@ -31,36 +32,39 @@ function RouteFallback() {
 
 export default function App() {
   return (
-    <Suspense fallback={<RouteFallback />}>
-      <Routes>
-        <Route path="/" element={<Navigate to="/campo" replace />} />
-        <Route path="/campo/*" element={<MobileApp />} />
-        <Route
-          path="/escritorio"
-          element={
-            <AdminGate>
-              <Dashboard />
-            </AdminGate>
-          }
-        />
-        <Route
-          path="/ordenes-de-cura"
-          element={
-            <AdminGate>
-              <OrdenesCuraPage />
-            </AdminGate>
-          }
-        />
-        <Route
-          path="/aplicaciones-fitosanitarias"
-          element={
-            <AdminGate>
-              <AplicacionesFitosanitariasPage />
-            </AdminGate>
-          }
-        />
-        <Route path="/cuadro/:fincaId/:cuadroId" element={<CuadroPublicPage />} />
-      </Routes>
-    </Suspense>
+    <>
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/campo" replace />} />
+          <Route path="/campo/*" element={<MobileApp />} />
+          <Route
+            path="/escritorio"
+            element={
+              <AdminGate>
+                <Dashboard />
+              </AdminGate>
+            }
+          />
+          <Route
+            path="/ordenes-de-cura"
+            element={
+              <AdminGate>
+                <OrdenesCuraPage />
+              </AdminGate>
+            }
+          />
+          <Route
+            path="/aplicaciones-fitosanitarias"
+            element={
+              <AdminGate>
+                <AplicacionesFitosanitariasPage />
+              </AdminGate>
+            }
+          />
+          <Route path="/cuadro/:fincaId/:cuadroId" element={<CuadroPublicPage />} />
+        </Routes>
+      </Suspense>
+      <PwaUpdateBanner />
+    </>
   )
 }

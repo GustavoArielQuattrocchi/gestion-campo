@@ -52,6 +52,20 @@ describe('gastoProducto y dosisRealHa', () => {
 })
 
 describe('calcularTurno', () => {
+  it('redondea ha, gasto y dosis real a 1 decimal', () => {
+    const result = calcularTurno(
+      100,
+      400,
+      [{ cuadroId: 'a', nombre: 'A', hileras: 7, canopia_hil: 150, canopia_ha: 4000 }],
+      [{ producto: 'Cobre', ia: '', presentacion: 'L', dosisHa: 1.33, dosisMaquinada: '' }],
+    )
+
+    assert.equal(result.cuadros[0]?.haEstimada, 0.3)
+    assert.equal(result.haTotal, 0.3)
+    assert.equal(result.productos[0]?.gasto, 0.3)
+    assert.equal(result.productos[0]?.dosisRealHa, 1)
+  })
+
   it('suma ha de varios cuadros y calcula gasto y dosis real', () => {
     const result = calcularTurno(
       800,
@@ -120,14 +134,26 @@ describe('acumularGastoProductos', () => {
   })
 })
 
+describe('formatCantidad', () => {
+  it('fija un decimal con redondeo', () => {
+    const one = { minimumFractionDigits: 1, maximumFractionDigits: 1 } as const
+    assert.equal(formatCantidad(1.66), (1.7).toLocaleString('es-AR', one))
+    assert.equal(formatCantidad(12), (12).toLocaleString('es-AR', one))
+    assert.equal(formatCantidad(null), '—')
+  })
+})
+
 describe('diferenciaDosis', () => {
   it('resta receta de real y formatea con signo y unidad', () => {
     assert.equal(diferenciaDosis(2.5, 2), 0.5)
     assert.equal(diferenciaDosis(1.5, 2), -0.5)
+    assert.equal(diferenciaDosis(2.14, 2), 0.1)
     assert.equal(formatDiferenciaDosis(0.5, 'L'), `+${formatCantidad(0.5)} L`)
     assert.equal(formatDiferenciaDosis(-0.5, 'kg'), `-${formatCantidad(0.5)} kg`)
     assert.equal(hayDiferenciaDosis(0.5), true)
     assert.equal(hayDiferenciaDosis(0), false)
+    assert.equal(hayDiferenciaDosis(0.04), false)
+    assert.equal(formatDiferenciaDosis(0.04, 'L'), '0')
     assert.equal(diferenciaDosis(null, 2), null)
   })
 })

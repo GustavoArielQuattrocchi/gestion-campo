@@ -170,6 +170,15 @@ export default function Dashboard() {
         />
       )}
 
+      {sidebarOpen ? (
+        <button
+          type="button"
+          className="dashboard-sidebar-backdrop"
+          aria-label="Cerrar panel"
+          onClick={() => setSidebarOpen(false)}
+        />
+      ) : null}
+
       <DashboardSidebar
         open={sidebarOpen}
         loading={loading}

@@ -12,10 +12,17 @@ export function catalogFincaFromOc(ocFinca: string): string {
   return OC_FINCA_A_CATALOGO[key] ?? key
 }
 
+/** Decimales de ha, gasto, dosis real y diferencias en aplicaciones. */
+export const CALC_DECIMALS = 1
+
 export function roundTo(value: number, decimals: number): number {
   if (!Number.isFinite(value)) return value
   const factor = 10 ** decimals
   return Math.round((value + Number.EPSILON) * factor) / factor
+}
+
+function roundCalc(value: number): number {
+  return roundTo(value, CALC_DECIMALS)
 }
 
 /**
@@ -111,14 +118,13 @@ export function calcularTurno(
     }
     return {
       ...cuadro,
-      haEstimada: ha === null ? null : roundTo(ha, 4),
+      haEstimada: ha === null ? null : roundCalc(ha),
       omitido: ha === null,
     }
   })
 
-  const haTotal = roundTo(
+  const haTotal = roundCalc(
     cuadrosCalc.reduce((sum, cuadro) => sum + (cuadro.haEstimada ?? 0), 0),
-    4,
   )
 
   if (cuadros.some(c => c.hileras > 0) && haTotal <= 0) {
@@ -138,7 +144,7 @@ export function calcularTurno(
       producto.dosisHa === null
         ? null
         : gastoProducto(producto.dosisHa, volumenLitros, volAplicacion)
-    const gastoRedondeado = gasto === null ? null : roundTo(gasto, 4)
+    const gastoRedondeado = gasto === null ? null : roundCalc(gasto)
     const dosisReal =
       gastoRedondeado === null ? null : dosisRealHa(gastoRedondeado, haTotal)
     if (producto.producto && producto.dosisHa === null) {
@@ -151,7 +157,7 @@ export function calcularTurno(
       dosisHaReceta: producto.dosisHa,
       dosisMaquinada: producto.dosisMaquinada,
       gasto: gastoRedondeado,
-      dosisRealHa: dosisReal === null ? null : roundTo(dosisReal, 4),
+      dosisRealHa: dosisReal === null ? null : roundCalc(dosisReal),
     }
   })
 
@@ -163,20 +169,21 @@ export function calcularTurno(
   }
 }
 
-export function formatCantidad(value: number | null, maxDecimals = 3): string {
+export function formatCantidad(value: number | null, decimals = CALC_DECIMALS): string {
   if (value === null || !Number.isFinite(value)) return '—'
-  return value.toLocaleString('es-AR', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: maxDecimals,
+  const rounded = roundTo(value, decimals)
+  return rounded.toLocaleString('es-AR', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
   })
 }
 
 export function formatCantidadConUnidad(
   value: number | null,
   presentacion: string,
-  maxDecimals = 3,
+  decimals = CALC_DECIMALS,
 ): string {
-  const n = formatCantidad(value, maxDecimals)
+  const n = formatCantidad(value, decimals)
   if (n === '—') return n
   const unidad = presentacion.trim()
   return unidad ? `${n} ${unidad}` : n
@@ -189,11 +196,11 @@ export function diferenciaDosis(
 ): number | null {
   if (dosisReal === null || dosisReceta === null) return null
   if (!Number.isFinite(dosisReal) || !Number.isFinite(dosisReceta)) return null
-  return roundTo(dosisReal - dosisReceta, 4)
+  return roundCalc(dosisReal - dosisReceta)
 }
 
-/** True si la diferencia se ve en pantalla (3 decimales). */
-export function hayDiferenciaDosis(diff: number | null, decimals = 3): boolean {
+/** True si la diferencia se ve en pantalla (1 decimal). */
+export function hayDiferenciaDosis(diff: number | null, decimals = CALC_DECIMALS): boolean {
   if (diff === null || !Number.isFinite(diff)) return false
   return roundTo(Math.abs(diff), decimals) > 0
 }
@@ -201,11 +208,11 @@ export function hayDiferenciaDosis(diff: number | null, decimals = 3): boolean {
 export function formatDiferenciaDosis(
   diff: number | null,
   presentacion: string,
-  maxDecimals = 3,
+  decimals = CALC_DECIMALS,
 ): string {
   if (diff === null || !Number.isFinite(diff)) return '—'
-  if (!hayDiferenciaDosis(diff, maxDecimals)) return '0'
-  const n = formatCantidad(Math.abs(diff), maxDecimals)
+  if (!hayDiferenciaDosis(diff, decimals)) return '0'
+  const n = formatCantidad(Math.abs(diff), decimals)
   const signed = diff > 0 ? `+${n}` : `-${n}`
   const unidad = presentacion.trim()
   return unidad ? `${signed} ${unidad}` : signed
@@ -233,12 +240,12 @@ export function acumularGastoProductos(
       const key = `${nombre.toLowerCase()}|${unidad.toLowerCase()}`
       const prev = map.get(key)
       if (prev) {
-        prev.gasto = roundTo(prev.gasto + producto.gasto, 4)
+        prev.gasto = roundCalc(prev.gasto + producto.gasto)
       } else {
         map.set(key, {
           producto: nombre,
           presentacion: unidad,
-          gasto: roundTo(producto.gasto, 4),
+          gasto: roundCalc(producto.gasto),
         })
       }
     }
