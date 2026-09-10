@@ -270,10 +270,21 @@ export function useDashboardTareas(allPartes: ParteDeLabores[] = []) {
   )
 
   const deshacerFinalizacionCuadro = useCallback(
-    (tareaId: string, cuadroId: string) =>
-      runTareaUpdate(tareaId, { cuadroIdsFinalizados: arrayRemove(cuadroId) },
-        'No se pudo desmarcar el cuadro. Revisá la conexión y las reglas de Firestore.'),
-    [runTareaUpdate],
+    (tareaId: string, cuadroId: string) => {
+      const tarea = allTareas.find(t => t.id === tareaId)
+      const remaining = (tarea?.cuadroFinalizaciones ?? [])
+        .filter(entry => entry.cuadroId !== cuadroId)
+        .map(entry => ({
+          cuadroId: entry.cuadroId,
+          fecha: entry.fecha,
+          operador: entry.operador,
+        }))
+      return runTareaUpdate(tareaId, {
+        cuadroIdsFinalizados: arrayRemove(cuadroId),
+        cuadroFinalizaciones: remaining,
+      }, 'No se pudo desmarcar el cuadro. Revisá la conexión y las reglas de Firestore.')
+    },
+    [runTareaUpdate, allTareas],
   )
 
   const finalizarTarea = useCallback(async (tareaId: string) => {

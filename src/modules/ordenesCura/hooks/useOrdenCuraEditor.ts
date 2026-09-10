@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Timestamp } from 'firebase/firestore'
 import { useAuth } from '../../../providers/AuthProvider'
 import {
@@ -6,8 +6,7 @@ import {
   deleteOrden,
   getOrdenById,
   getOrdenes,
-  replaceOrdenItems,
-  updateOrden,
+  updateOrdenConItems,
 } from '../services/ordenesCuraService'
 import {
   deleteProducto,
@@ -120,6 +119,7 @@ export function useOrdenCuraEditor() {
   const [catalogoOpen, setCatalogoOpen] = useState(false)
   const [pdfPreview, setPdfPreview] = useState<{ url: string; oc: string; blob: Blob } | null>(null)
   const [saving, setSaving] = useState(false)
+  const savingRef = useRef(false)
   const [readOnly, setReadOnly] = useState(false)
   const [busyPdfId, setBusyPdfId] = useState<string | null>(null)
   const [banner, setBanner] = useState<Banner>(null)
@@ -270,7 +270,7 @@ export function useOrdenCuraEditor() {
   }, [form, items])
 
   const guardar = useCallback(async () => {
-    if (readOnly) return
+    if (readOnly || savingRef.current) return
     if (!userId) {
       setBanner({ type: 'error', text: 'No hay sesión activa de Firebase.' })
       return
@@ -280,6 +280,7 @@ export function useOrdenCuraEditor() {
       return
     }
 
+    savingRef.current = true
     setSaving(true)
     try {
       const data: OrdenCuraCreate = {
@@ -313,8 +314,7 @@ export function useOrdenCuraEditor() {
         }))
 
       if (form.id) {
-        await updateOrden(form.id, data)
-        await replaceOrdenItems(form.id, itemPayload)
+        await updateOrdenConItems(form.id, data, itemPayload)
       } else {
         const newId = await createOrden(data, itemPayload)
         setForm(prev => ({ ...prev, id: newId }))
@@ -335,6 +335,7 @@ export function useOrdenCuraEditor() {
       console.error('[OrdenesCura] Error al guardar:', err)
       setBanner({ type: 'error', text: 'No se pudo guardar la orden. Revisá la conexión y las reglas de Firestore.' })
     } finally {
+      savingRef.current = false
       setSaving(false)
     }
   }, [readOnly, userId, user?.email, form, items, refreshOrdenes, refreshCatalogo])

@@ -33,12 +33,19 @@ export default function ParteWeather({ parte }: Props) {
     let cancelled = false
     setLoading(true)
     const fecha = parteFechaClima(parte)
-    fetchWeatherForDate(parte.fincaId, fecha, parte.fincaNombre).then(data => {
-      if (!cancelled) {
-        setFetched(data)
-        setLoading(false)
-      }
-    })
+    fetchWeatherForDate(parte.fincaId, fecha, parte.fincaNombre)
+      .then(data => {
+        if (!cancelled) {
+          setFetched(data)
+          setLoading(false)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setFetched(null)
+          setLoading(false)
+        }
+      })
 
     return () => {
       cancelled = true

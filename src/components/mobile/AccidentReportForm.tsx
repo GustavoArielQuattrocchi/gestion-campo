@@ -142,6 +142,7 @@ export default function AccidentReportForm({
   const [tarea, setTarea] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState('')
+  const informeGuardadoRef = useRef(false)
 
   const buildInput = (): AccidentReportInput => ({
     operador: operadorNombre,
@@ -256,8 +257,10 @@ export default function AccidentReportForm({
   }
 
   const guardarEnFirestore = async (): Promise<boolean> => {
+    if (informeGuardadoRef.current) return true
     try {
       await saveAccidentReport(buildInput())
+      informeGuardadoRef.current = true
       if (!navigator.onLine) {
         showToast('Informe guardado en el dispositivo. Se sincronizará al recuperar señal.', 'info')
       } else {
@@ -308,6 +311,7 @@ export default function AccidentReportForm({
   }
 
   const compartirWhatsApp = async () => {
+    if (enviando) return
     if (!validarFormulario()) return
 
     setEnviando(true)
@@ -325,13 +329,23 @@ export default function AccidentReportForm({
   }
 
   const descargarPDF = async (blob?: Blob, nombre?: string) => {
+    if (enviando) return
     if (!validarFormulario()) return
 
-    await guardarEnFirestore()
-    const pdfBlob = blob ?? generarPDFBlob()
-    const fileName = nombre ?? accidentReportFileName(fincaNombreSel, new Date(), afectadoDni)
-    downloadBlob(pdfBlob, fileName)
-    onSuccess('El PDF se descargó y el informe quedó registrado.')
+    setEnviando(true)
+    setError('')
+    try {
+      await guardarEnFirestore()
+      const pdfBlob = blob ?? generarPDFBlob()
+      const fileName = nombre ?? accidentReportFileName(fincaNombreSel, new Date(), afectadoDni)
+      downloadBlob(pdfBlob, fileName)
+      onSuccess('El PDF se descargó y el informe quedó registrado.')
+    } catch (err) {
+      console.error('Error al descargar PDF:', err)
+      setError('No se pudo generar el PDF. El informe puede estar guardado; no hace falta cargarlo de nuevo.')
+    } finally {
+      setEnviando(false)
+    }
   }
 
   const formularioValido = validateAccidentReport(buildInput()).success
@@ -599,8 +613,8 @@ export default function AccidentReportForm({
         <button
           className="btn btn-secondary"
           onClick={() => descargarPDF()}
-          disabled={!formularioValido}
-          style={{ opacity: formularioValido ? 1 : 0.5 }}
+          disabled={!formularioValido || enviando}
+          style={{ opacity: formularioValido && !enviando ? 1 : 0.5 }}
         >
           <Download size={18} /> Solo descargar PDF
         </button>

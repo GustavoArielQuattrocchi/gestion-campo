@@ -127,7 +127,13 @@ export default function AdminGate({ children }: { children: ReactNode }) {
           <button className="btn btn-primary" onClick={handleResend} disabled={busy}>
             <RefreshCw size={16} /> {busy ? 'Enviando…' : 'Reenviar verificación'}
           </button>
-          <button className="admin-gate-link" onClick={() => logout()} disabled={busy}>
+          <button
+            className="admin-gate-link"
+            onClick={() => {
+              void logout().catch(err => setError(mapAuthError(err)))
+            }}
+            disabled={busy}
+          >
             Usar otra cuenta
           </button>
         </div>
@@ -147,7 +153,13 @@ export default function AdminGate({ children }: { children: ReactNode }) {
             La cuenta <strong>{user?.email}</strong> no pertenece al dominio autorizado
             (@{ADMIN_EMAIL_DOMAIN}).
           </p>
-          <button className="btn btn-primary" onClick={() => logout()} disabled={busy}>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              void logout().catch(err => setError(mapAuthError(err)))
+            }}
+            disabled={busy}
+          >
             Usar otra cuenta
           </button>
         </div>

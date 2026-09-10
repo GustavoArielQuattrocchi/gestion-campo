@@ -133,6 +133,42 @@ export async function createOrden(
   return ordenRef.id
 }
 
+/**
+ * Actualiza la cabecera y reemplaza los items en un único batch.
+ * Evita dejar la orden a medias si falla el segundo write.
+ */
+export async function updateOrdenConItems(
+  ordenId: string,
+  data: Partial<OrdenCura>,
+  items: OrderItem[],
+): Promise<void> {
+  const existing = await getDocs(itemsRef(ordenId))
+  const {
+    id: _id,
+    created_at: _createdAt,
+    owner_id: _ownerId,
+    owner_email: _ownerEmail,
+    ...rest
+  } = data
+  void _id
+  void _createdAt
+  void _ownerId
+  void _ownerEmail
+
+  const batch = writeBatch(db)
+  batch.update(doc(db, ORDENES_COLLECTION, ordenId), {
+    ...rest,
+    updated_at: Timestamp.now(),
+  })
+  for (const itemDoc of existing.docs) {
+    batch.delete(itemDoc.ref)
+  }
+  for (const item of items) {
+    batch.set(doc(itemsRef(ordenId)), itemToData(item))
+  }
+  await batch.commit()
+}
+
 /** Actualiza campos de una orden (no toca `id` ni `created_at`). */
 export async function updateOrden(
   ordenId: string,

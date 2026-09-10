@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import { useLocation } from 'react-router-dom'
 import {
   onAuthStateChanged,
   signInAnonymously,
@@ -27,8 +28,7 @@ export function isAdminUser(user: User | null): boolean {
   )
 }
 
-function isAdminRoute(): boolean {
-  const path = window.location.pathname
+function isAdminPath(path: string): boolean {
   return (
     path.startsWith('/escritorio')
     || path.startsWith('/ordenes-de-cura')
@@ -61,6 +61,8 @@ const AuthContext = createContext<AuthContextValue>({
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const location = useLocation()
+  const onAdminRoute = isAdminPath(location.pathname)
   const [state, setState] = useState<{ user: User | null; ready: boolean; error: string | null }>({
     user: null,
     ready: false,
@@ -103,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      if (isAdminRoute()) {
+      if (isAdminPath(window.location.pathname)) {
         setState({ user: null, ready: true, error: null })
         return
       }
@@ -171,7 +173,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     )
   }
 
-  if (state.error) {
+  // Un fallo del anónimo (Campo) no debe impedir el login de Escritorio.
+  if (state.error && !onAdminRoute) {
     return (
       <div className="auth-shell auth-shell--error">
         <p>{state.error}</p>

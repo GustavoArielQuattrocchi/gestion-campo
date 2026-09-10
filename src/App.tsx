@@ -62,6 +62,7 @@ export default function App() {
             }
           />
           <Route path="/cuadro/:fincaId/:cuadroId" element={<CuadroPublicPage />} />
+          <Route path="*" element={<Navigate to="/campo" replace />} />
         </Routes>
       </Suspense>
       <PwaUpdateBanner />

@@ -69,7 +69,6 @@ import {
   ejecutorKeyFromTareaOrOverride,
   findParteAbiertoParaEjecutor,
   resolveCerradoEn,
-  tieneParteAbiertoParaEjecutor,
 } from '../utils/parteEstado'
 
 function initialSessionState() {
@@ -184,6 +183,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
 
   const partesAbiertosRef = useRef(partesAbiertos)
   partesAbiertosRef.current = partesAbiertos
+  const openingParteByKeyRef = useRef(new Map<string, Promise<string | null>>())
 
   const abrirParteDeLabores = useCallback(async (
     tarea: Tarea,
@@ -191,14 +191,27 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     scope?: ParteCuadrosScope,
   ): Promise<string | null> => {
     const key = ejecutorKeyFromTareaOrOverride(tarea, ejecutor)
-    if (tieneParteAbiertoParaEjecutor(partesAbiertosRef.current, tarea.id, key)) {
-      return findParteAbiertoParaEjecutor(partesAbiertosRef.current, tarea.id, key)?.id ?? null
-    }
-    const docRef = await addDoc(
-      collection(db, 'partes_labores'),
-      buildParteAbiertoPayload(tarea, operadorNombre, Timestamp.now(), ejecutor, scope),
-    )
-    return docRef.id
+    const lockKey = `${tarea.id}:${key}`
+    const existente = findParteAbiertoParaEjecutor(partesAbiertosRef.current, tarea.id, key)
+    if (existente) return existente.id
+
+    const inflight = openingParteByKeyRef.current.get(lockKey)
+    if (inflight) return inflight
+
+    const promise = (async () => {
+      const stillOpen = findParteAbiertoParaEjecutor(partesAbiertosRef.current, tarea.id, key)
+      if (stillOpen) return stillOpen.id
+      const docRef = await addDoc(
+        collection(db, 'partes_labores'),
+        buildParteAbiertoPayload(tarea, operadorNombre, Timestamp.now(), ejecutor, scope),
+      )
+      return docRef.id
+    })().finally(() => {
+      openingParteByKeyRef.current.delete(lockKey)
+    })
+
+    openingParteByKeyRef.current.set(lockKey, promise)
+    return promise
   }, [operadorNombre])
 
   useEffect(() => {
@@ -372,9 +385,10 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
 
     submittingRef.current = true
     try {
-      const docRef = await addDoc(collection(db, 'tareas'), payload)
+      const tareaRef = doc(collection(db, 'tareas'))
+      const parteRef = doc(collection(db, 'partes_labores'))
       const nuevaTarea: Tarea = {
-        id: docRef.id,
+        id: tareaRef.id,
         fincaId,
         fincaNombre,
         tipo: 'manual',
@@ -389,14 +403,22 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         fechaInicio: payload.fechaInicio,
       }
       const origen = origenFromCuadrilla(validated.data.cuadrilla)
-      const parteId = await abrirParteDeLabores(nuevaTarea, {
+      const ejecutor = {
         cuadrilla: validated.data.cuadrilla,
         cantidadPersonas: validated.data.cantidadPersonas,
         responsable,
         origenEjecucion: origen,
-      })
+      }
+      const batch = writeBatch(db)
+      batch.set(tareaRef, payload)
+      batch.set(
+        parteRef,
+        buildParteAbiertoPayload(nuevaTarea, operadorNombre, Timestamp.now(), ejecutor),
+      )
+      await batch.commit()
+      const parteId = parteRef.id
       setFirestoreError(null)
-      setLastCreatedTareaId(docRef.id)
+      setLastCreatedTareaId(tareaRef.id)
       setLastCreatedParteId(parteId)
       setSuccessMsg({
         message: 'Parte de labores abierto',
@@ -415,7 +437,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     } finally {
       submittingRef.current = false
     }
-  }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync, navigate, abrirParteDeLabores])
+  }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync, navigate])
 
   const handleStartMechanicalTask = useCallback(async (data: {
     tarea: string
@@ -450,9 +472,10 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
 
     submittingRef.current = true
     try {
-      const docRef = await addDoc(collection(db, 'tareas'), payload)
+      const tareaRef = doc(collection(db, 'tareas'))
+      const parteRef = doc(collection(db, 'partes_labores'))
       const nuevaTarea: Tarea = {
-        id: docRef.id,
+        id: tareaRef.id,
         fincaId,
         fincaNombre,
         tipo: 'mecanica',
@@ -469,16 +492,24 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         operador: operadorNombre.trim(),
         fechaInicio: payload.fechaInicio,
       }
-      const parteId = await abrirParteDeLabores(nuevaTarea, {
+      const ejecutor = {
         persona: validated.data.persona,
         maquinaria: validated.data.maquinaria,
         maquinariaModelo: validated.data.maquinariaModelo,
         maquinariaId: validated.data.maquinariaId,
         responsable,
         origenEjecucion: data.origenEjecucion,
-      })
+      }
+      const batch = writeBatch(db)
+      batch.set(tareaRef, payload)
+      batch.set(
+        parteRef,
+        buildParteAbiertoPayload(nuevaTarea, operadorNombre, Timestamp.now(), ejecutor),
+      )
+      await batch.commit()
+      const parteId = parteRef.id
       setFirestoreError(null)
-      setLastCreatedTareaId(docRef.id)
+      setLastCreatedTareaId(tareaRef.id)
       setLastCreatedParteId(parteId)
       const origenLabel = data.origenEjecucion === 'externa' ? 'Externa' : 'Propia'
       setSuccessMsg({
@@ -498,7 +529,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     } finally {
       submittingRef.current = false
     }
-  }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync, navigate, abrirParteDeLabores])
+  }, [fincaId, fincaNombre, operadorNombre, showToast, markPendingSync, navigate])
 
   const handleContinueTask = useCallback(async (
     tareaId: string,
