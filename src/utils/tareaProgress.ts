@@ -1,4 +1,4 @@
-import { buildNombreToIdMap } from '../data/mapaData'
+import { buildNombreToIdMap } from '../data/fincaData'
 import { getHectareasCuadro, getTotalHectareasFinca } from '../data/fincaData'
 import type { Tarea } from '../types'
 

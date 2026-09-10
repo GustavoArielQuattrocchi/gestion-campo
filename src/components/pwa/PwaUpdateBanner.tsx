@@ -11,18 +11,25 @@ export default function PwaUpdateBanner() {
     if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return
 
     let cancelled = false
+    const cleanups: Array<() => void> = []
 
     const trackWaiting = (registration: ServiceWorkerRegistration) => {
       if (registration.waiting) setWaiting(registration.waiting)
-      registration.addEventListener('updatefound', () => {
+
+      const onUpdateFound = () => {
         const installing = registration.installing
         if (!installing) return
-        installing.addEventListener('statechange', () => {
+        const onStateChange = () => {
           if (installing.state === 'installed' && navigator.serviceWorker.controller) {
             setWaiting(registration.waiting)
           }
-        })
-      })
+        }
+        installing.addEventListener('statechange', onStateChange)
+        cleanups.push(() => installing.removeEventListener('statechange', onStateChange))
+      }
+
+      registration.addEventListener('updatefound', onUpdateFound)
+      cleanups.push(() => registration.removeEventListener('updatefound', onUpdateFound))
     }
 
     void navigator.serviceWorker.getRegistration().then(registration => {
@@ -34,10 +41,13 @@ export default function PwaUpdateBanner() {
       window.location.reload()
     }
     navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
+    cleanups.push(() => {
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
+    })
 
     return () => {
       cancelled = true
-      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
+      for (const fn of cleanups) fn()
     }
   }, [])
 

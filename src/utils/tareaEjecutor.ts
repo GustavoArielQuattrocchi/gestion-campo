@@ -78,7 +78,7 @@ export function ejecutorLabelFromContinueOptions(
   const modelo = opts.maquinariaModelo?.trim()
   const resp = opts.responsable?.trim()
   const origen = opts.origenEjecucion === 'externa' ? 'Externa' : opts.origenEjecucion === 'propia' ? 'Propia' : null
-  let core = modelo ? `${persona} · ${maquinaria} (${modelo})` : `${persona} · ${maquinaria}`
+  const core = modelo ? `${persona} · ${maquinaria} (${modelo})` : `${persona} · ${maquinaria}`
   if (origen && resp) return `${origen} · ${resp} · ${core}`
   if (resp) return `${resp} · ${core}`
   return core

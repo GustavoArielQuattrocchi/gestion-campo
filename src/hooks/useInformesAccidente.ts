@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { collection, onSnapshot } from 'firebase/firestore'
+import { collection, limit, onSnapshot, orderBy, query } from 'firebase/firestore'
 import { db } from '../firebase'
+import { DASHBOARD_QUERY_LIMIT } from '../utils/firestoreDashboardQueryConfig'
 import {
   parseInformeAccidente,
   type InformeAccidente,
@@ -20,8 +21,13 @@ export function useInformesAccidente(enabled = true) {
     }
 
     setLoading(true)
-    const unsubscribe = onSnapshot(
+    const q = query(
       collection(db, 'informes_accidente'),
+      orderBy('creadoEn', 'desc'),
+      limit(DASHBOARD_QUERY_LIMIT),
+    )
+    const unsubscribe = onSnapshot(
+      q,
       snapshot => {
         const data: InformeAccidente[] = []
         for (const d of snapshot.docs) {

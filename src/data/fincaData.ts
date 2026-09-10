@@ -80,6 +80,15 @@ export function getCuadrosPorFinca(fincaNombre: string): CuadroDetalle[] {
   })
 }
 
+/** Nombre de cuadro (ej. "Cuartel 5") → id de catálogo. Sin GeoJSON. */
+export function buildNombreToIdMap(fincaNombre: string): Map<string, string> {
+  const map = new Map<string, string>()
+  for (const c of getCuadrosPorFinca(fincaNombre)) {
+    map.set(c.nombre, c.id)
+  }
+  return map
+}
+
 export function getCuadroDetalleById(cuadroId: string): CuadroDetalle | null {
   for (const [finca, cuadros] of Object.entries(CATALOGO_UNIFICADO)) {
     const found = cuadros.find(c => c.id === cuadroId)

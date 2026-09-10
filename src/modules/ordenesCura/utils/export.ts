@@ -54,7 +54,7 @@ const TABLE_COLS = [
 
 function safeName(oc: string): string {
   const base = oc.trim() || 'orden-cura'
-  return base.replace(/[^\w\-]+/g, '_')
+  return base.replace(/[^\w-]+/g, '_')
 }
 
 function display(value: string, fallback = '—'): string {

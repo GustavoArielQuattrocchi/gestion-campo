@@ -1,6 +1,7 @@
 import type { FeatureCollection, Feature, Polygon } from 'geojson'
 import mapaVinedos from './mapa_vinedos.json'
-import { getCuadrosPorFinca } from './fincaData'
+
+export { buildNombreToIdMap } from './fincaData'
 
 export interface CuadroFeatureProps {
   name: string
@@ -93,17 +94,4 @@ export function parseDescripcion(description?: string): Record<string, string> {
     if (key && value) result[key] = value
   }
   return result
-}
-
-/**
- * En las tareas guardamos los cuadros por su `nombre` (ej "Cuartel 5"),
- * pero los features del GeoJSON usan el `id` (ej "FOA-5"). Este helper
- * arma el mapeo nombre -> id para una finca dada.
- */
-export function buildNombreToIdMap(fincaNombre: string): Map<string, string> {
-  const map = new Map<string, string>()
-  for (const c of getCuadrosPorFinca(fincaNombre)) {
-    map.set(c.nombre, c.id)
-  }
-  return map
 }

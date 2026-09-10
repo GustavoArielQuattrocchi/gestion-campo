@@ -1,5 +1,5 @@
 import type { Tarea } from '../types'
-import { buildNombreToIdMap } from '../data/mapaData'
+import { buildNombreToIdMap } from '../data/fincaData'
 
 /** IDs de cuadro asociados a una tarea (por id o por nombre legacy). */
 export function getCuadroIdsFromTarea(tarea: Tarea): Set<string> {

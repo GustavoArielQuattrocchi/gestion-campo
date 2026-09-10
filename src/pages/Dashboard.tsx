@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { Clock } from 'lucide-react'
 import MetricDetailModal from '../components/dashboard/MetricDetailModal'
 import DashboardContentModal from '../components/dashboard/DashboardContentModal'
@@ -16,12 +16,13 @@ import { usePartesLabores } from '../hooks/usePartesLabores'
 import { useInformesAccidente } from '../hooks/useInformesAccidente'
 import { applyPartesDashboardFilters } from '../utils/dashboardFilters'
 import { countPartesAbiertosVencidos } from '../utils/parteEstado'
+import { lazyWithRetry } from '../utils/lazyWithRetry'
 
-const EnProgresoContent = lazy(() => import('../components/dashboard/EnProgresoContent'))
-const PartesLaboresContent = lazy(() => import('../components/dashboard/PartesLaboresContent'))
-const DotacionContent = lazy(() => import('../components/dashboard/DotacionContent'))
-const AnalyticsContent = lazy(() => import('../components/dashboard/AnalyticsContent'))
-const SafetyContent = lazy(() => import('../components/dashboard/SafetyContent'))
+const EnProgresoContent = lazyWithRetry(() => import('../components/dashboard/EnProgresoContent'), 'en-progreso')
+const PartesLaboresContent = lazyWithRetry(() => import('../components/dashboard/PartesLaboresContent'), 'partes-labores')
+const DotacionContent = lazyWithRetry(() => import('../components/dashboard/DotacionContent'), 'dotacion')
+const AnalyticsContent = lazyWithRetry(() => import('../components/dashboard/AnalyticsContent'), 'analytics')
+const SafetyContent = lazyWithRetry(() => import('../components/dashboard/SafetyContent'), 'seguridad')
 
 type ContentModalKey = 'en_progreso' | 'partes_labores' | 'dotacion' | 'analytics' | 'seguridad'
 

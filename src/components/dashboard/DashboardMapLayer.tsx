@@ -1,9 +1,10 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { Clock } from 'lucide-react'
+import { lazyWithRetry } from '../../utils/lazyWithRetry'
 import type { Tarea } from '../../types'
 import type { MapRelevamientoActions } from '../../features/mapRelevamiento'
 
-const VineyardMap = lazy(() => import('./VineyardMap'))
+const VineyardMap = lazyWithRetry(() => import('./VineyardMap'), 'vineyard-map')
 
 interface Props {
   tareas: Tarea[]

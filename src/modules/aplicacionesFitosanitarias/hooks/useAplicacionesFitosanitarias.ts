@@ -266,8 +266,10 @@ export function useAplicacionesFitosanitarias() {
     try {
       if (turnoId) {
         await updateAplicacion(turnoId, payload)
-        const listApps = await getAplicaciones()
-        setAplicaciones(listApps)
+        const now = Timestamp.now()
+        setAplicaciones(list =>
+          list.map(a => (a.id === turnoId ? { ...a, ...payload, updated_at: now } : a)),
+        )
         setReadOnly(true)
         setBanner({ type: 'success', text: 'Turno actualizado.' })
       } else {
@@ -276,8 +278,18 @@ export function useAplicacionesFitosanitarias() {
           owner_id: userId,
           registrado_por: registradoPor,
         })
-        const listApps = await getAplicaciones()
-        setAplicaciones(listApps)
+        const now = Timestamp.now()
+        setAplicaciones(list => [
+          {
+            id: newId,
+            ...payload,
+            owner_id: userId,
+            registrado_por: registradoPor,
+            created_at: now,
+            updated_at: now,
+          },
+          ...list,
+        ])
         setTurnoId(newId)
         setReadOnly(true)
         setBanner({ type: 'success', text: 'Turno guardado. Podés verlo o editarlo desde la lista.' })
