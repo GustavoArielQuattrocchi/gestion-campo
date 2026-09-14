@@ -51,7 +51,7 @@ export default function SuccessScreen({
             onClick={() => onCerrarParte(lastCreatedTareaId, lastCreatedParteId)}
           >
             <Square size={18} />
-            Cerrar parte de este día
+            Cerrar este parte
           </button>
         )}
 

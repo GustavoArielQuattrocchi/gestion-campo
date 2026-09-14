@@ -5,7 +5,7 @@ import { useMobileAppContext } from '../../contexts/MobileAppContext'
 import { MOBILE_ROUTES } from '../../mobile/routes'
 import { loadMobileSession } from '../../utils/mobileSession'
 import {
-  buildCierreItemsHoy,
+  buildCierreItemsPendientes,
   buildCierreItemsVencidos,
   isParteAbiertoHoy,
   isParteAbiertoVencido,
@@ -94,8 +94,8 @@ function ExitoRoute() {
   } = useMobileAppContext()
   const motivo = searchParams.get('motivo')
 
-  const pendientesHoy = useMemo(
-    () => buildCierreItemsHoy(tareasActivas, partesAbiertos),
+  const pendientesCierre = useMemo(
+    () => buildCierreItemsPendientes(tareasActivas, partesAbiertos),
     [tareasActivas, partesAbiertos],
   )
 
@@ -109,7 +109,7 @@ function ExitoRoute() {
           p =>
             p.id === lastCreatedParteId &&
             p.tareaId === lastCreatedTareaId &&
-            isParteAbiertoHoy(p),
+            (isParteAbiertoHoy(p) || isParteAbiertoVencido(p)),
         )
       : undefined
 
@@ -120,7 +120,7 @@ function ExitoRoute() {
       message={successMsg.message}
       detail={successMsg.detail}
       motivo={motivo}
-      pendientesCierreCount={pendientesHoy.length}
+      pendientesCierreCount={pendientesCierre.length}
       lastCreatedTareaId={puedeCerrarParte ? lastCreatedTareaId : null}
       lastCreatedParteId={puedeCerrarParte ? lastCreatedParteId : null}
       onContinue={() => navigate(MOBILE_ROUTES.menu)}
@@ -202,19 +202,19 @@ export default function MobileRoutes() {
     handleContinueTask,
   } = useMobileAppContext()
 
-  const itemsPendientesHoy = useMemo(
-    () => buildCierreItemsHoy(tareasActivas, partesAbiertos),
-    [tareasActivas, partesAbiertos],
-  )
-
   const itemsPendientesVencidas = useMemo(
     () => buildCierreItemsVencidos(tareasActivas, partesAbiertos),
     [tareasActivas, partesAbiertos],
   )
 
+  const itemsCierreDelDia = useMemo(
+    () => buildCierreItemsPendientes(tareasActivas, partesAbiertos),
+    [tareasActivas, partesAbiertos],
+  )
+
   const mensajeSinTareasCierre =
     tareasActivas.length > 0
-      ? 'No hay partes de labores abiertos hoy para cerrar.'
+      ? 'No hay partes de labores abiertos para cerrar.'
       : 'No hay tareas en progreso'
 
   const mensajeSinVencidos =
@@ -243,7 +243,7 @@ export default function MobileRoutes() {
                 fincaNombre={fincaNombre}
                 tareasActivas={tareasActivas}
                 partesAbiertos={partesAbiertos}
-                pendientesHoyCount={itemsPendientesHoy.length}
+                pendientesHoyCount={itemsCierreDelDia.length}
                 pendientesVencidosCount={itemsPendientesVencidas.length}
                 onSelectInicio={() => navigate(MOBILE_ROUTES.tareaTipo)}
                 onSelectFin={() => navigate(MOBILE_ROUTES.finalizar)}
@@ -299,9 +299,10 @@ export default function MobileRoutes() {
             path="finalizar"
             element={
               <EndTaskList
-                items={itemsPendientesHoy}
+                items={itemsCierreDelDia}
                 fincaNombre={fincaNombre}
                 emptyMessage={mensajeSinTareasCierre}
+                showFechaApertura
                 onSelect={(tarea, parte) =>
                   navigate(MOBILE_ROUTES.finalizarDetalle(tarea.id, parte.id))
                 }

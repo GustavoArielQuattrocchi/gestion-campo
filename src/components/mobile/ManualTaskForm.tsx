@@ -13,6 +13,10 @@ import {
   loadSugerenciasResponsable,
   rememberSugerenciaResponsable,
 } from '../../utils/mobileLocalMemory'
+import {
+  ejecutorKeyFromTareaOrOverride,
+  findParteVencidoParaEjecutor,
+} from '../../utils/parteEstado'
 import CuadroSelector from './CuadroSelector'
 import ContinueTaskBanner from './ContinueTaskBanner'
 import AutocompleteTextField from './AutocompleteTextField'
@@ -71,6 +75,15 @@ export default function ManualTaskForm({
   )
 
   const responsableOk = normalizeResponsable(responsable).length > 0
+  const parteVencidoEjecutor = useMemo(() => {
+    if (!tareaContinuable || !cuadrilla || !responsableOk) return undefined
+    const key = ejecutorKeyFromTareaOrOverride(tareaContinuable, {
+      cuadrilla,
+      responsable: normalizeResponsable(responsable),
+    })
+    return findParteVencidoParaEjecutor(partesAbiertos, tareaContinuable.id, key)
+  }, [tareaContinuable, cuadrilla, responsableOk, responsable, partesAbiertos])
+
   const isValid =
     Boolean(cuadrilla && tarea && cantidadPersonas && responsableOk && cuadroSelection.cuadroIds.length > 0)
 
@@ -201,13 +214,15 @@ export default function ManualTaskForm({
       <button
         className="btn btn-primary"
         onClick={handleSubmit}
-        disabled={!isValid || saving}
-        style={{ opacity: isValid && !saving ? 1 : 0.5, marginBottom: 24 }}
+        disabled={!isValid || saving || !!parteVencidoEjecutor}
+        style={{ opacity: isValid && !saving && !parteVencidoEjecutor ? 1 : 0.5, marginBottom: 24 }}
       >
         <Save size={18} />
         {saving
           ? 'Guardando...'
-          : tareaContinuable
+          : parteVencidoEjecutor
+            ? 'Cerrá el parte anterior primero'
+            : tareaContinuable
             ? 'Agregar cuadros a tarea existente'
             : 'Abrir parte de labores'}
       </button>

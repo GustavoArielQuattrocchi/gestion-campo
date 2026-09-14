@@ -4,7 +4,7 @@ import { es } from 'date-fns/locale'
 import type { ParteDeLabores, Tarea } from '../../types'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 import { getEjecutorLabelFromParte } from '../../utils/tareaEjecutor'
-import type { CierreParteItem } from '../../utils/parteEstado'
+import { isParteAbiertoVencido, type CierreParteItem } from '../../utils/parteEstado'
 
 interface Props {
   items: CierreParteItem[]
@@ -57,6 +57,7 @@ export default function EndTaskList({
           const finalizados = tarea.cuadroIdsFinalizados?.length ?? 0
           const totalCuadros = (tarea.cuadroIds ?? tarea.cuadros ?? []).length
           const cuadrosParte = (parte.cuadros ?? []).length
+          const vencido = isParteAbiertoVencido(parte)
 
           return (
             <button
@@ -68,8 +69,9 @@ export default function EndTaskList({
               <div className="task-info">
                 <h4>{tarea.tarea}</h4>
                 <p className="task-list-ejecutor">{ejecutor}</p>
-                {showFechaApertura && (
+                {(showFechaApertura || vencido) && (
                   <p className="task-list-fecha-apertura">
+                    {vencido ? 'Pendiente · ' : ''}
                     Abierto el {format(parte.abiertoEn.toDate(), "EEEE d 'de' MMMM", { locale: es })}
                   </p>
                 )}

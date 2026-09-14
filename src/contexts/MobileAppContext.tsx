@@ -16,6 +16,7 @@ import {
   where,
   onSnapshot,
   onSnapshotsInSync,
+  getDocs,
   Timestamp,
   arrayUnion,
   updateDoc,
@@ -66,6 +67,7 @@ import { parsePartesFromSnapshot } from '../utils/parseParteDeLabores'
 import {
   ejecutorKeyFromTareaOrOverride,
   findParteAbiertoParaEjecutor,
+  findParteVencidoParaEjecutor,
   resolveCerradoEn,
 } from '../utils/parteEstado'
 
@@ -548,11 +550,36 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
             }
 
       const key = ejecutorKeyFromTareaOrOverride(tarea, parteEjecutor)
-      const parteExistente = findParteAbiertoParaEjecutor(
-        partesAbiertosRef.current,
-        tareaId,
-        key,
-      )
+      let partesParaCierre = partesAbiertosRef.current
+      if (fincaId) {
+        try {
+          const snap = await getDocs(
+            query(
+              collection(db, 'partes_labores'),
+              where('fincaId', '==', fincaId),
+              where('estado', '==', 'abierto'),
+            ),
+          )
+          const { partes } = parsePartesFromSnapshot(
+            snap.docs.map(d => ({ id: d.id, data: () => d.data() as Record<string, unknown> })),
+          )
+          partesParaCierre = partes
+        } catch {
+          /* sin red: usar el snapshot en memoria */
+        }
+      }
+
+      const parteVencido = findParteVencidoParaEjecutor(partesParaCierre, tareaId, key)
+      if (parteVencido) {
+        showToast(
+          'Cerrá el parte del día anterior antes de abrir una jornada nueva.',
+          'error',
+        )
+        navigate(MOBILE_ROUTES.finalizarDetalle(tareaId, parteVencido.id))
+        return false
+      }
+
+      const parteExistente = findParteAbiertoParaEjecutor(partesParaCierre, tareaId, key)
 
       const tareaActualizada: Tarea = {
         ...tarea,
@@ -611,7 +638,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     } finally {
       submittingRef.current = false
     }
-  }, [tareasActivas, operadorNombre, showToast, markPendingSync, navigate])
+  }, [fincaId, tareasActivas, operadorNombre, showToast, markPendingSync, navigate])
 
   const handleRegisterRendimiento = useCallback(async (
     tareaId: string,

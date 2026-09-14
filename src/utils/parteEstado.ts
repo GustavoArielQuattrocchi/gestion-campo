@@ -60,6 +60,34 @@ export function findParteAbiertoParaEjecutor(
   )
 }
 
+/** Parte abierto de un día anterior para el mismo ejecutor (hay que cerrarlo antes de abrir otro). */
+export function findParteVencidoParaEjecutor(
+  partes: ParteDeLabores[],
+  tareaId: string,
+  ejecutorKey: string,
+  referenceDate = new Date(),
+): ParteDeLabores | undefined {
+  return partes.find(
+    p =>
+      p.tareaId === tareaId &&
+      p.estado === 'abierto' &&
+      parteEjecutorKey(p) === ejecutorKey &&
+      isParteAbiertoVencido(p, referenceDate),
+  )
+}
+
+/** Vencidos primero, después los abiertos hoy — para que aparezcan en Cierre del día. */
+export function buildCierreItemsPendientes(
+  tareas: Tarea[],
+  partesAbiertos: ParteDeLabores[],
+  referenceDate = new Date(),
+): CierreParteItem[] {
+  return [
+    ...buildCierreItemsVencidos(tareas, partesAbiertos, referenceDate),
+    ...buildCierreItemsHoy(tareas, partesAbiertos, referenceDate),
+  ]
+}
+
 export function tieneParteAbierto(partes: ParteDeLabores[], tareaId: string): boolean {
   return partes.some(p => p.tareaId === tareaId && p.estado === 'abierto')
 }

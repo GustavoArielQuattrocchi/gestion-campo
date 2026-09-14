@@ -1,13 +1,16 @@
 import { AlertCircle, RefreshCw } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import type { ParteDeLabores, Tarea } from '../../types'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 import {
   ejecutorKeyFromTareaOrOverride,
+  findParteVencidoParaEjecutor,
   findPartesAbiertosDeTarea,
   parteEjecutorKey,
   tieneParteAbiertoParaEjecutor,
 } from '../../utils/parteEstado'
 import type { OrigenEjecucion } from '../../utils/origenEjecucion'
+import { MOBILE_ROUTES } from '../../mobile/routes'
 
 interface Props {
   tarea: Tarea
@@ -28,6 +31,7 @@ export default function ContinueTaskBanner({
   responsableClave,
   origenEjecucion,
 }: Props) {
+  const navigate = useNavigate()
   const progress = computeTareaProgress(tarea)
   const partesTarea = findPartesAbiertosDeTarea(partesAbiertos, tarea.id)
   const clave = ejecutorClave?.trim()
@@ -40,8 +44,14 @@ export default function ContinueTaskBanner({
           responsable: responsableClave,
         })
       : null
+  const parteVencido =
+    keyActual != null
+      ? findParteVencidoParaEjecutor(partesAbiertos, tarea.id, keyActual)
+      : undefined
   const mismaJornadaAbierta =
-    keyActual != null && tieneParteAbiertoParaEjecutor(partesAbiertos, tarea.id, keyActual)
+    keyActual != null &&
+    !parteVencido &&
+    tieneParteAbiertoParaEjecutor(partesAbiertos, tarea.id, keyActual)
   const otrasJornadas = keyActual
     ? partesTarea.filter(p => parteEjecutorKey(p) !== keyActual)
     : partesTarea
@@ -65,6 +75,29 @@ export default function ContinueTaskBanner({
         </div>
       </div>
 
+      {parteVencido && (
+        <div className="card continue-task-banner continue-task-banner--warn">
+          <AlertCircle size={16} />
+          <div>
+            <strong>Parte de un día anterior sin cerrar</strong>
+            <small>
+              {label ?? 'Este ejecutor'} tiene un parte abierto de otro día. Cerralo con el
+              rendimiento antes de abrir una jornada nueva.
+            </small>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              style={{ marginTop: 8 }}
+              onClick={() =>
+                navigate(MOBILE_ROUTES.finalizarDetalle(tarea.id, parteVencido.id))
+              }
+            >
+              Cerrar parte pendiente
+            </button>
+          </div>
+        </div>
+      )}
+
       {mismaJornadaAbierta && (
         <div className="card continue-task-banner continue-task-banner--warn">
           <AlertCircle size={16} />
@@ -78,7 +111,7 @@ export default function ContinueTaskBanner({
         </div>
       )}
 
-      {!mismaJornadaAbierta && otrasJornadas.length > 0 && label && responsableClave && (
+      {!parteVencido && !mismaJornadaAbierta && otrasJornadas.length > 0 && label && responsableClave && (
         <div className="card continue-task-banner">
           <AlertCircle size={16} />
           <div>

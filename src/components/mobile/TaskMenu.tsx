@@ -138,7 +138,7 @@ export default function TaskMenu({
           </div>
           <div className="option-card-content">
             <h3>Cierre del día</h3>
-            <p>Cerrar partes abiertos hoy con el rendimiento</p>
+            <p>Cerrar partes abiertos (incluye días anteriores)</p>
           </div>
           {pendientesHoyCount > 0 && (
             <span className="option-card-badge">{pendientesHoyCount}</span>

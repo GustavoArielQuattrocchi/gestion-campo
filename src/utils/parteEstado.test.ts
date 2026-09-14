@@ -93,6 +93,31 @@ describe('parteEstado vencidos', () => {
     assert.equal(tieneParteAbiertoParaEjecutor(partes, 't1', keyOtra), false)
   })
 
+  it('findParteVencidoParaEjecutor ignora el parte de hoy', async () => {
+    const { findParteVencidoParaEjecutor, ejecutorKeyFromTareaOrOverride, buildCierreItemsPendientes } =
+      await import('./parteEstado.ts')
+    const hoy = {
+      ...parteAbierto('t1', '2026-07-09T08:00:00-03:00'),
+      id: 'p-hoy',
+      responsable: 'Omar',
+    }
+    const vencido = {
+      ...parteAbierto('t1', '2026-07-02T09:07:00-03:00'),
+      id: 'p-vencido',
+      responsable: 'Omar',
+    }
+    const key = ejecutorKeyFromTareaOrOverride(baseTarea, {
+      cuadrilla: 'Cuadrilla Propia',
+      responsable: 'Omar',
+    })
+    const found = findParteVencidoParaEjecutor([hoy, vencido], 't1', key, ref)
+    assert.equal(found?.id, 'p-vencido')
+    const items = buildCierreItemsPendientes([baseTarea], [hoy, vencido], ref)
+    assert.equal(items.length, 2)
+    assert.equal(items[0].parte.id, 'p-vencido')
+    assert.equal(items[1].parte.id, 'p-hoy')
+  })
+
   it('resolveCerradoEn usa fin del día de apertura para vencidos', () => {
     const vencido = parteAbierto('t1', '2026-07-07T08:00:00-03:00')
     const cerrado = resolveCerradoEn(vencido, ref)
