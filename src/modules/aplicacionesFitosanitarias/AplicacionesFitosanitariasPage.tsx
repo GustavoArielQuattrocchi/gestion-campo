@@ -3,6 +3,7 @@ import { ChevronLeft } from 'lucide-react'
 import { useAplicacionesFitosanitarias } from './hooks/useAplicacionesFitosanitarias'
 import OrdenPicker from './components/OrdenPicker'
 import TurnoPanel from './components/TurnoPanel'
+import { downloadTurnosOrdenExcel } from './utils/exportTurnosExcel'
 import '../ordenesCura/ordenesCura.css'
 import './aplicacionesFitosanitarias.css'
 
@@ -24,6 +25,14 @@ export default function AplicacionesFitosanitariasPage() {
         <div className="oc-btns">
           {editor.orden ? (
             <>
+              <button
+                type="button"
+                className="oc-btn oc-btn--excel"
+                disabled={editor.turnosDeOrden.length === 0}
+                onClick={() => downloadTurnosOrdenExcel(editor.orden?.oc ?? 'orden-cura', editor.turnosDeOrden)}
+              >
+                Excel 💾
+              </button>
               <button type="button" className="oc-btn oc-btn--light" onClick={editor.nuevoTurno}>
                 Nuevo turno
               </button>
@@ -72,6 +81,9 @@ export default function AplicacionesFitosanitariasPage() {
           onVerTurno={id => editor.abrirTurno(id, 'ver')}
           onEditarTurno={id => editor.abrirTurno(id, 'editar')}
           onEliminarTurno={id => void editor.eliminarTurno(id)}
+          onExportarExcel={() =>
+            downloadTurnosOrdenExcel(editor.orden?.oc ?? 'orden-cura', editor.turnosDeOrden)
+          }
         />
       ) : (
         <OrdenPicker

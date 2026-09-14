@@ -41,6 +41,7 @@ interface Props {
   onVerTurno: (id: string) => void
   onEditarTurno: (id: string) => void
   onEliminarTurno: (id: string) => void
+  onExportarExcel: () => void
 }
 
 function formatFechaTurno(app: AplicacionFitosanitaria): string {
@@ -79,6 +80,7 @@ export default function TurnoPanel({
   onVerTurno,
   onEditarTurno,
   onEliminarTurno,
+  onExportarExcel,
 }: Props) {
   const factor = orden.vol_aplicacion > 0 ? orden.vol_maquinaria / orden.vol_aplicacion : null
   const catalogoHint = fincaCatalogo !== orden.finca ? ` · catálogo ${fincaCatalogo}` : ''
@@ -351,7 +353,19 @@ export default function TurnoPanel({
       <GastoAcumulado titulo="Gastado en esta orden" turnos={turnos} />
 
       <section className="oc-card">
-        <h2>Turnos de esta orden</h2>
+        <div className="oc-tools">
+          <h2 className="af-card-title">Turnos de esta orden</h2>
+          <div className="oc-tools-right">
+            <button
+              type="button"
+              className="oc-btn oc-btn--slate oc-btn--small"
+              disabled={turnos.length === 0}
+              onClick={onExportarExcel}
+            >
+              Excel 💾
+            </button>
+          </div>
+        </div>
         <div className="oc-table-responsive">
           <table className="oc-table">
             <thead>

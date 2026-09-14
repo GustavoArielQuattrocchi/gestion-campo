@@ -36,6 +36,7 @@ const testFiles = [
   'src/utils/firestoreDashboardQueryConfig.test.ts',
   'src/utils/accidentAnalytics.test.ts',
   'src/utils/aplicacionFitosanitaria.test.ts',
+  'src/modules/aplicacionesFitosanitarias/utils/exportTurnosExcel.test.ts',
 ]
 
 const outDir = mkdtempSync(join(tmpdir(), 'gestion-campo-tests-'))
