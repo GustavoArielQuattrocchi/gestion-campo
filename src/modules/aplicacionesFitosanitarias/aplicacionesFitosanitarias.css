@@ -130,6 +130,23 @@
   color: #1e40af;
 }
 
+.af-gasto-grupo {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.af-gasto-grupo h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.af-gasto-grupo .oc-muted {
+  margin: 0 0 10px;
+}
+
 @media (max-width: 640px) {
   .af-meta,
   .af-kpis {

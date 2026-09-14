@@ -224,6 +224,123 @@ export interface GastoProductoAcumulado {
   gasto: number
 }
 
+export const SIN_FINCA_GASTO = 'Sin finca'
+export const FILTRO_FINCA_TODAS = 'todas'
+export const FILTRO_FINCA_SIN = '__sin_finca__'
+export const FILTRO_CAMPANA_TODAS = 'todas'
+
+/** Clave unificada de finca para gasto: SC2 y FC2 → FC2. Vacío si no hay finca. */
+export function fincaGastoKey(finca?: string | null, fincaCatalogo?: string | null): string {
+  const raw = (finca ?? '').trim() || (fincaCatalogo ?? '').trim()
+  if (!raw) return ''
+  return catalogFincaFromOc(raw)
+}
+
+export function fincaGastoLabel(key: string): string {
+  return key || SIN_FINCA_GASTO
+}
+
+/**
+ * Campaña vitivinícola julio–junio.
+ * 1 jul 2026 → 2026/27; 30 jun 2026 → 2025/26.
+ */
+export function campanaFromDate(date: Date): string {
+  const year = date.getFullYear()
+  const startYear = date.getMonth() >= 6 ? year : year - 1
+  return `${startYear}/${String(startYear + 1).slice(-2)}`
+}
+
+export function listCampanas(dates: Date[], now = new Date()): string[] {
+  const set = new Set<string>()
+  set.add(campanaFromDate(now))
+  for (const date of dates) {
+    if (Number.isNaN(date.getTime())) continue
+    set.add(campanaFromDate(date))
+  }
+  return [...set].sort((a, b) => b.localeCompare(a))
+}
+
+export function coincideCampana(date: Date, filtro: string): boolean {
+  if (filtro === FILTRO_CAMPANA_TODAS) return true
+  if (Number.isNaN(date.getTime())) return false
+  return campanaFromDate(date) === filtro
+}
+
+export function coincideFincaGasto(
+  finca: string | null | undefined,
+  fincaCatalogo: string | null | undefined,
+  filtro: string,
+): boolean {
+  if (filtro === FILTRO_FINCA_TODAS) return true
+  const key = fincaGastoKey(finca, fincaCatalogo)
+  if (filtro === FILTRO_FINCA_SIN) return key === ''
+  return key === filtro
+}
+
+export function listFincasGasto(
+  items: Array<{ finca?: string | null; fincaCatalogo?: string | null }>,
+): Array<{ key: string; label: string }> {
+  const keys = new Set<string>()
+  for (const item of items) {
+    keys.add(fincaGastoKey(item.finca, item.fincaCatalogo))
+  }
+  return [...keys]
+    .map(key => ({ key, label: fincaGastoLabel(key) }))
+    .sort((a, b) => {
+      if (!a.key) return 1
+      if (!b.key) return -1
+      return a.label.localeCompare(b.label, 'es')
+    })
+}
+
+export interface GastoFincaGrupo {
+  fincaKey: string
+  finca: string
+  turnosCount: number
+  litrosCaldo: number
+  haAplicadas: number
+  productos: GastoProductoAcumulado[]
+}
+
+type TurnoGastoFinca = {
+  finca?: string | null
+  fincaCatalogo?: string | null
+  volumenLitros?: number | null
+  haTotal?: number | null
+  productos: Array<{ producto: string; presentacion: string; gasto: number | null }>
+}
+
+function resumenTurnos(turnos: TurnoGastoFinca[]): Pick<GastoFincaGrupo, 'turnosCount' | 'litrosCaldo' | 'haAplicadas' | 'productos'> {
+  return {
+    turnosCount: turnos.length,
+    litrosCaldo: roundCalc(turnos.reduce((sum, t) => sum + (t.volumenLitros || 0), 0)),
+    haAplicadas: roundCalc(turnos.reduce((sum, t) => sum + (t.haTotal || 0), 0)),
+    productos: acumularGastoProductos(turnos),
+  }
+}
+
+/** Agrupa gasto y ha aplicadas por finca unificada. «Sin finca» al final; el resto alfabético. */
+export function acumularGastoPorFinca(turnos: TurnoGastoFinca[]): GastoFincaGrupo[] {
+  const buckets = new Map<string, TurnoGastoFinca[]>()
+  for (const turno of turnos) {
+    const key = fincaGastoKey(turno.finca, turno.fincaCatalogo)
+    const list = buckets.get(key) ?? []
+    list.push(turno)
+    buckets.set(key, list)
+  }
+  return [...buckets.entries()]
+    .map(([fincaKey, list]) => ({
+      fincaKey,
+      finca: fincaGastoLabel(fincaKey),
+      ...resumenTurnos(list),
+    }))
+    .sort((a, b) => {
+      if (!a.fincaKey) return 1
+      if (!b.fincaKey) return -1
+      return a.finca.localeCompare(b.finca, 'es')
+    })
+}
+
 /** Suma el gasto de producto de varios turnos, agrupando por nombre y unidad. */
 export function acumularGastoProductos(
   turnos: Array<{

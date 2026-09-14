@@ -1,52 +1,80 @@
 import {
+  acumularGastoPorFinca,
   acumularGastoProductos,
   formatCantidad,
   formatCantidadConUnidad,
+  type GastoFincaGrupo,
+  type GastoProductoAcumulado,
 } from '../../../utils/aplicacionFitosanitaria'
 import type { AplicacionFitosanitaria } from '../types'
 
 interface Props {
   titulo: string
   turnos: AplicacionFitosanitaria[]
+  desglosePorFinca?: boolean
 }
 
-export default function GastoAcumulado({ titulo, turnos }: Props) {
+function ProductosTable({ productos }: { productos: GastoProductoAcumulado[] }) {
+  return (
+    <div className="oc-table-responsive">
+      <table className="oc-table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Gastado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {productos.length === 0 ? (
+            <tr>
+              <td colSpan={2} className="oc-empty">Sin gasto de producto</td>
+            </tr>
+          ) : (
+            productos.map(p => (
+              <tr key={`${p.producto}|${p.presentacion}`}>
+                <td>{p.producto}</td>
+                <td>{formatCantidadConUnidad(p.gasto, p.presentacion)}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function resumenTurnos(turnosCount: number, litrosCaldo: number, haAplicadas: number): string {
+  if (turnosCount === 0) return 'Todavía no hay turnos para acumular.'
+  const turnosLabel = turnosCount === 1 ? 'turno' : 'turnos'
+  return `${turnosCount} ${turnosLabel} · ${formatCantidad(litrosCaldo)} L de caldo · ${formatCantidad(haAplicadas)} ha aplicadas`
+}
+
+function FincaGrupo({ grupo }: { grupo: GastoFincaGrupo }) {
+  return (
+    <div className="af-gasto-grupo">
+      <h3>{grupo.finca}</h3>
+      <p className="oc-muted">{resumenTurnos(grupo.turnosCount, grupo.litrosCaldo, grupo.haAplicadas)}</p>
+      <ProductosTable productos={grupo.productos} />
+    </div>
+  )
+}
+
+export default function GastoAcumulado({ titulo, turnos, desglosePorFinca = false }: Props) {
   const productos = acumularGastoProductos(turnos)
   const litrosCaldo = turnos.reduce((sum, t) => sum + (t.volumenLitros || 0), 0)
-  const haTotal = turnos.reduce((sum, t) => sum + (t.haTotal || 0), 0)
+  const haAplicadas = turnos.reduce((sum, t) => sum + (t.haTotal || 0), 0)
+  const grupos = desglosePorFinca ? acumularGastoPorFinca(turnos) : []
 
   return (
     <section className="oc-card">
       <h2>{titulo}</h2>
-      <p className="oc-muted">
-        {turnos.length === 0
-          ? 'Todavía no hay turnos para acumular.'
-          : `${turnos.length} ${turnos.length === 1 ? 'turno' : 'turnos'} · ${formatCantidad(litrosCaldo)} L de caldo · ${formatCantidad(haTotal)} ha`}
-      </p>
-      <div className="oc-table-responsive">
-        <table className="oc-table">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Gastado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {productos.length === 0 ? (
-              <tr>
-                <td colSpan={2} className="oc-empty">Sin gasto de producto</td>
-              </tr>
-            ) : (
-              productos.map(p => (
-                <tr key={`${p.producto}|${p.presentacion}`}>
-                  <td>{p.producto}</td>
-                  <td>{formatCantidadConUnidad(p.gasto, p.presentacion)}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <p className="oc-muted">{resumenTurnos(turnos.length, litrosCaldo, haAplicadas)}</p>
+      <ProductosTable productos={productos} />
+      {desglosePorFinca && grupos.length > 1
+        ? grupos.map(grupo => (
+            <FincaGrupo key={grupo.fincaKey || '__sin_finca__'} grupo={grupo} />
+          ))
+        : null}
     </section>
   )
 }

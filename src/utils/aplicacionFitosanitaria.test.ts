@@ -1,16 +1,27 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
+  FILTRO_CAMPANA_TODAS,
+  FILTRO_FINCA_SIN,
+  FILTRO_FINCA_TODAS,
+  SIN_FINCA_GASTO,
+  acumularGastoPorFinca,
   acumularGastoProductos,
   calcularTurno,
+  campanaFromDate,
   catalogFincaFromOc,
+  coincideCampana,
+  coincideFincaGasto,
   diferenciaDosis,
   dosisRealHa,
+  fincaGastoKey,
   formatCantidad,
   formatDiferenciaDosis,
   gastoProducto,
   haDesdeHileras,
   hayDiferenciaDosis,
+  listCampanas,
+  listFincasGasto,
 } from './aplicacionFitosanitaria.ts'
 
 describe('catalogFincaFromOc', () => {
@@ -103,6 +114,106 @@ describe('calcularTurno', () => {
     const result = calcularTurno(0, 0, [], [])
     assert.ok(result.avisos.some(a => a.includes('litros de caldo')))
     assert.ok(result.avisos.some(a => a.includes('volumen de aplicación')))
+  })
+})
+
+describe('campaña vitivinícola', () => {
+  it('corta en julio: junio queda en la campaña anterior', () => {
+    assert.equal(campanaFromDate(new Date(2026, 6, 1)), '2026/27')
+    assert.equal(campanaFromDate(new Date(2026, 5, 30)), '2025/26')
+    assert.equal(campanaFromDate(new Date(2026, 8, 14)), '2026/27')
+  })
+
+  it('lista campañas de más reciente a más vieja e incluye la actual', () => {
+    const list = listCampanas(
+      [new Date(2025, 7, 1), new Date(2024, 2, 10)],
+      new Date(2026, 8, 14),
+    )
+    assert.deepEqual(list, ['2026/27', '2025/26', '2023/24'])
+  })
+
+  it('filtra por campaña o deja pasar todas', () => {
+    assert.equal(coincideCampana(new Date(2026, 8, 14), '2026/27'), true)
+    assert.equal(coincideCampana(new Date(2026, 5, 30), '2026/27'), false)
+    assert.equal(coincideCampana(new Date(2026, 5, 30), FILTRO_CAMPANA_TODAS), true)
+  })
+})
+
+describe('finca unificada para gasto', () => {
+  it('trata SC2 y FC2 como la misma finca', () => {
+    assert.equal(fincaGastoKey('SC2'), 'FC2')
+    assert.equal(fincaGastoKey('FC2'), 'FC2')
+    assert.equal(fincaGastoKey('sc2', 'otra'), 'FC2')
+  })
+
+  it('usa fincaCatalogo si finca viene vacía, y vacío si no hay ninguna', () => {
+    assert.equal(fincaGastoKey('', 'FOA'), 'FOA')
+    assert.equal(fincaGastoKey('  ', '  '), '')
+    assert.equal(fincaGastoKey(null, null), '')
+  })
+
+  it('filtra todas, una finca unificada o sin finca', () => {
+    assert.equal(coincideFincaGasto('SC2', 'FC2', FILTRO_FINCA_TODAS), true)
+    assert.equal(coincideFincaGasto('SC2', '', 'FC2'), true)
+    assert.equal(coincideFincaGasto('FOA', 'FOA', 'FC2'), false)
+    assert.equal(coincideFincaGasto('', '', FILTRO_FINCA_SIN), true)
+    assert.equal(coincideFincaGasto('FOA', '', FILTRO_FINCA_SIN), false)
+  })
+})
+
+describe('acumularGastoPorFinca', () => {
+  it('une SC2 y FC2, suma ha aplicadas y deja Sin finca al final', () => {
+    const grupos = acumularGastoPorFinca([
+      {
+        finca: 'FOA',
+        haTotal: 1.2,
+        volumenLitros: 100,
+        productos: [{ producto: 'Cobre', presentacion: 'L', gasto: 1 }],
+      },
+      {
+        finca: 'SC2',
+        haTotal: 1,
+        volumenLitros: 80,
+        productos: [{ producto: 'Cobre', presentacion: 'L', gasto: 2 }],
+      },
+      {
+        finca: 'FC2',
+        haTotal: 2.5,
+        volumenLitros: 120,
+        productos: [{ producto: 'Cobre', presentacion: 'L', gasto: 3 }],
+      },
+      {
+        finca: '',
+        fincaCatalogo: '',
+        haTotal: 0.4,
+        volumenLitros: 40,
+        productos: [{ producto: 'Azufre', presentacion: 'kg', gasto: 5 }],
+      },
+    ])
+
+    assert.deepEqual(
+      grupos.map(g => `${g.finca}:${g.haAplicadas}:${g.turnosCount}`),
+      ['FC2:3.5:2', 'FOA:1.2:1', `${SIN_FINCA_GASTO}:0.4:1`],
+    )
+    assert.equal(grupos[0]?.litrosCaldo, 200)
+    assert.equal(grupos[0]?.productos[0]?.gasto, 5)
+    assert.equal(grupos[2]?.fincaKey, '')
+  })
+})
+
+describe('listFincasGasto', () => {
+  it('unifica claves, ordena alfabético y deja Sin finca al final', () => {
+    const list = listFincasGasto([
+      { finca: 'FOA' },
+      { finca: 'SC2' },
+      { finca: 'FC2' },
+      { finca: '' },
+      { finca: 'FLP' },
+    ])
+    assert.deepEqual(
+      list.map(f => `${f.key || FILTRO_FINCA_SIN}:${f.label}`),
+      [`FC2:FC2`, `FLP:FLP`, `FOA:FOA`, `${FILTRO_FINCA_SIN}:${SIN_FINCA_GASTO}`],
+    )
   })
 })
 
