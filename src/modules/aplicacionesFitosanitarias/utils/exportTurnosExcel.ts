@@ -2,6 +2,14 @@ import { formatOwnerLabel } from '../../ordenesCura/utils/ownerLabel'
 import type { AplicacionFitosanitaria } from '../types'
 import { catalogoDesdeArchivo } from '../../../data/agroQuimicos'
 import { canonicalizarProducto } from '../../../data/productoCatalogoAlias'
+import {
+  acumularGastoProductos,
+  CALC_DECIMALS,
+  desvioGasto,
+  desvioGastoPct,
+  gastoIdealProducto,
+  roundTo,
+} from '../../../utils/aplicacionFitosanitaria'
 
 export type ExcelCell = string | number | null
 
@@ -25,6 +33,9 @@ export interface GastoExcelRow {
   ia: string
   unidad: string
   gasto: number | null
+  ideal: number | null
+  desvio: number | null
+  desvioPct: number | null
   dosisRecetaHa: number | null
   dosisRealHa: number | null
   litros: number | null
@@ -41,11 +52,15 @@ const GASTOS_HEADERS = [
   'I.A.',
   'Unidad',
   'Gasto',
+  'Ideal',
+  'Desvío',
+  'Desvío %',
   'Dosis receta/ha',
   'Dosis real/ha',
   'Litros caldo',
   'ha aplicadas',
 ]
+const RESUMEN_HEADERS = ['Producto', 'Unidad', 'Gastado', 'Ideal', 'Desvío', 'Desvío %']
 
 function safeName(oc: string): string {
   const base = oc.trim() || 'orden-cura'
@@ -121,6 +136,16 @@ export function buildGastosExcelRows(turnos: AplicacionFitosanitaria[]): GastoEx
         },
         catalogo,
       )
+      const haAplicadas = Number.isFinite(turno.haTotal) ? turno.haTotal : null
+      const gasto = canon.gasto !== null && Number.isFinite(canon.gasto) ? canon.gasto : null
+      const dosisRecetaHa =
+        canon.dosisHa !== null && Number.isFinite(canon.dosisHa) ? canon.dosisHa : null
+      const idealRaw = gastoIdealProducto(dosisRecetaHa, haAplicadas)
+      const ideal = idealRaw === null ? null : roundTo(idealRaw, CALC_DECIMALS)
+      const desvioRaw = gasto === null ? null : desvioGasto(gasto, ideal)
+      const desvio = desvioRaw === null ? null : roundTo(desvioRaw, CALC_DECIMALS)
+      const desvioPctRaw = desvioGastoPct(desvio, ideal)
+      const desvioPct = desvioPctRaw === null ? null : roundTo(desvioPctRaw, CALC_DECIMALS)
       rows.push({
         oc: turno.oc,
         finca: turno.finca,
@@ -129,13 +154,15 @@ export function buildGastosExcelRows(turnos: AplicacionFitosanitaria[]): GastoEx
         producto: canon.nombre,
         ia: canon.ia.trim() || '—',
         unidad: canon.presentacion.trim() || '—',
-        gasto: canon.gasto !== null && Number.isFinite(canon.gasto) ? canon.gasto : null,
-        dosisRecetaHa:
-          canon.dosisHa !== null && Number.isFinite(canon.dosisHa) ? canon.dosisHa : null,
+        gasto,
+        ideal,
+        desvio,
+        desvioPct,
+        dosisRecetaHa,
         dosisRealHa:
           canon.dosisRealHa !== null && Number.isFinite(canon.dosisRealHa) ? canon.dosisRealHa : null,
         litros: Number.isFinite(turno.volumenLitros) ? turno.volumenLitros : null,
-        haAplicadas: Number.isFinite(turno.haTotal) ? turno.haTotal : null,
+        haAplicadas,
       })
     }
   }
@@ -190,10 +217,21 @@ export function buildTurnosExcelXml(turnos: AplicacionFitosanitaria[]): string {
     row.ia,
     row.unidad,
     row.gasto,
+    row.ideal,
+    row.desvio,
+    row.desvioPct,
     row.dosisRecetaHa,
     row.dosisRealHa,
     row.litros,
     row.haAplicadas,
+  ])
+  const resumenRows = acumularGastoProductos(turnos).map(row => [
+    row.producto,
+    row.presentacion,
+    row.gasto,
+    row.ideal,
+    row.desvio,
+    row.desvioPct,
   ])
 
   return [
@@ -203,6 +241,7 @@ export function buildTurnosExcelXml(turnos: AplicacionFitosanitaria[]): string {
     '<Styles><Style ss:ID="header"><Font ss:Bold="1"/></Style></Styles>',
     xmlSheet('Turnos', TURNOS_HEADERS, turnosRows),
     xmlSheet('Gastos', GASTOS_HEADERS, gastosRows),
+    xmlSheet('Resumen', RESUMEN_HEADERS, resumenRows),
     '</Workbook>',
   ].join('')
 }

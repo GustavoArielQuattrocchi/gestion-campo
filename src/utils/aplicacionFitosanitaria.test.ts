@@ -12,11 +12,15 @@ import {
   catalogFincaFromOc,
   coincideCampana,
   coincideFincaGasto,
+  desvioGasto,
+  desvioGastoPct,
   diferenciaDosis,
   dosisRealHa,
   fincaGastoKey,
   formatCantidad,
+  formatDesvioPorcentaje,
   formatDiferenciaDosis,
+  gastoIdealProducto,
   gastoProducto,
   haDesdeHileras,
   hayDiferenciaDosis,
@@ -199,6 +203,27 @@ describe('acumularGastoPorFinca', () => {
     assert.equal(grupos[0]?.productos[0]?.gasto, 5)
     assert.equal(grupos[2]?.fincaKey, '')
   })
+
+  it('calcula ideal y desvío dentro de cada finca', () => {
+    const grupos = acumularGastoPorFinca([
+      {
+        finca: 'FOA',
+        haTotal: 1.6,
+        productos: [{ producto: 'Cobre', presentacion: 'L', gasto: 4, dosisHaReceta: 2 }],
+      },
+      {
+        finca: 'FC2',
+        haTotal: 2,
+        productos: [{ producto: 'Cobre', presentacion: 'L', gasto: 3, dosisHaReceta: 2 }],
+      },
+    ])
+    assert.equal(grupos[0]?.finca, 'FC2')
+    assert.equal(grupos[0]?.productos[0]?.ideal, 4)
+    assert.equal(grupos[0]?.productos[0]?.desvio, -1)
+    assert.equal(grupos[1]?.finca, 'FOA')
+    assert.equal(grupos[1]?.productos[0]?.ideal, 3.2)
+    assert.equal(grupos[1]?.productos[0]?.desvio, 0.8)
+  })
 })
 
 describe('listFincasGasto', () => {
@@ -242,6 +267,56 @@ describe('acumularGastoProductos', () => {
       total.map(p => `${p.producto}:${p.presentacion}:${p.gasto}`),
       ['Azufre:kg:8', 'Cobre:L:4'],
     )
+  })
+
+  it('calcula ideal y desvío por producto con dosis receta × ha', () => {
+    const total = acumularGastoProductos([
+      {
+        haTotal: 1.6,
+        productos: [{ producto: 'Cobre', presentacion: 'L', gasto: 4, dosisHaReceta: 2 }],
+      },
+      {
+        haTotal: 2,
+        productos: [{ producto: 'Cobre', presentacion: 'L', gasto: 3, dosisHaReceta: 2 }],
+      },
+    ])
+    assert.equal(total[0]?.gasto, 7)
+    assert.equal(total[0]?.ideal, 7.2)
+    assert.equal(total[0]?.desvio, -0.2)
+    assert.equal(total[0]?.desvioPct, -2.8)
+  })
+
+  it('deja ideal y desvío vacíos si falta la dosis de receta', () => {
+    const total = acumularGastoProductos([
+      {
+        haTotal: 1.6,
+        productos: [{ producto: 'Cobre', presentacion: 'L', gasto: 4 }],
+      },
+    ])
+    assert.equal(total[0]?.gasto, 4)
+    assert.equal(total[0]?.ideal, null)
+    assert.equal(total[0]?.desvio, null)
+    assert.equal(total[0]?.desvioPct, null)
+  })
+})
+
+describe('gastoIdealProducto', () => {
+  it('multiplica dosis receta/ha por ha aplicadas', () => {
+    assert.equal(gastoIdealProducto(2, 1.6), 3.2)
+    assert.equal(gastoIdealProducto(null, 1.6), null)
+    assert.equal(gastoIdealProducto(2, 0), null)
+  })
+})
+
+describe('desvioGasto', () => {
+  it('resta el ideal del gastado y arma el porcentaje', () => {
+    assert.equal(desvioGasto(4, 3.2), 0.8)
+    assert.equal(desvioGastoPct(0.8, 3.2), 25)
+    assert.equal(desvioGasto(4, null), null)
+    assert.equal(desvioGastoPct(0.8, 0), null)
+    assert.equal(formatDesvioPorcentaje(25), `+${formatCantidad(25)} %`)
+    assert.equal(formatDesvioPorcentaje(-2.8), `-${formatCantidad(2.8)} %`)
+    assert.equal(formatDesvioPorcentaje(null), '—')
   })
 })
 

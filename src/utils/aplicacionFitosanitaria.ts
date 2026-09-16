@@ -219,10 +219,41 @@ export function formatDiferenciaDosis(
   return unidad ? `${signed} ${unidad}` : signed
 }
 
+/** Ideal = dosis receta/ha × ha aplicadas. Null si falta alguno. */
+export function gastoIdealProducto(
+  dosisHa: number | null | undefined,
+  haTotal: number | null | undefined,
+): number | null {
+  if (dosisHa == null || haTotal == null) return null
+  if (!Number.isFinite(dosisHa) || dosisHa < 0) return null
+  if (!Number.isFinite(haTotal) || haTotal <= 0) return null
+  return dosisHa * haTotal
+}
+
+export function desvioGasto(gastado: number, ideal: number | null): number | null {
+  if (ideal === null || !Number.isFinite(ideal) || !Number.isFinite(gastado)) return null
+  return roundCalc(gastado - ideal)
+}
+
+export function desvioGastoPct(desvio: number | null, ideal: number | null): number | null {
+  if (desvio === null || ideal === null || !Number.isFinite(ideal) || ideal === 0) return null
+  return (desvio / ideal) * 100
+}
+
+export function formatDesvioPorcentaje(pct: number | null, decimals = CALC_DECIMALS): string {
+  if (pct === null || !Number.isFinite(pct)) return '—'
+  if (roundTo(Math.abs(pct), decimals) === 0) return '0 %'
+  const n = formatCantidad(Math.abs(pct), decimals)
+  return pct > 0 ? `+${n} %` : `-${n} %`
+}
+
 export interface GastoProductoAcumulado {
   producto: string
   presentacion: string
   gasto: number
+  ideal: number | null
+  desvio: number | null
+  desvioPct: number | null
 }
 
 export const SIN_FINCA_GASTO = 'Sin finca'
@@ -308,7 +339,12 @@ type TurnoGastoFinca = {
   fincaCatalogo?: string | null
   volumenLitros?: number | null
   haTotal?: number | null
-  productos: Array<{ producto: string; presentacion: string; gasto: number | null }>
+  productos: Array<{
+    producto: string
+    presentacion: string
+    gasto: number | null
+    dosisHaReceta?: number | null
+  }>
 }
 
 function resumenTurnos(turnos: TurnoGastoFinca[]): Pick<GastoFincaGrupo, 'turnosCount' | 'litrosCaldo' | 'haAplicadas' | 'productos'> {
@@ -345,11 +381,23 @@ export function acumularGastoPorFinca(turnos: TurnoGastoFinca[]): GastoFincaGrup
 /** Suma el gasto de producto de varios turnos, agrupando por nombre y unidad canónicos. */
 export function acumularGastoProductos(
   turnos: Array<{
-    productos: Array<{ producto: string; presentacion: string; gasto: number | null }>
+    haTotal?: number | null
+    productos: Array<{
+      producto: string
+      presentacion: string
+      gasto: number | null
+      dosisHaReceta?: number | null
+    }>
   }>,
 ): GastoProductoAcumulado[] {
   const catalogo = catalogoDesdeArchivo()
-  const map = new Map<string, GastoProductoAcumulado>()
+  const map = new Map<string, {
+    producto: string
+    presentacion: string
+    gasto: number
+    ideal: number
+    incompleteIdeal: boolean
+  }>()
   for (const turno of turnos) {
     for (const producto of turno.productos) {
       if (producto.gasto === null || !Number.isFinite(producto.gasto) || producto.gasto === 0) continue
@@ -358,22 +406,42 @@ export function acumularGastoProductos(
           nombre: producto.producto,
           presentacion: producto.presentacion,
           gasto: producto.gasto,
+          dosisHa: producto.dosisHaReceta,
         },
         catalogo,
       )
       if (!canon.nombre) continue
       const key = `${canon.nombre.toLowerCase()}|${canon.presentacion.toLowerCase()}`
+      const idealPart = gastoIdealProducto(canon.dosisHa, turno.haTotal)
       const prev = map.get(key)
       if (prev) {
         prev.gasto = roundCalc(prev.gasto + (canon.gasto ?? 0))
+        if (idealPart === null) prev.incompleteIdeal = true
+        else prev.ideal = roundCalc(prev.ideal + idealPart)
       } else {
         map.set(key, {
           producto: canon.nombre,
           presentacion: canon.presentacion,
           gasto: roundCalc(canon.gasto ?? 0),
+          ideal: idealPart === null ? 0 : roundCalc(idealPart),
+          incompleteIdeal: idealPart === null,
         })
       }
     }
   }
-  return [...map.values()].sort((a, b) => a.producto.localeCompare(b.producto, 'es'))
+  return [...map.values()]
+    .map(row => {
+      const ideal = row.incompleteIdeal ? null : row.ideal
+      const desvio = desvioGasto(row.gasto, ideal)
+      const desvioPct = desvioGastoPct(desvio, ideal)
+      return {
+        producto: row.producto,
+        presentacion: row.presentacion,
+        gasto: row.gasto,
+        ideal: ideal === null ? null : roundCalc(ideal),
+        desvio: desvio === null ? null : roundCalc(desvio),
+        desvioPct: desvioPct === null ? null : roundTo(desvioPct, CALC_DECIMALS),
+      }
+    })
+    .sort((a, b) => a.producto.localeCompare(b.producto, 'es'))
 }

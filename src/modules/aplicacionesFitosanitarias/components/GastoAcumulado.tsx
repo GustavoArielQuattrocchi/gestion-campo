@@ -3,6 +3,9 @@ import {
   acumularGastoProductos,
   formatCantidad,
   formatCantidadConUnidad,
+  formatDesvioPorcentaje,
+  formatDiferenciaDosis,
+  hayDiferenciaDosis,
   type GastoFincaGrupo,
   type GastoProductoAcumulado,
 } from '../../../utils/aplicacionFitosanitaria'
@@ -22,20 +25,34 @@ function ProductosTable({ productos }: { productos: GastoProductoAcumulado[] }) 
           <tr>
             <th>Producto</th>
             <th>Gastado</th>
+            <th>Ideal</th>
+            <th>Desvío</th>
+            <th>Desvío %</th>
           </tr>
         </thead>
         <tbody>
           {productos.length === 0 ? (
             <tr>
-              <td colSpan={2} className="oc-empty">Sin gasto de producto</td>
+              <td colSpan={5} className="oc-empty">Sin gasto de producto</td>
             </tr>
           ) : (
-            productos.map(p => (
-              <tr key={`${p.producto}|${p.presentacion}`}>
-                <td>{p.producto}</td>
-                <td>{formatCantidadConUnidad(p.gasto, p.presentacion)}</td>
-              </tr>
-            ))
+            productos.map(p => {
+              const marcada = hayDiferenciaDosis(p.desvio)
+              const tono = !marcada ? '' : (p.desvio ?? 0) > 0 ? 'af-diff-up' : 'af-diff-down'
+              return (
+                <tr key={`${p.producto}|${p.presentacion}`} className={tono || undefined}>
+                  <td>{p.producto}</td>
+                  <td>{formatCantidadConUnidad(p.gasto, p.presentacion)}</td>
+                  <td>{formatCantidadConUnidad(p.ideal, p.presentacion)}</td>
+                  <td className={marcada ? 'af-diff-value' : undefined}>
+                    {formatDiferenciaDosis(p.desvio, p.presentacion)}
+                  </td>
+                  <td className={marcada ? 'af-diff-value' : undefined}>
+                    {formatDesvioPorcentaje(p.desvioPct)}
+                  </td>
+                </tr>
+              )
+            })
           )}
         </tbody>
       </table>

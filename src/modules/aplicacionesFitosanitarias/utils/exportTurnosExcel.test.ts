@@ -100,6 +100,12 @@ describe('exportTurnosExcel', () => {
       rows.map(r => `${r.producto}:${r.gasto}:${r.unidad}:${r.cargo}`),
       ['Cobre:4:L:ana', 'Azufre:8:kg:ana'],
     )
+    assert.equal(rows[0]?.ideal, 3.2)
+    assert.equal(rows[0]?.desvio, 0.8)
+    assert.equal(rows[0]?.desvioPct, 25)
+    assert.equal(rows[1]?.ideal, 4.8)
+    assert.equal(rows[1]?.desvio, 3.2)
+    assert.equal(rows[1]?.desvioPct, 66.7)
   })
 
   it('usa el nombre y la unidad del catálogo en el Excel', () => {
@@ -126,13 +132,16 @@ describe('exportTurnosExcel', () => {
     assert.equal(rows[0]?.ia, 'Flumioxazin')
   })
 
-  it('genera XML con las dos hojas', () => {
+  it('genera XML con las tres hojas', () => {
     const xml = buildTurnosExcelXml([
       turno({ id: 't1', fecha: ts('2026-09-01T12:00:00Z') }),
     ])
     assert.match(xml, /ss:Name="Turnos"/)
     assert.match(xml, /ss:Name="Gastos"/)
+    assert.match(xml, /ss:Name="Resumen"/)
     assert.match(xml, /Cobre/)
+    assert.match(xml, /Ideal/)
     assert.match(xml, /ss:Type="Number">4</)
+    assert.match(xml, /ss:Type="Number">3.2</)
   })
 })
