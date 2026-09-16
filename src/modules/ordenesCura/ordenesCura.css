@@ -375,6 +375,47 @@ select.oc-input {
   color: var(--gray-900);
 }
 
+.oc-sheet--catalogo {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.oc-sheet-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  margin-bottom: 8px;
+}
+
+.oc-sheet-head h3 {
+  margin: 0;
+  flex: 1;
+  min-width: 12rem;
+}
+
+.oc-sheet-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.oc-sheet-foot {
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.oc-sheet--catalogo .oc-cat-list {
+  max-height: none;
+}
+
 .oc-muted {
   color: var(--gray-500);
   font-size: 13px;

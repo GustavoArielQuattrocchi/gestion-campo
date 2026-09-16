@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Trash2 } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Trash2, X } from 'lucide-react'
 import {
   AGRO_CATEGORIAS,
   AGRO_MANEJO_CATALOGO,
@@ -44,6 +44,14 @@ export default function CatalogoModal({ catalogo, onAlta, onEliminar, onClose }:
     return groupCatalogo(filtrados)
   }, [catalogo, q])
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
   async function handleAlta() {
     if (!alta.nombre.trim()) {
       setError('Completá el nombre del producto.')
@@ -65,9 +73,22 @@ export default function CatalogoModal({ catalogo, onAlta, onEliminar, onClose }:
   }
 
   return (
-    <div className="oc-modal" role="dialog" aria-modal="true">
-      <div className="oc-sheet">
-        <h3>Catálogo de productos</h3>
+    <div
+      className="oc-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Catálogo de productos"
+      onClick={onClose}
+    >
+      <div className="oc-sheet oc-sheet--catalogo" onClick={e => e.stopPropagation()}>
+        <div className="oc-sheet-head">
+          <h3>Catálogo de productos</h3>
+          <button type="button" className="oc-btn oc-btn--slate" onClick={onClose}>
+            <X size={16} />
+            Volver a la OC
+          </button>
+        </div>
+        <div className="oc-sheet-body">
         <p className="oc-muted">
           La base viene del archivo. Los productos nuevos se guardan en Firestore con grupo e id.
           Id siguiente: <strong>{siguienteCodigo}</strong>
@@ -195,9 +216,11 @@ export default function CatalogoModal({ catalogo, onAlta, onEliminar, onClose }:
             ))
           )}
         </div>
-        <div style={{ textAlign: 'right', marginTop: 15 }}>
-          <button type="button" className="oc-btn oc-btn--light" onClick={onClose}>
-            Cerrar
+        </div>
+        <div className="oc-sheet-foot">
+          <button type="button" className="oc-btn oc-btn--slate" onClick={onClose}>
+            <X size={16} />
+            Volver a la OC
           </button>
         </div>
       </div>
