@@ -1,7 +1,5 @@
-const SHELL_CACHE = 'gestion-campo-shell-v7'
+const SHELL_CACHE = 'gestion-campo-shell-v8'
 const STATIC_SHELL = [
-  '/',
-  '/index.html',
   '/favicon.svg',
   '/favicon-escritorio.svg',
   '/manifest.webmanifest',
@@ -18,6 +16,7 @@ function isSameOrigin(request) {
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(STATIC_SHELL)))
+  self.skipWaiting()
 })
 
 self.addEventListener('activate', (event) => {
@@ -68,7 +67,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.mode !== 'navigate') return
 
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: 'no-store' })
       .then(async (response) => {
         if (response && response.ok) {
           const cache = await caches.open(SHELL_CACHE)

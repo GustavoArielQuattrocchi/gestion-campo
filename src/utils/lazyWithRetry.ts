@@ -17,6 +17,7 @@ export function lazyWithRetry<T extends ComponentType<any>>(
       if (!sessionStorage.getItem(key)) {
         sessionStorage.setItem(key, '1')
         window.location.reload()
+        return new Promise(() => {})
       }
       throw err
     }

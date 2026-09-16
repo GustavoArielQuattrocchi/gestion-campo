@@ -38,6 +38,8 @@ export default function PwaUpdateBanner() {
     })
 
     const onControllerChange = () => {
+      if (sessionStorage.getItem('sw-controller-reload')) return
+      sessionStorage.setItem('sw-controller-reload', '1')
       window.location.reload()
     }
     navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
