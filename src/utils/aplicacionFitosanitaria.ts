@@ -1,4 +1,5 @@
-/** Cálculo de hectáreas, gasto de producto y dosis real de un turno fitosanitario. */
+import { catalogoDesdeArchivo } from '../data/agroQuimicos'
+import { canonicalizarProducto } from '../data/productoCatalogoAlias'
 
 /** Códigos de OC que no coinciden con las claves del catálogo de cuadros. */
 const OC_FINCA_A_CATALOGO: Record<string, string> = {
@@ -341,28 +342,35 @@ export function acumularGastoPorFinca(turnos: TurnoGastoFinca[]): GastoFincaGrup
     })
 }
 
-/** Suma el gasto de producto de varios turnos, agrupando por nombre y unidad. */
+/** Suma el gasto de producto de varios turnos, agrupando por nombre y unidad canónicos. */
 export function acumularGastoProductos(
   turnos: Array<{
     productos: Array<{ producto: string; presentacion: string; gasto: number | null }>
   }>,
 ): GastoProductoAcumulado[] {
+  const catalogo = catalogoDesdeArchivo()
   const map = new Map<string, GastoProductoAcumulado>()
   for (const turno of turnos) {
     for (const producto of turno.productos) {
-      const nombre = producto.producto.trim()
-      if (!nombre) continue
       if (producto.gasto === null || !Number.isFinite(producto.gasto) || producto.gasto === 0) continue
-      const unidad = producto.presentacion.trim()
-      const key = `${nombre.toLowerCase()}|${unidad.toLowerCase()}`
+      const canon = canonicalizarProducto(
+        {
+          nombre: producto.producto,
+          presentacion: producto.presentacion,
+          gasto: producto.gasto,
+        },
+        catalogo,
+      )
+      if (!canon.nombre) continue
+      const key = `${canon.nombre.toLowerCase()}|${canon.presentacion.toLowerCase()}`
       const prev = map.get(key)
       if (prev) {
-        prev.gasto = roundCalc(prev.gasto + producto.gasto)
+        prev.gasto = roundCalc(prev.gasto + (canon.gasto ?? 0))
       } else {
         map.set(key, {
-          producto: nombre,
-          presentacion: unidad,
-          gasto: roundCalc(producto.gasto),
+          producto: canon.nombre,
+          presentacion: canon.presentacion,
+          gasto: roundCalc(canon.gasto ?? 0),
         })
       }
     }

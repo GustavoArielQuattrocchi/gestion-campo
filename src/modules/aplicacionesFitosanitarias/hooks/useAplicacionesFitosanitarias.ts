@@ -5,6 +5,8 @@ import { esCuadroProductivo, getCuadrosPorFinca, type CuadroDetalle } from '../.
 import { getOrdenById, getOrdenes } from '../../ordenesCura/services/ordenesCuraService'
 import type { OrdenCura, OrdenCuraWithItems } from '../../ordenesCura/types'
 import { parseLeadingNumber } from '../../ordenesCura/utils/factor'
+import { catalogoDesdeArchivo } from '../../../data/agroQuimicos'
+import { canonicalizarProducto } from '../../../data/productoCatalogoAlias'
 import {
   calcularTurno,
   catalogFincaFromOc,
@@ -185,13 +187,26 @@ export function useAplicacionesFitosanitarias() {
         canopia_ha: canopiaHa,
       }
     })
-    const productos = (orden?.items ?? []).map(item => ({
-      producto: item.producto,
-      ia: item.ia,
-      presentacion: item.presentacion,
-      dosisHa: parseLeadingNumber(item.dosis_ha),
-      dosisMaquinada: item.dosis_maquinada,
-    }))
+    const catalogo = catalogoDesdeArchivo()
+    const productos = (orden?.items ?? []).map(item => {
+      const canon = canonicalizarProducto(
+        {
+          nombre: item.producto,
+          presentacion: item.presentacion,
+          ia: item.ia,
+          dosisHa: parseLeadingNumber(item.dosis_ha),
+          dosisMaquinada: item.dosis_maquinada,
+        },
+        catalogo,
+      )
+      return {
+        producto: canon.nombre,
+        ia: canon.ia,
+        presentacion: canon.presentacion,
+        dosisHa: canon.dosisHa,
+        dosisMaquinada: canon.dosisMaquinada || item.dosis_maquinada,
+      }
+    })
     return calcularTurno(litros, volAplicacion, inputs, productos)
   }, [volumenLitros, orden, cuadros, cuadrosById])
 

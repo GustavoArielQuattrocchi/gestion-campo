@@ -16,7 +16,9 @@
     "audit:cuadros": "node scripts/audit-cuadros-map-vs-catalog.mjs",
     "sync:cuadros": "node scripts/sync-cuadros-catalog-from-mapa.mjs",
     "consolidar:tareas": "node scripts/consolidar-tareas-por-labor.mjs",
-    "consolidar:tareas:dry": "node scripts/consolidar-tareas-por-labor.mjs --dry-run"
+    "consolidar:tareas:dry": "node scripts/consolidar-tareas-por-labor.mjs --dry-run",
+    "normalizar:productos": "node scripts/normalizar-productos-fitosanitarios.mjs",
+    "normalizar:productos:apply": "node scripts/normalizar-productos-fitosanitarios.mjs --apply"
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",

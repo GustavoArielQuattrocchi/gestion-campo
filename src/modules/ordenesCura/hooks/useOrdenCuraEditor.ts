@@ -17,9 +17,10 @@ import {
   type ProductoCatalogoAlta,
 } from '../services/catalogoService'
 import { findProductoCatalogo, catalogoDesdeArchivo } from '../../../data/agroQuimicos'
+import { canonicalizarProducto, formatDosisHaCanon } from '../../../data/productoCatalogoAlias'
 import type { OrdenCura, OrdenCuraCreate, OrderItem } from '../types'
 import { generateOcNumber } from '../utils/ocNumber'
-import { computeDosisMaquinada, computeFactor } from '../utils/factor'
+import { computeDosisMaquinada, computeFactor, parseLeadingNumber } from '../utils/factor'
 import { createOrdenPdfBlob, downloadPdfBlob, exportOrdenCsv, ordenGuardadaToExport, type ItemExport, type OrdenExport } from '../utils/export'
 
 export interface OrdenFormState {
@@ -198,10 +199,23 @@ export function useOrdenCuraEditor() {
           if (field === 'producto') {
             const match = findProductoCatalogo(catalogo, value)
             if (match) {
+              const canon = canonicalizarProducto(
+                {
+                  nombre: value,
+                  presentacion: next.presentacion,
+                  ia: next.ia,
+                  dosisHa: parseLeadingNumber(next.dosis_ha),
+                  dosisMaquinada: next.dosis_maquinada,
+                },
+                catalogo,
+              )
+              next.producto = match.nombre
               next.ia = match.ia
-              next.presentacion = match.presentacion
               next.categoria = match.categoria
-              if (match.dosis_ha) next.dosis_ha = match.dosis_ha
+              next.presentacion = canon.presentacion
+              next.dosis_ha = formatDosisHaCanon(next.dosis_ha, canon)
+              if (match.dosis_ha && !next.dosis_ha.trim()) next.dosis_ha = match.dosis_ha
+              if (canon.dosisMaquinada) next.dosis_maquinada = canon.dosisMaquinada
             } else if (!value.trim()) {
               next.categoria = ''
             }
@@ -533,13 +547,23 @@ export function useOrdenCuraEditor() {
 }
 
 function itemToRow(item: OrderItem, catalogo: ProductoCatalogo[]): Omit<ItemRow, 'localId'> {
+  const canon = canonicalizarProducto(
+    {
+      nombre: item.producto,
+      presentacion: item.presentacion,
+      ia: item.ia,
+      dosisHa: parseLeadingNumber(item.dosis_ha),
+      dosisMaquinada: item.dosis_maquinada,
+    },
+    catalogo,
+  )
   return {
-    producto: item.producto,
-    categoria: findProductoCatalogo(catalogo, item.producto)?.categoria ?? '',
-    ia: item.ia,
-    presentacion: item.presentacion,
-    dosis_ha: item.dosis_ha,
-    dosis_maquinada: item.dosis_maquinada,
+    producto: canon.nombre,
+    categoria: findProductoCatalogo(catalogo, canon.nombre)?.categoria ?? '',
+    ia: canon.ia || item.ia,
+    presentacion: canon.presentacion,
+    dosis_ha: formatDosisHaCanon(item.dosis_ha, canon),
+    dosis_maquinada: canon.dosisMaquinada || item.dosis_maquinada,
     obs: item.obs,
   }
 }

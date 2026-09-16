@@ -45,9 +45,11 @@ describe('catálogo agroquímicos', () => {
     const merged = mergeCatalogo(base, [
       extra({ id: 'fs-1', nombre: 'Verno (FG)', categoria: 'Herbicida' }),
       extra({ id: 'fs-2', nombre: 'Nuevo foliar', categoria: 'Bioestimulante', codigo: 80 }),
+      extra({ id: 'fs-3', nombre: 'Alltec Ultra (Activador Bio)', categoria: 'Coadyuvante' }),
     ])
     assert.equal(merged.find(p => p.nombre === 'Verno (FG)')?.origen, 'static')
     assert.equal(merged.find(p => p.nombre === 'Nuevo foliar')?.origen, 'extra')
+    assert.equal(merged.find(p => p.nombre === 'Alltec Ultra (Activador Bio)'), undefined)
   })
 
   it('agrupa respetando el orden de categorías', () => {
@@ -63,5 +65,7 @@ describe('catálogo agroquímicos', () => {
     assert.equal(match?.nombre, 'Coragen (SC)')
     assert.equal(match?.presentacion, 'cc')
     assert.equal(findProductoCatalogo(catalogoDesdeArchivo(), ''), undefined)
+    assert.equal(findProductoCatalogo(catalogoDesdeArchivo(), 'flumoxazin')?.nombre, 'Gemmit Top (SC)')
+    assert.equal(findProductoCatalogo(catalogoDesdeArchivo(), 'Alltec Ultra')?.nombre, 'Activador bio')
   })
 })

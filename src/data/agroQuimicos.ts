@@ -1,3 +1,5 @@
+import { resolverNombreCatalogo } from './productoCatalogoAlias'
+
 export interface AgroQuimico {
   id: number
   name: string
@@ -51,7 +53,7 @@ export const AGRO_QUIMICOS: Record<AgroCategoria, AgroQuimico[]> = {
     { id: 20, name: 'Aceite Curafrutal', description: 'Insectos', activeprinciple: 'Aceite mineral', UM: 'L', management: 'Convencional', dosis_ha: '' },
   ],
   Herbicida: [
-    { id: 21, name: 'Roundup Control Max (SL)', description: 'Malezas', activeprinciple: 'Glifosato', UM: 'L', management: 'Convencional', dosis_ha: '' },
+    { id: 21, name: 'Roundup Control Max (SL)', description: 'Malezas', activeprinciple: 'Glifosato', UM: 'kg', management: 'Convencional', dosis_ha: '' },
     { id: 22, name: 'Gemmit Top (SC)', description: 'Malezas', activeprinciple: 'Flumioxazin', UM: 'L', management: 'Convencional', dosis_ha: '' },
     { id: 23, name: 'Gramoxone (SL)', description: 'Malezas', activeprinciple: 'Paraquat', UM: 'L', management: 'Convencional', dosis_ha: '' },
     { id: 24, name: 'Shark 40 (EC)', description: 'Desbrotante', activeprinciple: 'Carfentrazone', UM: 'cc', management: 'Convencional', dosis_ha: '' },
@@ -134,7 +136,7 @@ function indiceCategoria(categoria: string): number {
   return index === -1 ? AGRO_CATEGORIAS.length : index
 }
 
-/** Une el archivo con extras. Si el nombre ya está en el .ts, gana el archivo. */
+/** Une el archivo con extras. Si el nombre ya está en el .ts (o es un alias), gana el archivo. */
 export function mergeCatalogo(
   base: ProductoCatalogoVista[],
   extras: ProductoCatalogoVista[],
@@ -143,6 +145,7 @@ export function mergeCatalogo(
   for (const extra of extras) {
     const key = extra.nombre.trim().toLowerCase()
     if (!key || byName.has(key)) continue
+    if (resolverNombreCatalogo(extra.nombre, base)) continue
     byName.set(key, extra)
   }
   return [...byName.values()].sort((a, b) => {
@@ -179,7 +182,5 @@ export function findProductoCatalogo(
   catalogo: ProductoCatalogoVista[],
   nombre: string,
 ): ProductoCatalogoVista | undefined {
-  const clave = nombre.trim().toLowerCase()
-  if (!clave) return undefined
-  return catalogo.find(p => p.nombre.trim().toLowerCase() === clave)
+  return resolverNombreCatalogo(nombre, catalogo)
 }

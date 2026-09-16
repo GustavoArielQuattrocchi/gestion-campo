@@ -102,6 +102,30 @@ describe('exportTurnosExcel', () => {
     )
   })
 
+  it('usa el nombre y la unidad del catálogo en el Excel', () => {
+    const rows = buildGastosExcelRows([
+      turno({
+        id: 't1',
+        fecha: ts('2026-09-01T12:00:00Z'),
+        productos: [
+          {
+            producto: 'Flumoxazin',
+            ia: 'Flumoxazin',
+            presentacion: 'ml',
+            dosisHaReceta: 150,
+            dosisMaquinada: '',
+            gasto: 28329.8,
+            dosisRealHa: 150,
+          },
+        ],
+      }),
+    ])
+    assert.equal(rows[0]?.producto, 'Gemmit Top (SC)')
+    assert.equal(rows[0]?.unidad, 'L')
+    assert.equal(rows[0]?.gasto, 28.3298)
+    assert.equal(rows[0]?.ia, 'Flumioxazin')
+  })
+
   it('genera XML con las dos hojas', () => {
     const xml = buildTurnosExcelXml([
       turno({ id: 't1', fecha: ts('2026-09-01T12:00:00Z') }),

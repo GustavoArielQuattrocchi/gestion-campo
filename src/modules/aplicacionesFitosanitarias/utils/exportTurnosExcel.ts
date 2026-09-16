@@ -1,5 +1,7 @@
 import { formatOwnerLabel } from '../../ordenesCura/utils/ownerLabel'
 import type { AplicacionFitosanitaria } from '../types'
+import { catalogoDesdeArchivo } from '../../../data/agroQuimicos'
+import { canonicalizarProducto } from '../../../data/productoCatalogoAlias'
 
 export type ExcelCell = string | number | null
 
@@ -64,13 +66,18 @@ function formatCuadros(turno: AplicacionFitosanitaria): string {
 }
 
 function formatProductosResumen(turno: AplicacionFitosanitaria): string {
+  const catalogo = catalogoDesdeArchivo()
   return (
     turno.productos
       .filter(p => p.producto)
       .map(p => {
-        const gasto = p.gasto === null || !Number.isFinite(p.gasto) ? '—' : String(p.gasto)
-        const unidad = p.presentacion.trim()
-        return unidad ? `${p.producto}: ${gasto} ${unidad}` : `${p.producto}: ${gasto}`
+        const canon = canonicalizarProducto(
+          { nombre: p.producto, presentacion: p.presentacion, ia: p.ia, gasto: p.gasto },
+          catalogo,
+        )
+        const gasto = canon.gasto === null || !Number.isFinite(canon.gasto) ? '—' : String(canon.gasto)
+        const unidad = canon.presentacion.trim()
+        return unidad ? `${canon.nombre}: ${gasto} ${unidad}` : `${canon.nombre}: ${gasto}`
       })
       .join(' · ') || '—'
   )
@@ -98,28 +105,35 @@ export function buildTurnosExcelRows(turnos: AplicacionFitosanitaria[]): TurnoEx
 }
 
 export function buildGastosExcelRows(turnos: AplicacionFitosanitaria[]): GastoExcelRow[] {
+  const catalogo = catalogoDesdeArchivo()
   const rows: GastoExcelRow[] = []
   for (const turno of sortTurnos(turnos)) {
     for (const producto of turno.productos) {
-      const nombre = producto.producto.trim()
-      if (!nombre) continue
+      if (!producto.producto.trim()) continue
+      const canon = canonicalizarProducto(
+        {
+          nombre: producto.producto,
+          presentacion: producto.presentacion,
+          ia: producto.ia,
+          gasto: producto.gasto,
+          dosisHa: producto.dosisHaReceta,
+          dosisRealHa: producto.dosisRealHa,
+        },
+        catalogo,
+      )
       rows.push({
         oc: turno.oc,
         finca: turno.finca,
         fecha: formatFecha(turno),
         cargo: formatOwnerLabel(turno.registrado_por),
-        producto: nombre,
-        ia: producto.ia.trim() || '—',
-        unidad: producto.presentacion.trim() || '—',
-        gasto: producto.gasto !== null && Number.isFinite(producto.gasto) ? producto.gasto : null,
+        producto: canon.nombre,
+        ia: canon.ia.trim() || '—',
+        unidad: canon.presentacion.trim() || '—',
+        gasto: canon.gasto !== null && Number.isFinite(canon.gasto) ? canon.gasto : null,
         dosisRecetaHa:
-          producto.dosisHaReceta !== null && Number.isFinite(producto.dosisHaReceta)
-            ? producto.dosisHaReceta
-            : null,
+          canon.dosisHa !== null && Number.isFinite(canon.dosisHa) ? canon.dosisHa : null,
         dosisRealHa:
-          producto.dosisRealHa !== null && Number.isFinite(producto.dosisRealHa)
-            ? producto.dosisRealHa
-            : null,
+          canon.dosisRealHa !== null && Number.isFinite(canon.dosisRealHa) ? canon.dosisRealHa : null,
         litros: Number.isFinite(turno.volumenLitros) ? turno.volumenLitros : null,
         haAplicadas: Number.isFinite(turno.haTotal) ? turno.haTotal : null,
       })
