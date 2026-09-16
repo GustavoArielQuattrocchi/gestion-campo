@@ -85,7 +85,8 @@ export default function OrdenesCuraPage() {
       {editor.catalogoOpen ? (
         <CatalogoModal
           catalogo={editor.catalogo}
-          onEliminar={editor.eliminarProducto}
+          onAlta={editor.agregarProducto}
+          onEliminar={id => void editor.eliminarProducto(id)}
           onClose={() => editor.setCatalogoOpen(false)}
         />
       ) : null}

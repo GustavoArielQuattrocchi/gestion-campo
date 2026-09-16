@@ -442,6 +442,46 @@ select.oc-input {
   overflow-y: auto;
 }
 
+.oc-cat-alta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 8px;
+}
+
+.oc-cat-alta label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-500);
+}
+
+.oc-cat-alta-wide {
+  grid-column: 1 / -2;
+}
+
+.oc-cat-error {
+  color: var(--red-500);
+}
+
+.oc-cat-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.oc-cat-grupo h4 {
+  margin: 8px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+
 .oc-cat-item {
   display: flex;
   align-items: center;

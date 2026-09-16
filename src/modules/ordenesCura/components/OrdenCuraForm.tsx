@@ -6,6 +6,7 @@ import {
   MANEJO_OPTIONS,
   TECNICO_OPTIONS,
 } from '../constants'
+import { AGRO_CATEGORIAS, findProductoCatalogo, groupCatalogo } from '../../../data/agroQuimicos'
 import { formatFactor } from '../utils/factor'
 import type { ItemField, ItemRow, OrdenFormState } from '../hooks/useOrdenCuraEditor'
 
@@ -217,9 +218,11 @@ export default function OrdenCuraForm({
         </div>
 
         <datalist id="oc-dlProductos">
-          {catalogo.map(p => (
-            <option key={p.id} value={p.nombre} />
-          ))}
+          {groupCatalogo(catalogo).flatMap(grupo =>
+            grupo.productos.map(p => (
+              <option key={p.id} value={p.nombre} label={`${grupo.categoria} · ${p.nombre}`} />
+            )),
+          )}
         </datalist>
 
         <div className="oc-table-responsive">
@@ -227,6 +230,7 @@ export default function OrdenCuraForm({
             <thead>
               <tr>
                 <th style={{ minWidth: 140 }}>Producto</th>
+                <th style={{ minWidth: 110 }}>Grupo</th>
                 <th style={{ minWidth: 120 }}>Ing. Activo</th>
                 <th style={{ minWidth: 80 }}>Pres.</th>
                 <th style={{ minWidth: 80 }}>Dosis/ha</th>
@@ -236,7 +240,10 @@ export default function OrdenCuraForm({
               </tr>
             </thead>
             <tbody>
-              {items.map(row => (
+              {items.map(row => {
+                const enCatalogo = Boolean(findProductoCatalogo(catalogo, row.producto))
+                const pideGrupo = Boolean(row.producto.trim()) && !enCatalogo
+                return (
                 <tr key={row.localId}>
                   <td>
                     <input
@@ -245,6 +252,19 @@ export default function OrdenCuraForm({
                       value={row.producto}
                       onChange={e => onItemChange(row.localId, 'producto', e.target.value)}
                     />
+                  </td>
+                  <td>
+                    <select
+                      className="oc-input"
+                      value={row.categoria}
+                      disabled={enCatalogo || !row.producto.trim()}
+                      onChange={e => onItemChange(row.localId, 'categoria', e.target.value)}
+                    >
+                      <option value="">{pideGrupo ? 'Elegí grupo…' : '—'}</option>
+                      {AGRO_CATEGORIAS.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
                   </td>
                   <td>
                     <input
@@ -292,7 +312,8 @@ export default function OrdenCuraForm({
                     </button>
                   </td>
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
         </div>

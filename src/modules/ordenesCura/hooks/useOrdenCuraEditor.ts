@@ -9,11 +9,14 @@ import {
   updateOrdenConItems,
 } from '../services/ordenesCuraService'
 import {
+  createProductoExtra,
   deleteProducto,
-  ensureProductosEnCatalogo,
+  ensureExtrasEnCatalogo,
   getCatalogo,
   type ProductoCatalogo,
+  type ProductoCatalogoAlta,
 } from '../services/catalogoService'
+import { findProductoCatalogo, catalogoDesdeArchivo } from '../../../data/agroQuimicos'
 import type { OrdenCura, OrdenCuraCreate, OrderItem } from '../types'
 import { generateOcNumber } from '../utils/ocNumber'
 import { computeDosisMaquinada, computeFactor } from '../utils/factor'
@@ -39,6 +42,7 @@ export interface OrdenFormState {
 export interface ItemRow {
   localId: string
   producto: string
+  categoria: string
   ia: string
   presentacion: string
   dosis_ha: string
@@ -80,6 +84,7 @@ function emptyRow(): ItemRow {
   return {
     localId: newLocalId(),
     producto: '',
+    categoria: '',
     ia: '',
     presentacion: '',
     dosis_ha: '',
@@ -114,7 +119,7 @@ export function useOrdenCuraEditor() {
   const [form, setForm] = useState<OrdenFormState>(emptyForm)
   const [items, setItems] = useState<ItemRow[]>(() => [emptyRow()])
   const [ordenes, setOrdenes] = useState<OrdenCura[]>([])
-  const [catalogo, setCatalogo] = useState<ProductoCatalogo[]>([])
+  const [catalogo, setCatalogo] = useState<ProductoCatalogo[]>(() => catalogoDesdeArchivo())
   const [listadoOpen, setListadoOpen] = useState(false)
   const [catalogoOpen, setCatalogoOpen] = useState(false)
   const [pdfPreview, setPdfPreview] = useState<{ url: string; oc: string; blob: Blob } | null>(null)
@@ -191,12 +196,14 @@ export function useOrdenCuraEditor() {
           if (row.localId !== localId) return row
           const next = { ...row, [field]: value }
           if (field === 'producto') {
-            const clave = value.trim().toLowerCase()
-            const match = catalogo.find(p => p.nombre.trim().toLowerCase() === clave)
+            const match = findProductoCatalogo(catalogo, value)
             if (match) {
               next.ia = match.ia
               next.presentacion = match.presentacion
+              next.categoria = match.categoria
               if (match.dosis_ha) next.dosis_ha = match.dosis_ha
+            } else if (!value.trim()) {
+              next.categoria = ''
             }
           }
           if (field === 'dosis_ha' || field === 'presentacion' || field === 'producto') {
@@ -313,6 +320,19 @@ export function useOrdenCuraEditor() {
           obs: row.obs.trim(),
         }))
 
+      const nuevos = items.filter(row => {
+        const nombre = row.producto.trim()
+        if (!nombre) return false
+        return !findProductoCatalogo(catalogo, nombre)
+      })
+      if (nuevos.some(row => !row.categoria.trim())) {
+        setBanner({
+          type: 'error',
+          text: 'Hay productos nuevos: elegí el grupo (Fungicida, Herbicida, etc.) antes de guardar.',
+        })
+        return
+      }
+
       if (form.id) {
         await updateOrdenConItems(form.id, data, itemPayload)
       } else {
@@ -320,13 +340,17 @@ export function useOrdenCuraEditor() {
         setForm(prev => ({ ...prev, id: newId }))
       }
 
-      await ensureProductosEnCatalogo(
-        itemPayload.map(item => ({
-          nombre: item.producto,
-          ia: item.ia,
-          presentacion: item.presentacion,
-          dosis_ha: item.dosis_ha,
+      await ensureExtrasEnCatalogo(
+        nuevos.map(row => ({
+          categoria: row.categoria.trim(),
+          nombre: row.producto.trim(),
+          ia: row.ia.trim(),
+          presentacion: row.presentacion.trim(),
+          dosis_ha: row.dosis_ha.trim(),
+          description: '',
+          management: '',
         })),
+        catalogo,
       )
 
       await Promise.all([refreshOrdenes(), refreshCatalogo()])
@@ -338,7 +362,7 @@ export function useOrdenCuraEditor() {
       savingRef.current = false
       setSaving(false)
     }
-  }, [readOnly, userId, user?.email, form, items, refreshOrdenes, refreshCatalogo])
+  }, [readOnly, userId, user?.email, form, items, catalogo, refreshOrdenes, refreshCatalogo])
 
   const abrirOrden = useCallback(async (ordenId: string) => {
     try {
@@ -362,7 +386,7 @@ export function useOrdenCuraEditor() {
       })
       setItems(
         orden.items.length > 0
-          ? orden.items.map(item => ({ localId: newLocalId(), ...itemToRow(item) }))
+          ? orden.items.map(item => ({ localId: newLocalId(), ...itemToRow(item, catalogo) }))
           : [emptyRow()],
       )
       setListadoOpen(false)
@@ -374,7 +398,7 @@ export function useOrdenCuraEditor() {
       console.error('[OrdenesCura] Error al abrir la orden:', err)
       setBanner({ type: 'error', text: 'No se pudo abrir la orden.' })
     }
-  }, [])
+  }, [catalogo])
 
   const eliminarOrden = useCallback(
     async (ordenId: string) => {
@@ -410,6 +434,14 @@ export function useOrdenCuraEditor() {
       }
     },
     [refreshCatalogo],
+  )
+
+  const agregarProducto = useCallback(
+    async (input: ProductoCatalogoAlta) => {
+      await createProductoExtra(input, catalogo)
+      await refreshCatalogo()
+    },
+    [catalogo, refreshCatalogo],
   )
 
   const mostrarPdf = useCallback((blob: Blob, oc: string) => {
@@ -494,14 +526,16 @@ export function useOrdenCuraEditor() {
     vistaPdfOrden,
     eliminarOrden,
     eliminarProducto,
+    agregarProducto,
     exportarPdf,
     exportarExcel,
   }
 }
 
-function itemToRow(item: OrderItem): Omit<ItemRow, 'localId'> {
+function itemToRow(item: OrderItem, catalogo: ProductoCatalogo[]): Omit<ItemRow, 'localId'> {
   return {
     producto: item.producto,
+    categoria: findProductoCatalogo(catalogo, item.producto)?.categoria ?? '',
     ia: item.ia,
     presentacion: item.presentacion,
     dosis_ha: item.dosis_ha,

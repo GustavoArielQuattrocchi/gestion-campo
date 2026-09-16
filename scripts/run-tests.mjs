@@ -14,6 +14,7 @@ const testFiles = [
   'src/utils/cuadroQr.test.ts',
   'src/utils/cuadroTareas.test.ts',
   'src/data/fincaData.test.ts',
+  'src/data/agroQuimicos.test.ts',
   'src/utils/dashboardState.test.ts',
   'src/utils/firestoreError.test.ts',
   'src/utils/mobileTaskPayloads.test.ts',
