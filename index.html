@@ -4,13 +4,20 @@
     <meta charset="UTF-8" />
     <script>
       (function () {
-        var admin = /^\/(escritorio|ordenes-de-cura|aplicaciones-fitosanitarias)(\/|$)/.test(location.pathname)
+        var admin = /^\/(escritorio|ordenes-de-cura|aplicaciones-fitosanitarias|stock-admin)(\/|$)/.test(location.pathname)
+        var stock = /^\/stock(\/|$)/.test(location.pathname)
         if (admin) {
           document.write('<link rel="icon" type="image/svg+xml" href="/favicon-escritorio.svg" />')
           document.write('<link rel="apple-touch-icon" href="/icons/icon-escritorio-512.png" />')
           document.write('<link rel="manifest" href="/manifest-escritorio.webmanifest" />')
           document.write('<meta name="apple-mobile-web-app-title" content="Escritorio" />')
           document.title = 'Escritorio · Gestión de Campo'
+        } else if (stock) {
+          document.write('<link rel="icon" type="image/svg+xml" href="/favicon.svg" />')
+          document.write('<link rel="apple-touch-icon" href="/apple-touch-icon.png" />')
+          document.write('<link rel="manifest" href="/manifest-stock.webmanifest" />')
+          document.write('<meta name="apple-mobile-web-app-title" content="Stock" />')
+          document.title = 'App de Stock'
         } else {
           document.write('<link rel="icon" type="image/svg+xml" href="/favicon.svg" />')
           document.write('<link rel="apple-touch-icon" href="/apple-touch-icon.png" />')

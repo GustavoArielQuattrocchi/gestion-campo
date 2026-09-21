@@ -9,6 +9,7 @@ const testFiles = [
   'src/utils/dashboardMetrics.test.ts',
   'src/utils/dotacion.test.ts',
   'src/utils/mapTaskFilter.test.ts',
+  'src/modules/stock/utils/stockMath.test.ts',
   'src/utils/getMetricDetail.test.ts',
   'src/utils/dashboardFilters.test.ts',
   'src/utils/cuadroQr.test.ts',

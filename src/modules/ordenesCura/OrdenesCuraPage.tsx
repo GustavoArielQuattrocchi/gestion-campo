@@ -50,6 +50,9 @@ export default function OrdenesCuraPage() {
           <Link to="/aplicaciones-fitosanitarias" className="oc-btn oc-btn--light" style={{ textDecoration: 'none' }}>
             Aplicaciones
           </Link>
+          <Link to="/stock-admin" className="oc-btn oc-btn--light" style={{ textDecoration: 'none' }}>
+            Stock
+          </Link>
         </div>
       </header>
 

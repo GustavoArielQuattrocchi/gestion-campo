@@ -1,4 +1,4 @@
-import { Sprout, Smartphone, FileText, Droplets, LogOut } from 'lucide-react'
+import { Sprout, Smartphone, FileText, Droplets, LogOut, Package } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../providers/AuthProvider'
 
@@ -56,6 +56,16 @@ export default function DashboardSidebarHeader() {
           >
             <Droplets size={14} />
             Aplicaciones
+          </button>
+        </Link>
+        <Link to="/stock-admin" style={{ textDecoration: 'none', flex: 1 }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            style={{ width: '100%', padding: '8px 12px', fontSize: 13 }}
+          >
+            <Package size={14} />
+            Stock
           </button>
         </Link>
       </div>

@@ -41,6 +41,9 @@ export default function AplicacionesFitosanitariasPage() {
               </button>
             </>
           ) : null}
+          <Link to="/stock-admin" className="oc-btn oc-btn--light" style={{ textDecoration: 'none' }}>
+            Stock
+          </Link>
           <Link to="/ordenes-de-cura" className="oc-btn oc-btn--light" style={{ textDecoration: 'none' }}>
             Ir a OC
           </Link>
@@ -62,6 +65,8 @@ export default function AplicacionesFitosanitariasPage() {
           registradoPor={editor.registradoPor}
           fecha={editor.fecha}
           volumenLitros={editor.volumenLitros}
+          depositoPunto={editor.depositoPunto}
+          onDeposito={editor.setDepositoPunto}
           cuadros={editor.cuadros}
           cuadrosCatalogo={editor.cuadrosCatalogo}
           calculo={editor.calculo}

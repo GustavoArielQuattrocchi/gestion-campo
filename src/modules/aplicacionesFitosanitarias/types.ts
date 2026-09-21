@@ -35,6 +35,8 @@ export interface AplicacionFitosanitaria {
   cuadros: AplicacionCuadro[]
   haTotal: number
   productos: AplicacionProducto[]
+  /** Punto de almacenamiento del retiro (FOA, FLP, FSC, FSP). */
+  depositoPunto?: string
   registrado_por: string
   created_at: Timestamp
   updated_at: Timestamp

@@ -79,6 +79,7 @@ function mapAplicacion(id: string, data: DocumentData): AplicacionFitosanitaria 
     cuadros: Array.isArray(data.cuadros) ? data.cuadros.map(mapCuadro) : [],
     haTotal: toNum(data.haTotal),
     productos: Array.isArray(data.productos) ? data.productos.map(mapProducto) : [],
+    depositoPunto: toStr(data.depositoPunto) || undefined,
     registrado_por: toStr(data.registrado_por),
     created_at: toTs(data.created_at),
     updated_at: toTs(data.updated_at),
@@ -115,6 +116,7 @@ function toPersistable(data: AplicacionFitosanitariaCreate): DocumentData {
       gasto: p.gasto,
       dosisRealHa: p.dosisRealHa,
     })),
+    ...(data.depositoPunto ? { depositoPunto: data.depositoPunto } : {}),
     registrado_por: data.registrado_por,
   }
 }

@@ -4,9 +4,10 @@ import { Sprout } from 'lucide-react'
 interface Props {
   nombre: string
   onDone: () => void
+  subtitle?: string
 }
 
-export default function WelcomeScreen({ nombre, onDone }: Props) {
+export default function WelcomeScreen({ nombre, onDone, subtitle = 'Bienvenido a Gestión de Campo' }: Props) {
   useEffect(() => {
     const timer = setTimeout(onDone, 2800)
     return () => clearTimeout(timer)
@@ -20,7 +21,7 @@ export default function WelcomeScreen({ nombre, onDone }: Props) {
       <h1 className="welcome-title">
         Hola, <span className="welcome-name">{nombre}</span>
       </h1>
-      <p className="welcome-subtitle">Bienvenido a Gestión de Campo</p>
+      <p className="welcome-subtitle">{subtitle}</p>
       <div className="welcome-dots">
         <span className="welcome-dot" />
         <span className="welcome-dot" />

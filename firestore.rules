@@ -387,7 +387,31 @@ service cloud.firestore {
     }
 
     match /catalogoProductos/{productoId} {
-      allow read, create, update, delete: if esAdmin();
+      allow read: if isSignedIn();
+      allow create, update, delete: if esAdmin();
+    }
+
+    match /stockSaldos/{saldoId} {
+      allow read: if isSignedIn();
+      allow create, update: if operadorRegistrado() || esAdmin();
+      allow delete: if esAdmin();
+    }
+
+    match /stockMovimientos/{movimientoId} {
+      allow read: if isSignedIn();
+      allow create: if esAdmin()
+        || (operadorRegistrado()
+          && request.resource.data.operador == nombreOperadorAutenticado());
+      allow update: if esAdmin();
+      allow delete: if esAdmin();
+    }
+
+    match /stockProductoPropuestas/{propuestaId} {
+      allow read: if isSignedIn();
+      allow create: if operadorRegistrado()
+        && request.resource.data.operador == nombreOperadorAutenticado()
+        && request.resource.data.estado == 'pendiente';
+      allow update, delete: if esAdmin();
     }
   }
 }

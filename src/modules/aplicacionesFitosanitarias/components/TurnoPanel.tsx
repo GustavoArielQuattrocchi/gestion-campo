@@ -14,6 +14,7 @@ import {
 } from '../../../utils/aplicacionFitosanitaria'
 import type { AplicacionFitosanitaria } from '../types'
 import type { CuadroRow } from '../hooks/useAplicacionesFitosanitarias'
+import { PUNTO_STOCK_LABEL, PUNTOS_STOCK, type PuntoStock } from '../../stock/constants'
 import GastoAcumulado from './GastoAcumulado'
 
 interface Props {
@@ -22,6 +23,8 @@ interface Props {
   registradoPor: string
   fecha: string
   volumenLitros: string
+  depositoPunto: PuntoStock | ''
+  onDeposito: (value: PuntoStock | '') => void
   cuadros: CuadroRow[]
   cuadrosCatalogo: CuadroDetalle[]
   calculo: CalculoTurnoResult
@@ -61,6 +64,8 @@ export default function TurnoPanel({
   registradoPor,
   fecha,
   volumenLitros,
+  depositoPunto,
+  onDeposito,
   cuadros,
   cuadrosCatalogo,
   calculo,
@@ -193,6 +198,19 @@ export default function TurnoPanel({
                 value={volumenLitros}
                 onChange={e => onVolumen(e.target.value)}
               />
+            </div>
+            <div>
+              <label>Retiro de</label>
+              <select
+                className="oc-input"
+                value={depositoPunto}
+                onChange={e => onDeposito((e.target.value || '') as PuntoStock | '')}
+              >
+                <option value="">Elegí el depósito</option>
+                {PUNTOS_STOCK.map(p => (
+                  <option key={p} value={p}>{PUNTO_STOCK_LABEL[p]}</option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -375,6 +393,7 @@ export default function TurnoPanel({
                 <th>ha</th>
                 <th>Cuadros</th>
                 <th>Productos</th>
+                <th>Depósito</th>
                 <th>Cargó</th>
                 <th>Acción</th>
               </tr>
@@ -382,7 +401,7 @@ export default function TurnoPanel({
             <tbody>
               {turnos.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="oc-empty">Todavía no hay turnos cargados</td>
+                  <td colSpan={8} className="oc-empty">Todavía no hay turnos cargados</td>
                 </tr>
               ) : (
                 turnos.map(turno => (
@@ -402,6 +421,7 @@ export default function TurnoPanel({
                         .map(p => `${p.producto}: ${formatCantidadConUnidad(p.gasto, p.presentacion)}`)
                         .join(' · ') || '—'}
                     </td>
+                    <td>{turno.depositoPunto || 'Sin asignar'}</td>
                     <td>{formatOwnerLabel(turno.registrado_por)}</td>
                     <td>
                       <div className="oc-listado-actions">

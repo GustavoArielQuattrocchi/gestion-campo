@@ -7,6 +7,14 @@ import type { OrdenCura, OrdenCuraWithItems } from '../../ordenesCura/types'
 import { parseLeadingNumber } from '../../ordenesCura/utils/factor'
 import { catalogoDesdeArchivo } from '../../../data/agroQuimicos'
 import { canonicalizarProducto } from '../../../data/productoCatalogoAlias'
+import { type PuntoStock } from '../../stock/constants'
+import {
+  aplicarEgresoTurno,
+  getStockSaldos,
+  revertirEgresoTurno,
+} from '../../stock/services/stockService'
+import type { StockSaldo } from '../../stock/types'
+import { faltantesDeEgreso, isPuntoStock, productoKeyFromNombre } from '../../stock/utils/stockMath'
 import {
   calcularTurno,
   catalogFincaFromOc,
@@ -89,6 +97,8 @@ export function useAplicacionesFitosanitarias() {
   const [fecha, setFecha] = useState(todayInput)
   const [volumenLitros, setVolumenLitros] = useState('')
   const [cuadros, setCuadros] = useState<CuadroRow[]>([emptyCuadroRow()])
+  const [depositoPunto, setDepositoPunto] = useState<PuntoStock | ''>('')
+  const [saldos, setSaldos] = useState<StockSaldo[]>([])
 
   const userId = user?.uid ?? ''
   const registradoPor = user?.email ?? ''
@@ -118,12 +128,25 @@ export function useAplicacionesFitosanitarias() {
     void refresh()
   }, [refresh])
 
+  const refreshSaldos = useCallback(async () => {
+    try {
+      setSaldos(await getStockSaldos())
+    } catch (err) {
+      console.error('[Aplicaciones] No se pudieron cargar saldos de stock:', err)
+    }
+  }, [])
+
+  useEffect(() => {
+    void refreshSaldos()
+  }, [refreshSaldos])
+
   const resetForm = useCallback(() => {
     setTurnoId(null)
     setReadOnly(false)
     setFecha(todayInput())
     setVolumenLitros('')
     setCuadros([emptyCuadroRow()])
+    setDepositoPunto('')
     setBanner(null)
   }, [])
 
@@ -133,6 +156,7 @@ export function useAplicacionesFitosanitarias() {
     setFecha(tsToInput(turno.fecha))
     setVolumenLitros(String(turno.volumenLitros))
     setCuadros(rowsFromTurno(turno))
+    setDepositoPunto(isPuntoStock(turno.depositoPunto) ? turno.depositoPunto : '')
   }, [])
 
   const seleccionarOrden = useCallback(
@@ -221,8 +245,9 @@ export function useAplicacionesFitosanitarias() {
     if (!Number.isFinite(litros) || litros <= 0) return false
     if (orden.vol_aplicacion <= 0) return false
     if (calculo.haTotal <= 0) return false
+    if (!depositoPunto) return false
     return calculo.productos.some(p => p.gasto !== null)
-  }, [orden, userId, readOnly, saving, volumenLitros, calculo])
+  }, [orden, userId, readOnly, saving, volumenLitros, calculo, depositoPunto])
 
   const addCuadro = useCallback(() => {
     setCuadros(rows => [...rows, emptyCuadroRow()])
@@ -269,30 +294,69 @@ export function useAplicacionesFitosanitarias() {
         gasto: p.gasto,
         dosisRealHa: p.dosisRealHa,
       })),
+      depositoPunto: depositoPunto || undefined,
     }
-  }, [orden, volumenLitros, fincaCatalogo, fecha, calculo])
+  }, [orden, volumenLitros, fincaCatalogo, fecha, calculo, depositoPunto])
 
   const guardar = useCallback(async () => {
-    if (!orden || !userId || !puedeGuardar) return
+    if (!orden || !userId || !puedeGuardar || !depositoPunto) return
     const payload = payloadTurno()
     if (!payload) return
+    const lineas = payload.productos.map(p => ({
+      producto: p.producto,
+      productoKey: productoKeyFromNombre(p.producto),
+      ia: p.ia,
+      presentacion: p.presentacion,
+      gasto: p.gasto,
+    }))
+    const faltantes = faltantesDeEgreso(saldos, depositoPunto, lineas)
+    if (faltantes.length > 0) {
+      const ok = window.confirm(
+        `El retiro deja saldo negativo en ${depositoPunto}:\n${faltantes
+          .map(f => `• ${f.producto}: hay ${f.disponible}, se retiran ${f.solicitado} ${f.presentacion}`)
+          .join('\n')}\n\n¿Confirmar el turno igual?`,
+      )
+      if (!ok) return
+    }
     setSaving(true)
     setBanner(null)
     try {
       if (turnoId) {
+        await revertirEgresoTurno(turnoId, registradoPor)
         await updateAplicacion(turnoId, payload)
+        await aplicarEgresoTurno({
+          turnoId,
+          ordenId: payload.ordenId,
+          oc: payload.oc,
+          punto: depositoPunto,
+          operador: registradoPor,
+          productos: lineas,
+        })
         const now = Timestamp.now()
         setAplicaciones(list =>
           list.map(a => (a.id === turnoId ? { ...a, ...payload, updated_at: now } : a)),
         )
         setReadOnly(true)
-        setBanner({ type: 'success', text: 'Turno actualizado.' })
+        setBanner({ type: 'success', text: 'Turno actualizado y stock descontado.' })
       } else {
         const newId = await createAplicacion({
           ...payload,
           owner_id: userId,
           registrado_por: registradoPor,
         })
+        try {
+          await aplicarEgresoTurno({
+            turnoId: newId,
+            ordenId: payload.ordenId,
+            oc: payload.oc,
+            punto: depositoPunto,
+            operador: registradoPor,
+            productos: lineas,
+          })
+        } catch (stockErr) {
+          await deleteAplicacion(newId)
+          throw stockErr
+        }
         const now = Timestamp.now()
         setAplicaciones(list => [
           {
@@ -307,15 +371,16 @@ export function useAplicacionesFitosanitarias() {
         ])
         setTurnoId(newId)
         setReadOnly(true)
-        setBanner({ type: 'success', text: 'Turno guardado. Podés verlo o editarlo desde la lista.' })
+        setBanner({ type: 'success', text: 'Turno guardado. El stock se descontó del depósito.' })
       }
+      await refreshSaldos()
     } catch (err) {
       console.error('[Aplicaciones] Error al guardar:', err)
-      setBanner({ type: 'error', text: 'No se pudo guardar el turno.' })
+      setBanner({ type: 'error', text: 'No se pudo guardar el turno o descontar el stock.' })
     } finally {
       setSaving(false)
     }
-  }, [orden, userId, puedeGuardar, payloadTurno, turnoId, registradoPor])
+  }, [orden, userId, puedeGuardar, payloadTurno, turnoId, registradoPor, depositoPunto, saldos, refreshSaldos])
 
   const abrirTurno = useCallback(
     (id: string, modo: 'ver' | 'editar') => {
@@ -350,6 +415,7 @@ export function useAplicacionesFitosanitarias() {
       )
       if (!ok) return
       try {
+        await revertirEgresoTurno(id, registradoPor)
         await deleteAplicacion(id)
         setAplicaciones(list => list.filter(a => a.id !== id))
         if (turnoId === id) resetForm()
@@ -359,7 +425,7 @@ export function useAplicacionesFitosanitarias() {
         setBanner({ type: 'error', text: 'No se pudo eliminar el turno.' })
       }
     },
-    [aplicaciones, turnoId, resetForm],
+    [aplicaciones, turnoId, resetForm, registradoPor],
   )
 
   return {
@@ -376,6 +442,8 @@ export function useAplicacionesFitosanitarias() {
     setFecha,
     volumenLitros,
     setVolumenLitros,
+    depositoPunto,
+    setDepositoPunto,
     cuadros,
     cuadrosCatalogo,
     fincaCatalogo,

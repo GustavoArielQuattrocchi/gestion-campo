@@ -1,8 +1,9 @@
 import { Suspense, useEffect, useState } from 'react'
 import { Clock } from 'lucide-react'
 import { lazyWithRetry } from '../../utils/lazyWithRetry'
-import type { Tarea } from '../../types'
+import type { ParteDeLabores, Tarea } from '../../types'
 import type { MapRelevamientoActions } from '../../features/mapRelevamiento'
+import type { MapFechaFilter } from '../../utils/mapTaskFilter'
 
 const VineyardMap = lazyWithRetry(() => import('./VineyardMap'), 'vineyard-map')
 
@@ -10,6 +11,8 @@ interface Props {
   tareas: Tarea[]
   filtroFinca: string
   filtroTarea?: string
+  filtroFecha?: MapFechaFilter
+  partes?: ParteDeLabores[]
   /** map-relevamiento */
   allTareas?: Tarea[]
   mapRelevamiento?: MapRelevamientoActions | null
@@ -38,6 +41,8 @@ export default function DashboardMapLayer({
   tareas,
   filtroFinca,
   filtroTarea = 'todas',
+  filtroFecha,
+  partes,
   allTareas,
   mapRelevamiento,
   onLaborAsignada,
@@ -64,6 +69,8 @@ export default function DashboardMapLayer({
             tareas={tareas}
             filtroFinca={filtroFinca}
             filtroTarea={filtroTarea}
+            filtroFecha={filtroFecha}
+            partes={partes}
             fullHeight
             allTareas={allTareas}
             mapRelevamiento={mapRelevamiento}

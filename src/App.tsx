@@ -11,6 +11,8 @@ const AplicacionesFitosanitariasPage = lazyWithRetry(
   () => import('./modules/aplicacionesFitosanitarias/AplicacionesFitosanitariasPage'),
   'aplicaciones-fitosanitarias',
 )
+const StockApp = lazyWithRetry(() => import('./pages/StockApp'), 'stock')
+const StockAdminPage = lazyWithRetry(() => import('./modules/stock/StockAdminPage'), 'stock-admin')
 const CuadroPublicPage = lazyWithRetry(() => import('./pages/CuadroPublicPage'), 'cuadro-public')
 
 function RouteFallback() {
@@ -37,6 +39,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/campo" replace />} />
           <Route path="/campo/*" element={<MobileApp />} />
+          <Route path="/stock/*" element={<StockApp />} />
           <Route
             path="/escritorio"
             element={
@@ -58,6 +61,14 @@ export default function App() {
             element={
               <AdminGate>
                 <AplicacionesFitosanitariasPage />
+              </AdminGate>
+            }
+          />
+          <Route
+            path="/stock-admin"
+            element={
+              <AdminGate>
+                <StockAdminPage />
               </AdminGate>
             }
           />

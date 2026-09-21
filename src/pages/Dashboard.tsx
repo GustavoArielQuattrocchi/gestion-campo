@@ -15,6 +15,7 @@ import { isMapRelevamientoEnabled, useMapRelevamiento } from '../features/mapRel
 import { usePartesLabores } from '../hooks/usePartesLabores'
 import { useInformesAccidente } from '../hooks/useInformesAccidente'
 import { applyPartesDashboardFilters } from '../utils/dashboardFilters'
+import { defaultMapFechaFilter, type MapFechaFilter } from '../utils/mapTaskFilter'
 import { countPartesAbiertosVencidos } from '../utils/parteEstado'
 import { lazyWithRetry } from '../utils/lazyWithRetry'
 
@@ -87,6 +88,7 @@ export default function Dashboard() {
   const mapRelevamiento = useMapRelevamiento(allTareas)
 
   const [contentModal, setContentModal] = useState<ContentModalKey | null>(null)
+  const [filtroFechaMapa, setFiltroFechaMapa] = useState<MapFechaFilter>(defaultMapFechaFilter)
 
   const [loadInformes, setLoadInformes] = useState(false)
   useEffect(() => {
@@ -146,6 +148,8 @@ export default function Dashboard() {
         tareas={tareasFiltradas}
         filtroFinca={filtroFinca}
         filtroTarea={filtroTareaMapa}
+        filtroFecha={filtroFechaMapa}
+        partes={partesLabores}
         allTareas={isMapRelevamientoEnabled() ? allTareas : undefined}
         mapRelevamiento={isMapRelevamientoEnabled() ? mapRelevamiento : null}
         onLaborAsignada={setFiltroTareaMapa}
@@ -158,6 +162,8 @@ export default function Dashboard() {
         tareasDisponibles={mapTareasDisponibles}
         filtroFinca={filtroFinca}
         onTareaChange={setFiltroTareaMapa}
+        filtroFecha={filtroFechaMapa}
+        onFechaChange={setFiltroFechaMapa}
       />
 
       {!pendingAlertDismissed && partesVencidosCount > 0 && (

@@ -33,6 +33,7 @@ function isAdminPath(path: string): boolean {
     path.startsWith('/escritorio')
     || path.startsWith('/ordenes-de-cura')
     || path.startsWith('/aplicaciones-fitosanitarias')
+    || path.startsWith('/stock-admin')
   )
 }
 

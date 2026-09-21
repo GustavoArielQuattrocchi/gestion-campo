@@ -5,7 +5,7 @@ import type { GeoJSON as LeafletGeoJSON, LatLngBoundsExpression, Layer, PathOpti
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { Feature, FeatureCollection } from 'geojson'
-import type { Tarea } from '../../types'
+import type { ParteDeLabores, Tarea } from '../../types'
 import {
   getAllVineyardFeatures,
   getFeaturesByFinca,
@@ -19,7 +19,13 @@ import { getCuadroDetalleById } from '../../data/fincaData'
 import { formatHectareas } from '../../utils/cuadroQr'
 import CuadroCatalogoResumen from '../cuadro/CuadroCatalogoResumen'
 import { formatTareaMapLabel } from '../../utils/vineyardMapLabels'
-import { filterTareasForMap } from '../../utils/mapTaskFilter'
+import {
+  defaultMapFechaFilter,
+  filterTareasByMapFecha,
+  filterTareasForMap,
+  rendimientoCoincideFechaMapa,
+  type MapFechaFilter,
+} from '../../utils/mapTaskFilter'
 import { buildEstadoPorCuadro, buildEstadoPorCuadroParaMapa } from '../../utils/vineyardMapState'
 import { computeTareaProgress, formatProgressLabel } from '../../utils/tareaProgress'
 import TaskProgressBar from './TaskProgressBar'
@@ -33,6 +39,9 @@ interface Props {
   filtroFinca: string
   /** Labor visible en el mapa; no afecta datos globales del escritorio. */
   filtroTarea?: string
+  /** Período de partes visible en el mapa; no afecta sidebar ni métricas. */
+  filtroFecha?: MapFechaFilter
+  partes?: ParteDeLabores[]
   /** Ocupa el 100% del contenedor padre (dashboard fullscreen). */
   fullHeight?: boolean
   /** map-relevamiento: tareas sin filtrar para asignación / conflictos. */
@@ -120,6 +129,8 @@ export default function VineyardMap({
   tareas,
   filtroFinca,
   filtroTarea = 'todas',
+  filtroFecha,
+  partes = [],
   fullHeight = false,
   allTareas,
   mapRelevamiento = null,
@@ -131,6 +142,11 @@ export default function VineyardMap({
   const styleFeatureRef = useRef<(feature?: Feature, hover?: boolean) => PathOptions>(() => ({}))
   const tooltipStateRef = useRef({ viewMode, heat: { perHa: new Map<string, number>(), maxVal: 0 } })
 
+  const fechaMapa = useMemo(
+    () => filtroFecha ?? defaultMapFechaFilter(),
+    [filtroFecha],
+  )
+
   const tareasParaEstado = useMemo(() => {
     const source = allTareas ?? tareas
     if (!allTareas) return tareas
@@ -140,9 +156,14 @@ export default function VineyardMap({
     )
   }, [allTareas, tareas, filtroFinca])
 
+  const { tareas: tareasDelPeriodo, parteIds } = useMemo(
+    () => filterTareasByMapFecha(tareasParaEstado, partes, fechaMapa),
+    [tareasParaEstado, partes, fechaMapa],
+  )
+
   const tareasMapa = useMemo(
-    () => filterTareasForMap(tareasParaEstado, filtroTarea),
-    [tareasParaEstado, filtroTarea],
+    () => filterTareasForMap(tareasDelPeriodo, filtroTarea),
+    [tareasDelPeriodo, filtroTarea],
   )
 
   /**
@@ -151,24 +172,27 @@ export default function VineyardMap({
    * - filtro todas → estado combinado (verde si alguna labor está pendiente)
    */
   const estadoPorCuadroColor = useMemo(
-    () => buildEstadoPorCuadroParaMapa(tareasParaEstado, filtroTarea),
-    [tareasParaEstado, filtroTarea],
+    () => buildEstadoPorCuadroParaMapa(tareasDelPeriodo, filtroTarea),
+    [tareasDelPeriodo, filtroTarea],
   )
 
-  /** Panel lateral: todas las labores del cuadro, independientemente del filtro. */
+  /** Panel lateral: labores del cuadro en el período (independiente del filtro de labor). */
   const estadoPorCuadroCompleto = useMemo(
-    () => buildEstadoPorCuadro(tareasParaEstado),
-    [tareasParaEstado],
+    () => buildEstadoPorCuadro(tareasDelPeriodo),
+    [tareasDelPeriodo],
   )
 
   // Agregación de rendimiento por cuadro para heat map.
   const rendimientoHeatData = useMemo(() => {
     const totals = new Map<string, number>()
     for (const tarea of tareasMapa) {
+      const allowed = new Set(tarea.cuadroIds ?? [])
       for (const rd of tarea.rendimientosDiarios ?? []) {
+        if (!rendimientoCoincideFechaMapa(rd, fechaMapa, parteIds)) continue
         const rpc = rd.rendimientoPorCuadro
         if (!rpc) continue
         for (const [cuadroId, val] of Object.entries(rpc)) {
+          if (allowed.size > 0 && !allowed.has(cuadroId)) continue
           if (typeof val === 'number' && val > 0) {
             totals.set(cuadroId, (totals.get(cuadroId) ?? 0) + val)
           }
@@ -185,7 +209,7 @@ export default function VineyardMap({
       if (valor > maxVal) maxVal = valor
     }
     return { perHa, maxVal }
-  }, [tareasMapa])
+  }, [tareasMapa, fechaMapa, parteIds])
 
   // Filtra features según finca seleccionada.
   const features = useMemo(() => {

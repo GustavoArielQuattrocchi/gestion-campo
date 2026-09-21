@@ -2659,7 +2659,7 @@ button.task-list-item {
   gap: 10px;
   width: auto;
   min-height: 48px;
-  max-width: min(320px, calc(100vw - 240px));
+  max-width: min(560px, calc(100vw - 240px));
   padding: 8px 12px;
   border: 1px solid rgba(187, 247, 208, 0.95);
   border-radius: 999px;
@@ -2674,9 +2674,65 @@ button.task-list-item {
   left: calc((100vw + min(400px, 92vw)) / 2);
 }
 
-.dashboard-map-task-filter.is-active {
+.dashboard-map-task-filter.is-active,
+.dashboard-map-task-filter.has-custom-date {
   border-color: #86efac;
   box-shadow: 0 6px 20px rgba(22, 163, 74, 0.16);
+}
+
+.dashboard-map-task-filter-divider {
+  width: 1px;
+  align-self: stretch;
+  margin: 4px 0;
+  background: #bbf7d0;
+  flex-shrink: 0;
+}
+
+.dashboard-map-task-filter-date-toggle {
+  border: none;
+  padding: 0;
+  cursor: default;
+  pointer-events: none;
+}
+
+.dashboard-map-task-filter-date-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.dashboard-map-task-filter-date-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.dashboard-map-task-filter-date-input {
+  min-width: 0;
+  max-width: 132px;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: #166534;
+  background: transparent;
+  font-family: inherit;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.dashboard-map-task-filter-date-input:focus {
+  outline: none;
+}
+
+.dashboard-map-task-filter-date-input:focus-visible {
+  outline: 2px solid #86efac;
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .dashboard-map-task-filter-icon {
@@ -2699,11 +2755,22 @@ button.task-list-item {
   gap: 1px;
 }
 
-.dashboard-map-task-filter-content strong {
+.dashboard-map-task-filter-content strong,
+.dashboard-map-task-filter-date-panel strong {
   font-size: 12px;
   font-weight: 700;
   color: #14532d;
   line-height: 1.2;
+}
+
+.dashboard-map-task-filter-labor {
+  flex: 1 1 132px;
+}
+
+.dashboard-map-task-filter-date-row .dashboard-map-task-filter-select {
+  width: auto;
+  max-width: 124px;
+  flex: 0 0 auto;
 }
 
 .dashboard-map-task-filter-select {
@@ -3993,30 +4060,65 @@ button.task-list-item {
     left: 60px;
     right: auto;
     transform: none;
-    width: var(--touch-min);
+    width: auto;
     height: var(--touch-min);
     min-height: var(--touch-min);
-    max-width: var(--touch-min);
+    max-width: none;
     padding: 0;
-    gap: 0;
-    justify-content: center;
-    border-radius: 12px;
+    gap: 8px;
+    justify-content: flex-start;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
   }
 
   .dashboard-layout.sidebar-open .dashboard-map-task-filter {
     left: 60px;
   }
 
-  .dashboard-map-task-filter-content {
-    position: absolute;
-    inset: 0;
+  .dashboard-map-task-filter.is-active,
+  .dashboard-map-task-filter.has-custom-date {
+    border: none;
+    box-shadow: none;
   }
 
-  .dashboard-map-task-filter-content strong {
+  .dashboard-map-task-filter-icon {
+    width: var(--touch-min);
+    height: var(--touch-min);
+    border-radius: 12px;
+    border: 1px solid rgba(187, 247, 208, 0.95);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 4px 16px rgba(22, 163, 74, 0.1);
+  }
+
+  .dashboard-map-task-filter.is-active .dashboard-map-task-filter-labor + .dashboard-map-task-filter-divider,
+  .dashboard-map-task-filter.is-active .dashboard-map-task-filter-icon:first-child {
+    border-color: #86efac;
+  }
+
+  .dashboard-map-task-filter.has-custom-date .dashboard-map-task-filter-date-toggle {
+    border-color: #86efac;
+  }
+
+  .dashboard-map-task-filter-divider {
     display: none;
   }
 
-  .dashboard-map-task-filter-select {
+  .dashboard-map-task-filter-labor {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--touch-min);
+    height: var(--touch-min);
+  }
+
+  .dashboard-map-task-filter-content strong,
+  .dashboard-map-task-filter-date-panel strong {
+    display: none;
+  }
+
+  .dashboard-map-task-filter-labor .dashboard-map-task-filter-select {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -4029,14 +4131,61 @@ button.task-list-item {
     background-image: none;
   }
 
+  .dashboard-map-task-filter-date-toggle {
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  .dashboard-map-task-filter-date-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 228px;
+    padding: 10px 12px;
+    border: 1px solid rgba(187, 247, 208, 0.95);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 8px 24px rgba(22, 163, 74, 0.14);
+    flex: none;
+  }
+
+  .dashboard-map-task-filter-date-panel.is-open {
+    display: flex;
+  }
+
+  .dashboard-map-task-filter-date-panel strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #14532d;
+  }
+
+  .dashboard-map-task-filter-date-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dashboard-map-task-filter-date-panel .dashboard-map-task-filter-select,
+  .dashboard-map-task-filter-date-input {
+    width: 100%;
+    max-width: none;
+    min-height: var(--touch-min);
+    padding: 0 8px;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    background: #fff;
+  }
+
   .dashboard-weather-float {
     top: 10px;
-    left: 110px;
+    left: 164px;
     width: var(--touch-min);
   }
 
   .dashboard-layout.sidebar-open .dashboard-weather-float {
-    left: 110px;
+    left: 164px;
     width: var(--touch-min);
   }
 
