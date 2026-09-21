@@ -64,3 +64,7 @@ export { isPuntoStock }
 export function parsePuntoStock(value: string | null | undefined): PuntoStock | null {
   return isPuntoStock(value) ? value : null
 }
+
+export function faltaNotaSiBaja(anterior: number, siguiente: number, nota: string): boolean {
+  return siguiente < anterior - 1e-9 && !nota.trim()
+}

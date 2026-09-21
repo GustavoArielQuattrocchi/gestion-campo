@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../../../providers/AuthProvider'
-import { getCatalogo } from '../../ordenesCura/services/catalogoService'
-import type { ProductoCatalogo } from '../../ordenesCura/services/catalogoService'
+import { createProductoExtra, getCatalogo } from '../../ordenesCura/services/catalogoService'
+import type { ProductoCatalogo, ProductoCatalogoAlta } from '../../ordenesCura/services/catalogoService'
 import { getAplicaciones, updateAplicacion } from '../../aplicacionesFitosanitarias/services/aplicacionesService'
 import type { AplicacionFitosanitaria } from '../../aplicacionesFitosanitarias/types'
 import { PUNTOS_STOCK, type PuntoStock } from '../constants'
 import {
+  actualizarSaldoEnDeposito,
   aplicarEgresoTurno,
   confirmarTransferencia,
   getStockMovimientos,
   getStockSaldos,
+  quitarProductoDeDeposito,
   rechazarTransferencia,
   registrarAjuste,
   registrarConteo,
@@ -26,6 +28,15 @@ import type { StockCargaInput, StockFaltante, StockMovimiento, StockProductoProp
 
 type Banner = { type: 'success' | 'error'; text: string } | null
 
+function stockErrorText(err: unknown): string {
+  const msg = err instanceof Error ? err.message : ''
+  if (msg === 'nota') return 'Indicá una nota: el saldo baja.'
+  if (msg === 'duplicado') return 'Ese producto ya existe en el depósito o en el catálogo.'
+  if (msg === 'cantidad') return 'Revisá la cantidad.'
+  if (msg === 'delta') return 'El ajuste no puede ser cero.'
+  return 'No se pudo completar la acción.'
+}
+
 export function useStockAdmin() {
   const { user } = useAuth()
   const adminEmail = user?.email ?? ''
@@ -37,7 +48,7 @@ export function useStockAdmin() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [banner, setBanner] = useState<Banner>(null)
-  const [puntoFiltro, setPuntoFiltro] = useState<PuntoStock | 'todos'>('todos')
+  const [puntoFiltro, setPuntoFiltro] = useState<PuntoStock>('FOA')
 
   const refresh = useCallback(async () => {
     setLoading(true)
@@ -67,7 +78,7 @@ export function useStockAdmin() {
   }, [refresh])
 
   const saldosFiltrados = useMemo(
-    () => puntoFiltro === 'todos' ? saldos : saldos.filter(s => s.punto === puntoFiltro),
+    () => saldos.filter(s => s.punto === puntoFiltro),
     [puntoFiltro, saldos],
   )
 
@@ -93,9 +104,11 @@ export function useStockAdmin() {
       await fn()
       await refresh()
       setBanner({ type: 'success', text: ok })
+      return true
     } catch (err) {
       console.error('[Stock admin]', err)
-      setBanner({ type: 'error', text: 'No se pudo completar la acción.' })
+      setBanner({ type: 'error', text: stockErrorText(err) })
+      return false
     } finally {
       setSaving(false)
     }
@@ -118,8 +131,49 @@ export function useStockAdmin() {
     )
   }, [adminEmail, run])
 
+  const actualizarSaldoAdmin = useCallback((
+    saldo: StockSaldo,
+    patch: Parameters<typeof actualizarSaldoEnDeposito>[1],
+  ) => {
+    return run(
+      () => actualizarSaldoEnDeposito(saldo, patch, adminEmail || 'escritorio'),
+      'Producto actualizado.',
+    )
+  }, [adminEmail, run])
+
+  const quitarProductoAdmin = useCallback((saldo: StockSaldo, nota: string) => {
+    return run(
+      () => quitarProductoDeDeposito(saldo, nota, adminEmail || 'escritorio'),
+      'Producto quitado del depósito.',
+    )
+  }, [adminEmail, run])
+
+  const altaProductoAdmin = useCallback((
+    alta: ProductoCatalogoAlta,
+    punto: PuntoStock,
+    cantidadInicial?: number,
+  ) => {
+    return run(async () => {
+      await createProductoExtra(alta, catalogo)
+      if (cantidadInicial != null && cantidadInicial > 0) {
+        await registrarIngreso({
+          punto,
+          producto: alta.nombre,
+          productoKey: productoKeyFromNombre(alta.nombre),
+          ia: alta.ia,
+          presentacion: alta.presentacion,
+          cantidad: cantidadInicial,
+          nota: 'Alta desde escritorio',
+        }, adminEmail || 'escritorio')
+      }
+    }, cantidadInicial && cantidadInicial > 0
+      ? 'Producto dado de alta y cargado en el depósito.'
+      : 'Producto dado de alta en el catálogo.')
+  }, [adminEmail, catalogo, run])
+
   return {
-    saldos: saldosFiltrados,
+    saldos,
+    saldosVista: saldosFiltrados,
     movimientos,
     catalogo,
     pendientesTransfer,
@@ -135,6 +189,9 @@ export function useStockAdmin() {
     refresh,
     cargarAdmin,
     transferirAdmin,
+    actualizarSaldoAdmin,
+    quitarProductoAdmin,
+    altaProductoAdmin,
     confirmarTransfer: (id: string) => run(() => confirmarTransferencia(id, adminEmail), 'Transferencia confirmada.'),
     rechazarTransfer: (id: string) => run(() => rechazarTransferencia(id, adminEmail), 'Transferencia rechazada.'),
     confirmarProducto: (id: string) => run(() => confirmarProductoPropuesta(id, adminEmail), 'Producto agregado al catálogo.'),

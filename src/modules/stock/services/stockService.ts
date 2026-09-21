@@ -23,7 +23,7 @@ import type {
   StockProductoRef,
   StockSaldo,
 } from '../types'
-import { conteoDelta, nextSaldo, productoKeyFromNombre, saldoDocId } from '../utils/stockMath'
+import { conteoDelta, faltaNotaSiBaja, nextSaldo, productoKeyFromNombre, saldoDocId } from '../utils/stockMath'
 
 const SALDOS = 'stockSaldos'
 const MOVIMIENTOS = 'stockMovimientos'
@@ -182,6 +182,7 @@ export async function registrarConteo(input: StockCargaInput, operador: string):
   await runTransaction(db, async tx => {
     const actual = await readSaldoTx(tx, input.punto, producto.productoKey)
     const delta = conteoDelta(actual, input.cantidad)
+    if (faltaNotaSiBaja(actual, input.cantidad, input.nota ?? '')) throw new Error('nota')
     writeSaldoTx(tx, input.punto, producto, input.cantidad, now)
     tx.set(doc(movimientosCol()), {
       tipo: 'conteo',
@@ -208,7 +209,9 @@ export async function registrarAjuste(
   const now = Timestamp.now()
   await runTransaction(db, async tx => {
     const actual = await readSaldoTx(tx, input.punto, producto.productoKey)
-    writeSaldoTx(tx, input.punto, producto, nextSaldo(actual, input.delta), now)
+    const siguiente = nextSaldo(actual, input.delta)
+    if (faltaNotaSiBaja(actual, siguiente, input.nota ?? '')) throw new Error('nota')
+    writeSaldoTx(tx, input.punto, producto, siguiente, now)
     tx.set(doc(movimientosCol()), {
       tipo: 'ajuste',
       estado: 'confirmado',
@@ -219,6 +222,98 @@ export async function registrarAjuste(
       operador,
       owner_id: uid,
       nota: input.nota?.trim() || '',
+      created_at: now,
+    })
+  })
+}
+
+export async function actualizarSaldoEnDeposito(
+  saldo: StockSaldo,
+  patch: {
+    producto: string
+    ia: string
+    presentacion: string
+    modo: 'conteo' | 'ajuste' | 'datos'
+    cantidad?: number
+    delta?: number
+    nota: string
+  },
+  operador: string,
+): Promise<void> {
+  const { uid } = actor()
+  const producto = refProducto({
+    producto: patch.producto,
+    productoKey: productoKeyFromNombre(patch.producto),
+    ia: patch.ia,
+    presentacion: patch.presentacion,
+  })
+  const now = Timestamp.now()
+  await runTransaction(db, async tx => {
+    const origenRef = saldoRef(saldo.punto, saldo.productoKey)
+    const destinoRef = saldoRef(saldo.punto, producto.productoKey)
+    const origenSnap = await tx.get(origenRef)
+    const actual = origenSnap.exists() ? toNum(origenSnap.data()?.cantidad) : 0
+    if (producto.productoKey !== saldo.productoKey) {
+      const destSnap = await tx.get(destinoRef)
+      if (destSnap.exists()) throw new Error('duplicado')
+    }
+    let siguiente = actual
+    let tipo: StockMovimientoTipo = 'ajuste'
+    let delta = 0
+    if (patch.modo === 'conteo') {
+      if (patch.cantidad == null) throw new Error('cantidad')
+      siguiente = patch.cantidad
+      delta = conteoDelta(actual, siguiente)
+      tipo = 'conteo'
+    } else if (patch.modo === 'ajuste') {
+      if (patch.delta == null || patch.delta === 0) throw new Error('delta')
+      siguiente = nextSaldo(actual, patch.delta)
+      delta = patch.delta
+      tipo = 'ajuste'
+    }
+    if (faltaNotaSiBaja(actual, siguiente, patch.nota)) throw new Error('nota')
+
+    if (producto.productoKey !== saldo.productoKey) {
+      tx.delete(origenRef)
+    }
+    writeSaldoTx(tx, saldo.punto, producto, siguiente, now)
+    tx.set(doc(movimientosCol()), {
+      tipo,
+      estado: 'confirmado',
+      ...producto,
+      cantidad: patch.modo === 'conteo' ? (patch.cantidad ?? siguiente) : Math.abs(delta) || siguiente,
+      delta,
+      punto: saldo.punto,
+      operador,
+      owner_id: uid,
+      nota: patch.nota.trim(),
+      created_at: now,
+    })
+  })
+}
+
+export async function quitarProductoDeDeposito(
+  saldo: StockSaldo,
+  nota: string,
+  operador: string,
+): Promise<void> {
+  if (!nota.trim()) throw new Error('nota')
+  const { uid } = actor()
+  const producto = refProducto(saldo)
+  const now = Timestamp.now()
+  await runTransaction(db, async tx => {
+    const actual = await readSaldoTx(tx, saldo.punto, producto.productoKey)
+    tx.delete(saldoRef(saldo.punto, producto.productoKey))
+    tx.set(doc(movimientosCol()), {
+      tipo: 'ajuste',
+      estado: 'confirmado',
+      ...producto,
+      cantidad: actual,
+      delta: -actual,
+      punto: saldo.punto,
+      operador,
+      owner_id: uid,
+      nota: nota.trim(),
       created_at: now,
     })
   })

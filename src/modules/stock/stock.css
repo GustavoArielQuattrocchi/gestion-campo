@@ -27,3 +27,28 @@
   color: #b91c1c;
   font-weight: 600;
 }
+
+.stock-deposito-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.stock-inline-form {
+  margin: 0 0 20px;
+  padding: 16px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f9fafb;
+}
+
+.stock-inline-form h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.stock-inline-form .oc-btns {
+  margin-top: 12px;
+}

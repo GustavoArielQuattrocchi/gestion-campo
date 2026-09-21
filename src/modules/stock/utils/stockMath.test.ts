@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
   conteoDelta,
+  faltaNotaSiBaja,
   faltantesDeEgreso,
   nextSaldo,
   parseCantidadStock,
@@ -43,5 +44,11 @@ describe('stockMath', () => {
   it('parsea cantidad con coma', () => {
     assert.equal(parseCantidadStock('12,5'), 12.5)
     assert.equal(parseCantidadStock('-1'), null)
+  })
+
+  it('exige nota solo si el saldo baja', () => {
+    assert.equal(faltaNotaSiBaja(10, 8, ''), true)
+    assert.equal(faltaNotaSiBaja(10, 8, 'merma'), false)
+    assert.equal(faltaNotaSiBaja(10, 12, ''), false)
   })
 })

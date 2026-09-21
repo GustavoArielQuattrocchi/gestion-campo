@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
+import { AGRO_CATEGORIAS, AGRO_MANEJO_CATALOGO, AGRO_UM_OPTIONS } from '../../data/agroQuimicos'
 import { useAuth } from '../../providers/AuthProvider'
 import { PUNTO_STOCK_LABEL, PUNTOS_STOCK, type PuntoStock } from './constants'
 import { useStockAdmin } from './hooks/useStockAdmin'
-import { parseCantidadStock, productoKeyFromNombre } from './utils/stockMath'
+import { faltaNotaSiBaja, parseCantidadStock, productoKeyFromNombre } from './utils/stockMath'
+import type { StockSaldo } from './types'
 import type { AplicacionFitosanitaria } from '../aplicacionesFitosanitarias/types'
 import '../ordenesCura/ordenesCura.css'
 import './stock.css'
@@ -63,46 +65,423 @@ export default function StockAdminPage() {
   )
 }
 
+type AccionDeposito =
+  | { kind: 'agregar' }
+  | { kind: 'alta' }
+  | { kind: 'editar'; saldo: StockSaldo }
+  | { kind: 'quitar'; saldo: StockSaldo }
+
 function SaldosPanel({ editor }: { editor: ReturnType<typeof useStockAdmin> }) {
+  const [accion, setAccion] = useState<AccionDeposito | null>(null)
+  const punto = editor.puntoFiltro
+
+  useEffect(() => {
+    setAccion(null)
+  }, [punto])
+
   return (
     <section className="oc-card">
-      <div className="oc-tools">
-        <h2>Saldos por depósito</h2>
-        <select
-          className="oc-input"
-          value={editor.puntoFiltro}
-          onChange={e => editor.setPuntoFiltro(e.target.value as PuntoStock | 'todos')}
-        >
-          <option value="todos">Todos</option>
-          {PUNTOS_STOCK.map(p => <option key={p} value={p}>{PUNTO_STOCK_LABEL[p]}</option>)}
-        </select>
+      <div className="stock-deposito-tabs" role="tablist" aria-label="Depósitos">
+        {PUNTOS_STOCK.map(p => (
+          <button
+            key={p}
+            type="button"
+            role="tab"
+            aria-selected={punto === p}
+            className={`oc-btn ${punto === p ? 'oc-btn--primary' : 'oc-btn--light'}`}
+            onClick={() => editor.setPuntoFiltro(p)}
+          >
+            {PUNTO_STOCK_LABEL[p]}
+          </button>
+        ))}
       </div>
+
+      <div className="oc-tools">
+        <h2>Saldos · {PUNTO_STOCK_LABEL[punto]}</h2>
+        <div className="oc-tools-right">
+          <button type="button" className="oc-btn oc-btn--light" onClick={() => setAccion({ kind: 'agregar' })}>
+            Cargar producto
+          </button>
+          <button type="button" className="oc-btn oc-btn--primary" onClick={() => setAccion({ kind: 'alta' })}>
+            Dar de alta
+          </button>
+        </div>
+      </div>
+
+      {accion?.kind === 'agregar' ? (
+        <CargarProductoDepositoForm
+          editor={editor}
+          punto={punto}
+          onClose={() => setAccion(null)}
+        />
+      ) : null}
+      {accion?.kind === 'alta' ? (
+        <AltaProductoDepositoForm
+          editor={editor}
+          punto={punto}
+          onClose={() => setAccion(null)}
+        />
+      ) : null}
+      {accion?.kind === 'editar' ? (
+        <EditarSaldoForm
+          editor={editor}
+          saldo={accion.saldo}
+          onClose={() => setAccion(null)}
+        />
+      ) : null}
+      {accion?.kind === 'quitar' ? (
+        <QuitarProductoForm
+          editor={editor}
+          saldo={accion.saldo}
+          onClose={() => setAccion(null)}
+        />
+      ) : null}
+
       {editor.loading ? <p className="oc-muted">Cargando…</p> : null}
       <div className="oc-table-responsive">
         <table className="oc-table">
           <thead>
             <tr>
-              <th>Depósito</th>
               <th>Producto</th>
               <th>I.A.</th>
               <th>Saldo</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
-            {editor.saldos.length === 0 ? (
-              <tr><td colSpan={4} className="oc-empty">Sin stock cargado</td></tr>
-            ) : editor.saldos.map(s => (
+            {editor.saldosVista.length === 0 ? (
+              <tr><td colSpan={4} className="oc-empty">Sin productos en este depósito</td></tr>
+            ) : editor.saldosVista.map(s => (
               <tr key={s.id} className={s.cantidad < 0 ? 'stock-row-neg' : undefined}>
-                <td>{s.punto}</td>
                 <td>{s.producto}</td>
                 <td>{s.ia || '—'}</td>
                 <td>{s.cantidad} {s.presentacion}</td>
+                <td>
+                  <div className="oc-btns">
+                    <button
+                      type="button"
+                      className="oc-btn oc-btn--light"
+                      disabled={editor.saving}
+                      onClick={() => setAccion({ kind: 'editar', saldo: s })}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      className="oc-btn oc-btn--danger"
+                      disabled={editor.saving}
+                      onClick={() => setAccion({ kind: 'quitar', saldo: s })}
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
     </section>
+  )
+}
+
+function CargarProductoDepositoForm({
+  editor,
+  punto,
+  onClose,
+}: {
+  editor: ReturnType<typeof useStockAdmin>
+  punto: PuntoStock
+  onClose: () => void
+}) {
+  const [productoId, setProductoId] = useState('')
+  const [cantidad, setCantidad] = useState('')
+  const [nota, setNota] = useState('')
+  const keysEnDeposito = useMemo(
+    () => new Set(editor.saldosVista.map(s => s.productoKey)),
+    [editor.saldosVista],
+  )
+  const disponibles = useMemo(
+    () => editor.catalogo.filter(p => !keysEnDeposito.has(productoKeyFromNombre(p.nombre))),
+    [editor.catalogo, keysEnDeposito],
+  )
+  const producto = editor.catalogo.find(p => p.id === productoId)
+
+  const submit = () => {
+    if (!producto) return
+    const n = parseCantidadStock(cantidad)
+    if (n == null || n <= 0) {
+      editor.setBanner({ type: 'error', text: 'Revisá la cantidad.' })
+      return
+    }
+    void editor.cargarAdmin({
+      punto,
+      producto: producto.nombre,
+      productoKey: productoKeyFromNombre(producto.nombre),
+      ia: producto.ia,
+      presentacion: producto.presentacion,
+      cantidad: n,
+      nota,
+    }, 'ingreso').then(ok => { if (ok) onClose() })
+  }
+
+  return (
+    <div className="stock-inline-form">
+      <h3>Cargar producto existente</h3>
+      <label>Producto
+        <select className="oc-input" value={productoId} onChange={e => setProductoId(e.target.value)}>
+          <option value="">Elegí un producto</option>
+          {disponibles.map(p => (
+            <option key={p.id} value={p.id}>{p.nombre} · {p.presentacion}</option>
+          ))}
+        </select>
+      </label>
+      <label>Cantidad
+        <input className="oc-input" value={cantidad} onChange={e => setCantidad(e.target.value)} inputMode="decimal" />
+      </label>
+      <label>Nota
+        <input className="oc-input" value={nota} onChange={e => setNota(e.target.value)} />
+      </label>
+      <div className="oc-btns">
+        <button type="button" className="oc-btn oc-btn--primary" disabled={editor.saving || !producto} onClick={submit}>
+          {editor.saving ? 'Guardando…' : 'Cargar'}
+        </button>
+        <button type="button" className="oc-btn oc-btn--slate" onClick={onClose}>Cancelar</button>
+      </div>
+    </div>
+  )
+}
+
+function AltaProductoDepositoForm({
+  editor,
+  punto,
+  onClose,
+}: {
+  editor: ReturnType<typeof useStockAdmin>
+  punto: PuntoStock
+  onClose: () => void
+}) {
+  const [categoria, setCategoria] = useState<(typeof AGRO_CATEGORIAS)[number]>('Fungicida')
+  const [nombre, setNombre] = useState('')
+  const [ia, setIa] = useState('')
+  const [presentacion, setPresentacion] = useState<(typeof AGRO_UM_OPTIONS)[number]>('kg')
+  const [management, setManagement] = useState<(typeof AGRO_MANEJO_CATALOGO)[number]>('Convencional')
+  const [cantidad, setCantidad] = useState('')
+
+  const submit = () => {
+    if (!nombre.trim()) {
+      editor.setBanner({ type: 'error', text: 'Completá el nombre del producto.' })
+      return
+    }
+    let inicial: number | undefined
+    if (cantidad.trim()) {
+      const parsed = parseCantidadStock(cantidad)
+      if (parsed == null || parsed <= 0) {
+        editor.setBanner({ type: 'error', text: 'Revisá la cantidad inicial.' })
+        return
+      }
+      inicial = parsed
+    }
+    void editor.altaProductoAdmin({
+      categoria,
+      nombre: nombre.trim(),
+      ia: ia.trim(),
+      presentacion,
+      dosis_ha: '',
+      description: '',
+      management,
+    }, punto, inicial).then(ok => { if (ok) onClose() })
+  }
+
+  return (
+    <div className="stock-inline-form">
+      <h3>Dar de alta un producto</h3>
+      <p className="oc-muted">Queda en el catálogo. Si cargás cantidad, también entra a {PUNTO_STOCK_LABEL[punto]}.</p>
+      <div className="oc-row">
+        <label>Grupo
+          <select className="oc-input" value={categoria} onChange={e => setCategoria(e.target.value as typeof categoria)}>
+            {AGRO_CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </label>
+        <label>Nombre
+          <input className="oc-input" value={nombre} onChange={e => setNombre(e.target.value)} />
+        </label>
+      </div>
+      <div className="oc-row">
+        <label>I.A.
+          <input className="oc-input" value={ia} onChange={e => setIa(e.target.value)} />
+        </label>
+        <label>UM
+          <select className="oc-input" value={presentacion} onChange={e => setPresentacion(e.target.value as typeof presentacion)}>
+            {AGRO_UM_OPTIONS.map(um => <option key={um} value={um}>{um}</option>)}
+          </select>
+        </label>
+      </div>
+      <div className="oc-row">
+        <label>Manejo
+          <select className="oc-input" value={management} onChange={e => setManagement(e.target.value as typeof management)}>
+            {AGRO_MANEJO_CATALOGO.map(m => <option key={m} value={m}>{m}</option>)}
+          </select>
+        </label>
+        <label>Cantidad inicial (opcional)
+          <input className="oc-input" value={cantidad} onChange={e => setCantidad(e.target.value)} inputMode="decimal" />
+        </label>
+      </div>
+      <div className="oc-btns">
+        <button type="button" className="oc-btn oc-btn--primary" disabled={editor.saving} onClick={submit}>
+          {editor.saving ? 'Guardando…' : 'Dar de alta'}
+        </button>
+        <button type="button" className="oc-btn oc-btn--slate" onClick={onClose}>Cancelar</button>
+      </div>
+    </div>
+  )
+}
+
+function EditarSaldoForm({
+  editor,
+  saldo,
+  onClose,
+}: {
+  editor: ReturnType<typeof useStockAdmin>
+  saldo: StockSaldo
+  onClose: () => void
+}) {
+  const [modo, setModo] = useState<'conteo' | 'ajuste'>('conteo')
+  const [producto, setProducto] = useState(saldo.producto)
+  const [ia, setIa] = useState(saldo.ia)
+  const [presentacion, setPresentacion] = useState(saldo.presentacion)
+  const [cantidad, setCantidad] = useState(String(saldo.cantidad))
+  const [delta, setDelta] = useState('')
+  const [nota, setNota] = useState('')
+
+  const umOptions = AGRO_UM_OPTIONS.includes(presentacion as (typeof AGRO_UM_OPTIONS)[number])
+    ? AGRO_UM_OPTIONS
+    : ([presentacion, ...AGRO_UM_OPTIONS] as const)
+
+  const siguiente = useMemo(() => {
+    if (modo === 'conteo') {
+      const n = parseCantidadStock(cantidad)
+      return n
+    }
+    const d = Number(delta.replace(',', '.'))
+    return Number.isFinite(d) ? saldo.cantidad + d : null
+  }, [modo, cantidad, delta, saldo.cantidad])
+
+  const bajaSinNota = siguiente != null && faltaNotaSiBaja(saldo.cantidad, siguiente, nota)
+
+  const submit = () => {
+    if (!producto.trim()) {
+      editor.setBanner({ type: 'error', text: 'Completá el nombre del producto.' })
+      return
+    }
+    if (siguiente == null) {
+      editor.setBanner({ type: 'error', text: 'Revisá la cantidad o el ajuste.' })
+      return
+    }
+    if (modo === 'ajuste') {
+      const d = Number(delta.replace(',', '.'))
+      if (!Number.isFinite(d) || d === 0) {
+        editor.setBanner({ type: 'error', text: 'El ajuste no puede ser cero.' })
+        return
+      }
+    }
+    if (bajaSinNota) {
+      editor.setBanner({ type: 'error', text: 'Indicá una nota: el saldo baja.' })
+      return
+    }
+    void editor.actualizarSaldoAdmin(saldo, {
+      producto,
+      ia,
+      presentacion,
+      modo,
+      cantidad: modo === 'conteo' ? siguiente : undefined,
+      delta: modo === 'ajuste' ? Number(delta.replace(',', '.')) : undefined,
+      nota,
+    }).then(ok => { if (ok) onClose() })
+  }
+
+  return (
+    <div className="stock-inline-form">
+      <h3>Editar {saldo.producto}</h3>
+      <p className="oc-muted">Saldo actual: {saldo.cantidad} {saldo.presentacion}</p>
+      <label>Modo
+        <select className="oc-input" value={modo} onChange={e => setModo(e.target.value as typeof modo)}>
+          <option value="conteo">Conteo (dejar en…)</option>
+          <option value="ajuste">Ajuste (+/−)</option>
+        </select>
+      </label>
+      <div className="oc-row">
+        <label>Producto
+          <input className="oc-input" value={producto} onChange={e => setProducto(e.target.value)} />
+        </label>
+        <label>I.A.
+          <input className="oc-input" value={ia} onChange={e => setIa(e.target.value)} />
+        </label>
+      </div>
+      <div className="oc-row">
+        <label>UM
+          <select className="oc-input" value={presentacion} onChange={e => setPresentacion(e.target.value)}>
+            {umOptions.map(um => <option key={um} value={um}>{um}</option>)}
+          </select>
+        </label>
+        {modo === 'conteo' ? (
+          <label>Cantidad
+            <input className="oc-input" value={cantidad} onChange={e => setCantidad(e.target.value)} inputMode="decimal" />
+          </label>
+        ) : (
+          <label>Delta (negativo resta)
+            <input className="oc-input" value={delta} onChange={e => setDelta(e.target.value)} />
+          </label>
+        )}
+      </div>
+      <label>Nota {bajaSinNota ? '(obligatoria: el saldo baja)' : '(obligatoria si baja el saldo)'}
+        <input className="oc-input" value={nota} onChange={e => setNota(e.target.value)} />
+      </label>
+      <div className="oc-btns">
+        <button type="button" className="oc-btn oc-btn--primary" disabled={editor.saving} onClick={submit}>
+          {editor.saving ? 'Guardando…' : 'Guardar cambios'}
+        </button>
+        <button type="button" className="oc-btn oc-btn--slate" onClick={onClose}>Cancelar</button>
+      </div>
+    </div>
+  )
+}
+
+function QuitarProductoForm({
+  editor,
+  saldo,
+  onClose,
+}: {
+  editor: ReturnType<typeof useStockAdmin>
+  saldo: StockSaldo
+  onClose: () => void
+}) {
+  const [nota, setNota] = useState('')
+
+  const submit = () => {
+    if (!nota.trim()) {
+      editor.setBanner({ type: 'error', text: 'Indicá una nota para quitar el producto.' })
+      return
+    }
+    void editor.quitarProductoAdmin(saldo, nota).then(ok => { if (ok) onClose() })
+  }
+
+  return (
+    <div className="stock-inline-form">
+      <h3>Quitar de {PUNTO_STOCK_LABEL[saldo.punto]}</h3>
+      <p className="oc-muted">
+        Se saca {saldo.producto} ({saldo.cantidad} {saldo.presentacion}) de este depósito. El catálogo no se borra.
+      </p>
+      <label>Nota (obligatoria)
+        <input className="oc-input" value={nota} onChange={e => setNota(e.target.value)} />
+      </label>
+      <div className="oc-btns">
+        <button type="button" className="oc-btn oc-btn--danger" disabled={editor.saving} onClick={submit}>
+          {editor.saving ? 'Quitando…' : 'Quitar del depósito'}
+        </button>
+        <button type="button" className="oc-btn oc-btn--slate" onClick={onClose}>Cancelar</button>
+      </div>
+    </div>
   )
 }
 
@@ -296,10 +675,22 @@ function CargaPanel({
     }
     if (modo === 'ajuste') {
       if (!Number.isFinite(d) || d === 0) return
+      const actual = editor.saldos.find(s => s.punto === punto && s.productoKey === base.productoKey)?.cantidad ?? 0
+      if (faltaNotaSiBaja(actual, actual + d, nota)) {
+        editor.setBanner({ type: 'error', text: 'Indicá una nota: el saldo baja.' })
+        return
+      }
       void editor.cargarAdmin(base, 'ajuste', d)
       return
     }
     if (n == null) return
+    if (modo === 'conteo') {
+      const actual = editor.saldos.find(s => s.punto === punto && s.productoKey === base.productoKey)?.cantidad ?? 0
+      if (faltaNotaSiBaja(actual, n, nota)) {
+        editor.setBanner({ type: 'error', text: 'Indicá una nota: el saldo baja.' })
+        return
+      }
+    }
     void editor.cargarAdmin(base, modo)
   }
 
@@ -343,7 +734,7 @@ function CargaPanel({
           <input className="oc-input" value={cantidad} onChange={e => setCantidad(e.target.value)} />
         </label>
       )}
-      <label>Nota
+      <label>Nota (obligatoria si baja el saldo)
         <input className="oc-input" value={nota} onChange={e => setNota(e.target.value)} />
       </label>
       <button type="button" className="oc-btn oc-btn--primary" disabled={editor.saving || !producto} onClick={submit}>
