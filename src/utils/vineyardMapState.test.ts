@@ -44,6 +44,18 @@ describe('buildEstadoPorCuadro', () => {
     assert.equal(estado?.pendiente, false)
     assert.equal(estado?.cuadroFinalizado, true)
   })
+
+  it('ignora tareas de toda la finca', () => {
+    const map = buildEstadoPorCuadro([
+      {
+        ...tareaManual('1', 'FOA-5'),
+        alcance: 'finca',
+        cuadros: [],
+        cuadroIds: [],
+      },
+    ])
+    assert.equal(map.size, 0)
+  })
 })
 
 describe('buildEstadoPorCuadroParaMapa — solape poda cerrada + alambre abierta', () => {

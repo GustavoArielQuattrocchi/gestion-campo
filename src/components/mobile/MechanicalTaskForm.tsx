@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { ChevronLeft, Save } from 'lucide-react'
 import { getMaquinariasPorFinca, tareasMecanicas } from '../../data/catalog'
 import { emptyCuadroSelection, type CuadroSelection, type ParteDeLabores, type Tarea } from '../../types'
+import { ALCANCE_FINCA } from '../../utils/tareaAlcance'
 import { findTareaContinuableMecanica } from '../../utils/findTareaContinuable'
 import type { ContinueTaskOptions } from '../../utils/tareaEjecutor'
 import {
@@ -38,6 +39,7 @@ interface Props {
     ordenCuraRef?: string
     responsable: string
     origenEjecucion: OrigenEjecucion
+    alcance?: 'finca'
   }) => Promise<boolean>
   onContinue: (
     tareaId: string,
@@ -64,14 +66,15 @@ export default function MechanicalTaskForm({
   const [persona, setPersona] = useState('')
   const [maquinariaId, setMaquinariaId] = useState('')
   const [cuadroSelection, setCuadroSelection] = useState<CuadroSelection>(emptyCuadroSelection)
+  const [todaLaFinca, setTodaLaFinca] = useState(false)
   const [ordenCuraRef, setOrdenCuraRef] = useState('')
   const [saving, setSaving] = useState(false)
 
   const maquinariasFinca = useMemo(() => getMaquinariasPorFinca(fincaId), [fincaId])
 
   const tareaContinuable = useMemo(
-    () => findTareaContinuableMecanica(tareasActivas, tarea),
-    [tareasActivas, tarea],
+    () => findTareaContinuableMecanica(tareasActivas, tarea, undefined, todaLaFinca ? ALCANCE_FINCA : 'cuadros'),
+    [tareasActivas, tarea, todaLaFinca],
   )
 
   const sugerencias = useMemo(() => {
@@ -110,7 +113,7 @@ export default function MechanicalTaskForm({
         responsableOk &&
         persona &&
         maquinariaId &&
-        cuadroSelection.cuadroIds.length > 0,
+        (todaLaFinca || cuadroSelection.cuadroIds.length > 0),
     )
 
   const handleSubmit = async () => {
@@ -123,7 +126,11 @@ export default function MechanicalTaskForm({
     try {
       rememberSugerenciaResponsable(operadorNombre, origenEjecucion, resp)
       if (tareaContinuable) {
-        await onContinue(tareaContinuable.id, cuadroSelection.cuadros, cuadroSelection.cuadroIds, {
+        await onContinue(
+          tareaContinuable.id,
+          todaLaFinca ? [] : cuadroSelection.cuadros,
+          todaLaFinca ? [] : cuadroSelection.cuadroIds,
+          {
           persona,
           maquinaria: tractor.nombre,
           maquinariaModelo: tractor.modelo,
@@ -138,10 +145,11 @@ export default function MechanicalTaskForm({
           maquinaria: tractor.nombre,
           maquinariaModelo: tractor.modelo,
           maquinariaId: tractor.id,
-          cuadros: cuadroSelection.cuadros,
-          cuadroIds: cuadroSelection.cuadroIds,
+          cuadros: todaLaFinca ? [] : cuadroSelection.cuadros,
+          cuadroIds: todaLaFinca ? [] : cuadroSelection.cuadroIds,
           responsable: resp,
           origenEjecucion,
+          ...(todaLaFinca ? { alcance: ALCANCE_FINCA } : {}),
           ...(ordenCuraRef.trim() ? { ordenCuraRef: ordenCuraRef.trim() } : {}),
         })
       }
@@ -241,6 +249,25 @@ export default function MechanicalTaskForm({
         </div>
 
         <div className="form-group">
+          <label className={`checkbox-item ${todaLaFinca ? 'selected' : ''}`}>
+            <input
+              type="checkbox"
+              checked={todaLaFinca}
+              onChange={e => {
+                const next = e.target.checked
+                setTodaLaFinca(next)
+                if (next) setCuadroSelection(emptyCuadroSelection())
+              }}
+            />
+            <span>Toda la finca</span>
+          </label>
+          {todaLaFinca ? (
+            <p className="form-hint">Se guarda en la finca, sin asignar cuadros ni pintar el mapa.</p>
+          ) : null}
+        </div>
+
+        {!todaLaFinca && (
+        <div className="form-group">
           <label className="form-label">Cuadros de trabajo</label>
           <CuadroSelector
             fincaNombre={fincaNombre}
@@ -248,6 +275,7 @@ export default function MechanicalTaskForm({
             onChange={setCuadroSelection}
           />
         </div>
+        )}
 
         {tarea === 'Curacion' && (
           <div className="form-group">
@@ -286,7 +314,9 @@ export default function MechanicalTaskForm({
           : parteVencidoEjecutor
             ? 'Cerrá el parte anterior primero'
             : tareaContinuable
-            ? 'Agregar cuadros a tarea existente'
+            ? todaLaFinca
+              ? 'Abrir parte en tarea de toda la finca'
+              : 'Agregar cuadros a tarea existente'
             : 'Abrir parte de labores'}
       </button>
     </div>

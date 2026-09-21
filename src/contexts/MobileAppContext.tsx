@@ -108,6 +108,7 @@ interface MobileAppContextValue {
     cuadros: string[]
     cuadroIds: string[]
     responsable: string
+    alcance?: 'finca'
   }) => Promise<boolean>
   handleStartMechanicalTask: (data: {
     tarea: string
@@ -120,6 +121,7 @@ interface MobileAppContextValue {
     ordenCuraRef?: string
     responsable: string
     origenEjecucion: 'propia' | 'externa'
+    alcance?: 'finca'
   }) => Promise<boolean>
   handleRegisterRendimiento: (
     tareaId: string,
@@ -333,6 +335,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     cuadros: string[]
     cuadroIds: string[]
     responsable: string
+    alcance?: 'finca'
   }): Promise<boolean> => {
     if (submittingRef.current) return false
     const validated = validateManualTaskCreate(data)
@@ -367,6 +370,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         cantidadPersonas: validated.data.cantidadPersonas,
         cuadros: validated.data.cuadros,
         cuadroIds: validated.data.cuadroIds,
+        ...(validated.data.alcance ? { alcance: validated.data.alcance } : {}),
         ...(payload.ejecutorPorCuadro ? { ejecutorPorCuadro: payload.ejecutorPorCuadro } : {}),
         estado: 'en_progreso',
         operador: operadorNombre.trim(),
@@ -420,6 +424,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
     ordenCuraRef?: string
     responsable: string
     origenEjecucion: 'propia' | 'externa'
+    alcance?: 'finca'
   }): Promise<boolean> => {
     if (submittingRef.current) return false
     const validated = validateMechanicalTaskCreate(data)
@@ -457,6 +462,7 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         ...(validated.data.ordenCuraRef ? { ordenCuraRef: validated.data.ordenCuraRef } : {}),
         cuadros: validated.data.cuadros,
         cuadroIds: validated.data.cuadroIds,
+        ...(validated.data.alcance ? { alcance: validated.data.alcance } : {}),
         ...(payload.ejecutorPorCuadro ? { ejecutorPorCuadro: payload.ejecutorPorCuadro } : {}),
         estado: 'en_progreso',
         operador: operadorNombre.trim(),
@@ -521,10 +527,9 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
         ? buildEjecutorPorCuadroPatch(cuadroIds, ejecutorLabel)
         : {}
 
-      const updates: Record<string, unknown> = {
-        cuadros: arrayUnion(...cuadros),
-        cuadroIds: arrayUnion(...cuadroIds),
-      }
+      const updates: Record<string, unknown> = {}
+      if (cuadros.length > 0) updates.cuadros = arrayUnion(...cuadros)
+      if (cuadroIds.length > 0) updates.cuadroIds = arrayUnion(...cuadroIds)
       if (Object.keys(ejecutorPatch).length > 0) {
         updates.ejecutorPorCuadro = mergeEjecutorPorCuadro(tarea.ejecutorPorCuadro, ejecutorPatch)
       }
@@ -595,12 +600,16 @@ export function MobileAppProvider({ children }: { children: ReactNode }) {
 
       let parteId: string | null
       if (parteExistente) {
-        await updateDoc(doc(db, 'tareas', tareaId), updates)
+        if (Object.keys(updates).length > 0) {
+          await updateDoc(doc(db, 'tareas', tareaId), updates)
+        }
         parteId = parteExistente.id
       } else {
         const parteRef = doc(collection(db, 'partes_labores'))
         const batch = writeBatch(db)
-        batch.update(doc(db, 'tareas', tareaId), updates)
+        if (Object.keys(updates).length > 0) {
+          batch.update(doc(db, 'tareas', tareaId), updates)
+        }
         batch.set(
           parteRef,
           buildParteAbiertoPayload(

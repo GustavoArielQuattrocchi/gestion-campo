@@ -80,6 +80,18 @@ describe('parseTarea', () => {
       assert.equal(result.tarea.maquinaria, 'Tractor')
     }
   })
+
+  it('conserva alcance finca sin exigir cuadros', () => {
+    const result = parseTarea('abc', {
+      ...baseManual,
+      cuadros: [],
+      alcance: 'finca',
+    })
+    assert.equal(result.success, true)
+    if (!result.success) return
+    assert.equal(result.tarea.alcance, 'finca')
+    assert.deepEqual(result.tarea.cuadros, [])
+  })
 })
 
 describe('parseTareasFromSnapshot', () => {

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { ChevronLeft, Save } from 'lucide-react'
 import { cuadrillas, tareasManuales } from '../../data/catalog'
 import { emptyCuadroSelection, type CuadroSelection, type ParteDeLabores, type Tarea } from '../../types'
+import { ALCANCE_FINCA } from '../../utils/tareaAlcance'
 import { findTareaContinuableManual } from '../../utils/findTareaContinuable'
 import type { ContinueTaskOptions } from '../../utils/tareaEjecutor'
 import {
@@ -33,6 +34,7 @@ interface Props {
     cuadros: string[]
     cuadroIds: string[]
     responsable: string
+    alcance?: 'finca'
   }) => Promise<boolean>
   onContinue: (
     tareaId: string,
@@ -57,6 +59,7 @@ export default function ManualTaskForm({
   const [cantidadPersonas, setCantidadPersonas] = useState('')
   const [responsable, setResponsable] = useState('')
   const [cuadroSelection, setCuadroSelection] = useState<CuadroSelection>(emptyCuadroSelection)
+  const [todaLaFinca, setTodaLaFinca] = useState(false)
   const [saving, setSaving] = useState(false)
 
   const origen = useMemo(
@@ -70,8 +73,8 @@ export default function ManualTaskForm({
   }, [origen, operadorNombre, responsable])
 
   const tareaContinuable = useMemo(
-    () => findTareaContinuableManual(tareasActivas, tarea),
-    [tareasActivas, tarea],
+    () => findTareaContinuableManual(tareasActivas, tarea, undefined, todaLaFinca ? ALCANCE_FINCA : 'cuadros'),
+    [tareasActivas, tarea, todaLaFinca],
   )
 
   const responsableOk = normalizeResponsable(responsable).length > 0
@@ -85,7 +88,7 @@ export default function ManualTaskForm({
   }, [tareaContinuable, cuadrilla, responsableOk, responsable, partesAbiertos])
 
   const isValid =
-    Boolean(cuadrilla && tarea && cantidadPersonas && responsableOk && cuadroSelection.cuadroIds.length > 0)
+    Boolean(cuadrilla && tarea && cantidadPersonas && responsableOk && (todaLaFinca || cuadroSelection.cuadroIds.length > 0))
 
   const handleSubmit = async () => {
     if (!isValid || saving || !origen) return
@@ -97,7 +100,11 @@ export default function ManualTaskForm({
     try {
       rememberSugerenciaResponsable(operadorNombre, origen, resp)
       if (tareaContinuable) {
-        await onContinue(tareaContinuable.id, cuadroSelection.cuadros, cuadroSelection.cuadroIds, {
+        await onContinue(
+          tareaContinuable.id,
+          todaLaFinca ? [] : cuadroSelection.cuadros,
+          todaLaFinca ? [] : cuadroSelection.cuadroIds,
+          {
           cantidadPersonas: n,
           cuadrilla,
           responsable: resp,
@@ -108,9 +115,10 @@ export default function ManualTaskForm({
           cuadrilla,
           tarea,
           cantidadPersonas: n,
-          cuadros: cuadroSelection.cuadros,
-          cuadroIds: cuadroSelection.cuadroIds,
+          cuadros: todaLaFinca ? [] : cuadroSelection.cuadros,
+          cuadroIds: todaLaFinca ? [] : cuadroSelection.cuadroIds,
           responsable: resp,
+          ...(todaLaFinca ? { alcance: ALCANCE_FINCA } : {}),
         })
       }
     } finally {
@@ -188,6 +196,25 @@ export default function ManualTaskForm({
         </div>
 
         <div className="form-group">
+          <label className={`checkbox-item ${todaLaFinca ? 'selected' : ''}`}>
+            <input
+              type="checkbox"
+              checked={todaLaFinca}
+              onChange={e => {
+                const next = e.target.checked
+                setTodaLaFinca(next)
+                if (next) setCuadroSelection(emptyCuadroSelection())
+              }}
+            />
+            <span>Toda la finca</span>
+          </label>
+          {todaLaFinca ? (
+            <p className="form-hint">Se guarda en la finca, sin asignar cuadros ni pintar el mapa.</p>
+          ) : null}
+        </div>
+
+        {!todaLaFinca && (
+        <div className="form-group">
           <label className="form-label">Cuadros de trabajo</label>
           <CuadroSelector
             fincaNombre={fincaNombre}
@@ -195,6 +222,7 @@ export default function ManualTaskForm({
             onChange={setCuadroSelection}
           />
         </div>
+        )}
       </div>
 
       {tareaContinuable && (
@@ -223,7 +251,9 @@ export default function ManualTaskForm({
           : parteVencidoEjecutor
             ? 'Cerrá el parte anterior primero'
             : tareaContinuable
-            ? 'Agregar cuadros a tarea existente'
+            ? todaLaFinca
+              ? 'Abrir parte en tarea de toda la finca'
+              : 'Agregar cuadros a tarea existente'
             : 'Abrir parte de labores'}
       </button>
     </div>

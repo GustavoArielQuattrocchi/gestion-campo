@@ -1,5 +1,6 @@
 import type { Timestamp } from 'firebase/firestore'
-import type { Tarea, TareaEstado, TareaTipo } from '../types'
+import type { Tarea, TareaAlcance, TareaEstado, TareaTipo } from '../types'
+import { ALCANCE_FINCA } from './tareaAlcance'
 
 export interface ParseInvalidEntry {
   id: string
@@ -102,6 +103,8 @@ export function parseTarea(id: string, raw: Record<string, unknown>): ParseTarea
         )
       : undefined
 
+  const alcance: TareaAlcance | undefined = raw.alcance === ALCANCE_FINCA ? ALCANCE_FINCA : undefined
+
   const rendimientosDiarios = Array.isArray(raw.rendimientosDiarios)
     ? raw.rendimientosDiarios
         .map(entry => {
@@ -130,6 +133,7 @@ export function parseTarea(id: string, raw: Record<string, unknown>): ParseTarea
     tarea: tareaNombre,
     cuadros,
     ...(cuadroIds.length > 0 ? { cuadroIds } : {}),
+    ...(alcance ? { alcance } : {}),
     ...(cuadroIdsFinalizados.length > 0 ? { cuadroIdsFinalizados } : {}),
     ...(cuadroFinalizaciones.length > 0 ? { cuadroFinalizaciones } : {}),
     ...(ejecutorPorCuadro && Object.keys(ejecutorPorCuadro).length > 0 ? { ejecutorPorCuadro } : {}),

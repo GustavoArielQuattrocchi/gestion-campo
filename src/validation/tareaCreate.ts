@@ -1,8 +1,12 @@
 /** Validación compartida para payloads de alta de tareas (mobile → Firestore). */
 
+import type { TareaAlcance } from '../types'
+import { ALCANCE_FINCA, esTareaTodaLaFinca } from '../utils/tareaAlcance'
+
 export interface CuadroFields {
   cuadros: string[]
   cuadroIds: string[]
+  alcance?: TareaAlcance
 }
 
 export interface ManualTaskCreateInput extends CuadroFields {
@@ -34,7 +38,8 @@ function nonEmptyStrings(values: string[], field: string): string | null {
   return null
 }
 
-function validateCuadros(cuadros: string[], cuadroIds: string[]): string | null {
+function validateCuadros(cuadros: string[], cuadroIds: string[], alcance?: TareaAlcance): string | null {
+  if (esTareaTodaLaFinca({ alcance })) return null
   const cuadrosErr = nonEmptyStrings(cuadros, 'cuadros')
   if (cuadrosErr) return cuadrosErr
   const idsErr = nonEmptyStrings(cuadroIds, 'cuadroIds')
@@ -42,10 +47,22 @@ function validateCuadros(cuadros: string[], cuadroIds: string[]): string | null 
   return null
 }
 
+function normalizeAlcance(alcance?: TareaAlcance): TareaAlcance | undefined {
+  return alcance === ALCANCE_FINCA ? ALCANCE_FINCA : undefined
+}
+
+function normalizeCuadros(input: CuadroFields): CuadroFields {
+  if (esTareaTodaLaFinca(input)) {
+    return { cuadros: [], cuadroIds: [], alcance: ALCANCE_FINCA }
+  }
+  return { cuadros: input.cuadros, cuadroIds: input.cuadroIds }
+}
+
 export function validateManualTaskCreate(input: ManualTaskCreateInput): ValidationResult<ManualTaskCreateInput> {
   const cuadrilla = input.cuadrilla?.trim() ?? ''
   const tarea = input.tarea?.trim() ?? ''
   const n = input.cantidadPersonas
+  const alcance = normalizeAlcance(input.alcance)
 
   if (!cuadrilla) return { success: false, reason: 'Seleccioná una cuadrilla' }
   if (!tarea) return { success: false, reason: 'Seleccioná una tarea' }
@@ -53,7 +70,7 @@ export function validateManualTaskCreate(input: ManualTaskCreateInput): Validati
     return { success: false, reason: 'La cantidad de personas debe ser al menos 1' }
   }
 
-  const cuadrosErr = validateCuadros(input.cuadros, input.cuadroIds)
+  const cuadrosErr = validateCuadros(input.cuadros, input.cuadroIds, alcance)
   if (cuadrosErr) return { success: false, reason: cuadrosErr }
 
   return {
@@ -62,8 +79,7 @@ export function validateManualTaskCreate(input: ManualTaskCreateInput): Validati
       cuadrilla,
       tarea,
       cantidadPersonas: Math.floor(n),
-      cuadros: input.cuadros,
-      cuadroIds: input.cuadroIds,
+      ...normalizeCuadros({ ...input, alcance }),
     },
   }
 }
@@ -77,12 +93,13 @@ export function validateMechanicalTaskCreate(
   const maquinariaModelo = input.maquinariaModelo?.trim() ?? ''
   const maquinariaId = input.maquinariaId?.trim() ?? ''
   const ordenCuraRef = input.ordenCuraRef?.trim() ?? ''
+  const alcance = normalizeAlcance(input.alcance)
 
   if (!tarea) return { success: false, reason: 'Seleccioná una tarea' }
   if (!persona) return { success: false, reason: 'Ingresá la persona responsable' }
   if (!maquinaria) return { success: false, reason: 'Seleccioná la maquinaria' }
 
-  const cuadrosErr = validateCuadros(input.cuadros, input.cuadroIds)
+  const cuadrosErr = validateCuadros(input.cuadros, input.cuadroIds, alcance)
   if (cuadrosErr) return { success: false, reason: cuadrosErr }
 
   return {
@@ -94,8 +111,7 @@ export function validateMechanicalTaskCreate(
       ...(maquinariaModelo ? { maquinariaModelo } : {}),
       ...(maquinariaId ? { maquinariaId } : {}),
       ...(ordenCuraRef ? { ordenCuraRef } : {}),
-      cuadros: input.cuadros,
-      cuadroIds: input.cuadroIds,
+      ...normalizeCuadros({ ...input, alcance }),
     },
   }
 }

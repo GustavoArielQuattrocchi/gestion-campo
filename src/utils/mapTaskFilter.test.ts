@@ -45,6 +45,15 @@ describe('filterTareasForMap', () => {
     assert.equal(result.length, 1)
     assert.equal(result[0].tarea, 'Poda')
   })
+
+  it('omite labores de toda la finca', () => {
+    const tareas = [
+      tarea({ id: '1', tarea: 'Poda de raíces', alcance: 'finca' }),
+      tarea({ id: '2', tarea: 'Poda' }),
+    ]
+    assert.deepEqual(listMapTareasDisponibles(tareas), ['Poda'])
+    assert.equal(filterTareasForMap(tareas, 'todas').length, 1)
+  })
 })
 
 describe('normalizeMapTareaParam', () => {

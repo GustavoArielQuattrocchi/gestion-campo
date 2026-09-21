@@ -44,6 +44,9 @@ export interface CuadroFinalizacion {
 }
 export type TareaTipo = 'manual' | 'mecanica'
 
+/** `finca` = labor de toda la finca, sin cuadros en el mapa. */
+export type TareaAlcance = 'cuadros' | 'finca'
+
 export interface CuadroSelection {
   cuadros: string[]
   cuadroIds: string[]
@@ -98,6 +101,8 @@ interface TareaBase {
   cuadros: string[]
   /** IDs de cuadro del catálogo (ej. FOA-5). Opcional en documentos legacy. */
   cuadroIds?: string[]
+  /** Si es `finca`, no se asignan cuadros ni se pinta el mapa. */
+  alcance?: TareaAlcance
   /** Cuadros marcados como finalizados desde el dashboard. */
   cuadroIdsFinalizados?: string[]
   /** Metadata de cada finalización de cuadro (fecha + operador). Complementa cuadroIdsFinalizados. */

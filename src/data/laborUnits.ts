@@ -29,6 +29,7 @@ export const UNIDAD_POR_LABOR: Record<string, RendimientoUnidad> = {
   'Colocando polainas': 'jornal',
   'Cambios de postes': 'jornal',
   'Mediciones': 'jornal',
+  'Poda de raíces': 'jornal',
   'Otros': 'jornal',
   // Mecánicas
   'Curacion': 'hileras',

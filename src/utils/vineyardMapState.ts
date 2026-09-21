@@ -1,6 +1,7 @@
 import type { Tarea } from '../types'
 import { buildNombreToIdMap } from '../data/mapaData'
 import { filterTareasForMap } from './mapTaskFilter'
+import { esTareaTodaLaFinca } from './tareaAlcance'
 
 export interface CuadroEstadoMapa {
   tareasEnProgreso: Tarea[]
@@ -18,6 +19,7 @@ export function buildEstadoPorCuadro(tareas: Tarea[]): Map<string, CuadroEstadoM
   const laboresPorCuadro = new Map<string, Set<string>>()
 
   for (const tarea of tareas) {
+    if (esTareaTodaLaFinca(tarea)) continue
     const fincaNombre = tarea.fincaNombre
     if (!fincaNombre) continue
 
@@ -94,6 +96,7 @@ export function collectCuadroIdsFromTareas(tareas: Tarea[]): Set<string> {
   const mappersPorFinca = new Map<string, Map<string, string>>()
 
   for (const tarea of tareas) {
+    if (esTareaTodaLaFinca(tarea)) continue
     const fincaNombre = tarea.fincaNombre
     if (!fincaNombre) continue
 

@@ -1,8 +1,10 @@
 import type { Tarea, TareaTipo } from '../types'
+import { esTareaTodaLaFinca } from './tareaAlcance'
 
-/** Clave de agrupación: una tarea en progreso por finca + labor + tipo (sin ejecutor). */
+/** Clave de agrupación: una tarea en progreso por finca + labor + tipo + alcance. */
 export function laborTaskGroupKey(t: Tarea): string {
-  return `${t.fincaId}|${t.tarea}|${t.tipo}`.toLowerCase()
+  const alcance = esTareaTodaLaFinca(t) ? 'finca' : 'cuadros'
+  return `${t.fincaId}|${t.tarea}|${t.tipo}|${alcance}`.toLowerCase()
 }
 
 export function laborTaskGroupKeyParts(

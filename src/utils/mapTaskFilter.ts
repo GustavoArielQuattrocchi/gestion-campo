@@ -1,16 +1,20 @@
 import type { Tarea } from '../types'
+import { esTareaTodaLaFinca } from './tareaAlcance'
 
 export const MAP_TAREA_TODAS = 'todas'
 
 /** Labores únicas disponibles para el filtro del mapa (según tareas ya filtradas por finca/tipo/estado). */
 export function listMapTareasDisponibles(tareas: Tarea[]): string[] {
-  return [...new Set(tareas.map(t => t.tarea).filter(Boolean))].sort((a, b) => a.localeCompare(b))
+  return [...new Set(
+    tareas.filter(t => !esTareaTodaLaFinca(t)).map(t => t.tarea).filter(Boolean),
+  )].sort((a, b) => a.localeCompare(b))
 }
 
 /** Filtra tareas para colorear el mapa; no afecta sidebar ni métricas. */
 export function filterTareasForMap(tareas: Tarea[], filtroTarea: string): Tarea[] {
-  if (filtroTarea === MAP_TAREA_TODAS) return tareas
-  return tareas.filter(t => t.tarea === filtroTarea)
+  const conCuadros = tareas.filter(t => !esTareaTodaLaFinca(t))
+  if (filtroTarea === MAP_TAREA_TODAS) return conCuadros
+  return conCuadros.filter(t => t.tarea === filtroTarea)
 }
 
 export function normalizeMapTareaParam(

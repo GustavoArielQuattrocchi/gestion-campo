@@ -61,6 +61,13 @@ describe('findTareaContinuable', () => {
     const activas = [manual('a', 'Podando', 'Propia')]
     assert.equal(findTareaContinuable(activas, 'Desbrote', 'manual'), undefined)
   })
+
+  it('no mezcla una tarea de toda la finca con una de cuadros', () => {
+    const finca = { ...manual('f', 'Podando', 'Propia'), alcance: 'finca' as const, cuadros: [], cuadroIds: [] }
+    const deCuadro = manual('c', 'Podando', 'Propia')
+    assert.equal(findTareaContinuable([finca, deCuadro], 'Podando', 'manual', 'finca')?.id, 'f')
+    assert.equal(findTareaContinuable([finca, deCuadro], 'Podando', 'manual', 'cuadros')?.id, 'c')
+  })
 })
 
 describe('findDuplicados', () => {

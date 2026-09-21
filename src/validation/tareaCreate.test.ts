@@ -34,6 +34,33 @@ describe('validateManualTaskCreate', () => {
     })
     assert.equal(result.success, false)
   })
+
+  it('acepta alcance finca sin cuadros', () => {
+    const result = validateManualTaskCreate({
+      cuadrilla: 'Cuadrilla A',
+      tarea: 'Poda de raíces',
+      cantidadPersonas: 8,
+      cuadros: [],
+      cuadroIds: [],
+      alcance: 'finca',
+    })
+    assert.equal(result.success, true)
+    if (!result.success) return
+    assert.equal(result.data.alcance, 'finca')
+    assert.deepEqual(result.data.cuadros, [])
+    assert.deepEqual(result.data.cuadroIds, [])
+  })
+
+  it('sigue exigiendo cuadros si no es toda la finca', () => {
+    const result = validateManualTaskCreate({
+      cuadrilla: 'Cuadrilla A',
+      tarea: 'Poda',
+      cantidadPersonas: 8,
+      cuadros: [],
+      cuadroIds: [],
+    })
+    assert.equal(result.success, false)
+  })
 })
 
 describe('validateMechanicalTaskCreate', () => {

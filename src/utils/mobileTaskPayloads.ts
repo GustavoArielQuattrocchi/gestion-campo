@@ -1,5 +1,7 @@
 import type { Timestamp } from 'firebase/firestore'
+import type { TareaAlcance } from '../types'
 import type { ManualTaskCreateInput, MechanicalTaskCreateInput } from '../validation/tareaCreate'
+import { ALCANCE_FINCA, esTareaTodaLaFinca } from './tareaAlcance'
 import { buildEjecutorPorCuadroPatch } from './tareaEjecutor'
 
 export interface ManualTaskFirestorePayload {
@@ -11,6 +13,7 @@ export interface ManualTaskFirestorePayload {
   cantidadPersonas: number
   cuadros: string[]
   cuadroIds: string[]
+  alcance?: TareaAlcance
   estado: 'en_progreso'
   operador: string
   fechaInicio: Timestamp
@@ -29,10 +32,15 @@ export interface MechanicalTaskFirestorePayload {
   ordenCuraRef?: string
   cuadros: string[]
   cuadroIds: string[]
+  alcance?: TareaAlcance
   estado: 'en_progreso'
   operador: string
   fechaInicio: Timestamp
   ejecutorPorCuadro?: Record<string, string>
+}
+
+function alcancePatch(alcance?: TareaAlcance): { alcance: TareaAlcance } | Record<string, never> {
+  return esTareaTodaLaFinca({ alcance }) ? { alcance: ALCANCE_FINCA } : {}
 }
 
 export function hasMobileSession(
@@ -57,10 +65,11 @@ export function buildManualTaskFirestorePayload(
     cantidadPersonas: validated.cantidadPersonas,
     cuadros: validated.cuadros,
     cuadroIds: validated.cuadroIds,
+    ...alcancePatch(validated.alcance),
     estado: 'en_progreso',
     operador: ctx.operadorNombre.trim(),
     fechaInicio: ctx.fechaInicio,
-    ejecutorPorCuadro,
+    ...(Object.keys(ejecutorPorCuadro).length > 0 ? { ejecutorPorCuadro } : {}),
   }
 }
 
@@ -85,9 +94,10 @@ export function buildMechanicalTaskFirestorePayload(
     ...(validated.ordenCuraRef ? { ordenCuraRef: validated.ordenCuraRef } : {}),
     cuadros: validated.cuadros,
     cuadroIds: validated.cuadroIds,
+    ...alcancePatch(validated.alcance),
     estado: 'en_progreso',
     operador: ctx.operadorNombre.trim(),
     fechaInicio: ctx.fechaInicio,
-    ejecutorPorCuadro,
+    ...(Object.keys(ejecutorPorCuadro).length > 0 ? { ejecutorPorCuadro } : {}),
   }
 }

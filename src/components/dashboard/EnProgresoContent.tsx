@@ -205,6 +205,9 @@ export default function EnProgresoContent({
                       {multiEjecutor && (
                         <span className="en-progreso-badge en-progreso-badge--multi">Varios ejecutores</span>
                       )}
+                      {progress.alcanceFinca && (
+                        <span className="en-progreso-badge">Toda la finca</span>
+                      )}
                     </span>
                   </div>
                   <ChevronDown
@@ -213,7 +216,9 @@ export default function EnProgresoContent({
                   />
                 </button>
 
-                <p className="en-progreso-avance-hint">Avance general de la finca</p>
+                <p className="en-progreso-avance-hint">
+                  {progress.alcanceFinca ? 'Labor de toda la finca' : 'Avance general de la finca'}
+                </p>
 
                 <TaskProgressBar
                   value={progress.porcentaje}
@@ -302,9 +307,11 @@ export default function EnProgresoContent({
                         className="btn-cerrar-tarea"
                         disabled={!puedeCerrar || busyKey !== null}
                         title={
-                          puedeCerrar
-                            ? 'Marcar la tarea como finalizada en el dashboard'
-                            : 'Finalizá todos los cuadros antes de cerrar la tarea'
+                          progress.alcanceFinca
+                            ? 'Cerrar la labor de toda la finca'
+                            : puedeCerrar
+                              ? 'Marcar la tarea como finalizada en el dashboard'
+                              : 'Finalizá todos los cuadros antes de cerrar la tarea'
                         }
                         onClick={() =>
                           runAction(`close:${tarea.id}`, () => onFinalizarTarea(tarea.id))

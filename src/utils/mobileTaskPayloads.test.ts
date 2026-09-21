@@ -33,6 +33,23 @@ describe('buildManualTaskFirestorePayload', () => {
     assert.equal(payload.operador, 'Juan')
     assert.deepEqual(payload.cuadroIds, ['FOA-5'])
   })
+
+  it('guarda alcance finca sin cuadros', () => {
+    const payload = buildManualTaskFirestorePayload(
+      {
+        cuadrilla: 'C1',
+        tarea: 'Poda de raíces',
+        cantidadPersonas: 5,
+        cuadros: [],
+        cuadroIds: [],
+        alcance: 'finca',
+      },
+      { fincaId: 'FOA', fincaNombre: 'Finca Ocho A', operadorNombre: 'Juan', fechaInicio: mockTs },
+    )
+    assert.equal(payload.alcance, 'finca')
+    assert.deepEqual(payload.cuadroIds, [])
+    assert.equal(payload.ejecutorPorCuadro, undefined)
+  })
 })
 
 describe('buildMechanicalTaskFirestorePayload', () => {

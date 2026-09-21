@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { computeTareaProgress, resolveTaskCuadroIds } from './tareaProgress'
+import {
+  allCuadrosTareaFinalizados,
+  computeTareaProgress,
+  formatProgressLabel,
+  resolveTaskCuadroIds,
+} from './tareaProgress'
 import type { TareaManual } from '../types'
 
 const base: TareaManual = {
@@ -37,5 +42,13 @@ describe('computeTareaProgress', () => {
     const esperado = Math.round((10.22 / p.hectareasFinca) * 1000) / 10
     assert.equal(p.porcentaje, esperado)
     assert.equal(p.hectareasFinalizadas, 10.22)
+  })
+
+  it('permite cerrar una labor de toda la finca sin cuadros', () => {
+    const finca = { ...base, alcance: 'finca' as const, cuadros: [], cuadroIds: [] }
+    assert.equal(allCuadrosTareaFinalizados(finca), true)
+    const p = computeTareaProgress(finca)
+    assert.equal(p.alcanceFinca, true)
+    assert.match(formatProgressLabel(p), /Toda la finca/)
   })
 })
