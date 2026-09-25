@@ -18,6 +18,7 @@ const MAQUINARIAS: Record<string, MaquinariaCatalogo[]> = {
     { id: 'FOA-10', nombre: 'MT45', modelo: 'JOHN DEERE 5076EFD' },
     { id: 'FOA-11', nombre: 'MT51', modelo: 'NEW HOLLAND T4.65V' },
     { id: 'FOA-12', nombre: 'MT53', modelo: 'NEW HOLLAND T4.65V' },
+    { id: 'FOA-13', nombre: 'MT55', modelo: 'NEW HOLLAND T4.65V' },
   ],
   FLP: [
     { id: 'FLP-1', nombre: 'MT19', modelo: 'NEW HOLLAND TN-75-V' },
