@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+functions/lib/
 dev-certs/
 dist
 dist-ssr
@@ -16,6 +17,7 @@ dist-ssr
 .env
 .env.*
 !.env.example
+.secret.local
 firebase-sa.json
 service-account.json
 *-firebase-adminsdk-*.json

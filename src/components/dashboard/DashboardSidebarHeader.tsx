@@ -1,5 +1,6 @@
 import { Sprout, Smartphone, FileText, Droplets, LogOut, Package } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import AsesorIaPanel from '../../features/asesorIA/AsesorIaPanel'
 import { useAuth } from '../../providers/AuthProvider'
 
 export default function DashboardSidebarHeader() {
@@ -68,6 +69,7 @@ export default function DashboardSidebarHeader() {
             Stock
           </button>
         </Link>
+        <AsesorIaPanel />
       </div>
     </div>
   )

@@ -1,10 +1,13 @@
 import { useState, type ReactNode } from 'react'
-import { Eye, EyeOff, LogIn, MailCheck, RefreshCw, ShieldCheck, UserPlus } from 'lucide-react'
+import { Eye, EyeOff, LogIn, Mail, MailCheck, RefreshCw, ShieldCheck, UserPlus } from 'lucide-react'
 import { ADMIN_EMAIL_DOMAIN, isAdminEmail, useAuth } from '../../providers/AuthProvider'
 
 const MIN_PASSWORD_LENGTH = 6
 
-type Mode = 'login' | 'register'
+const RESET_SUCCESS =
+  'Si existe una cuenta con ese correo, te enviamos un enlace para restablecer la contraseña. Revisá la bandeja y el spam.'
+
+type Mode = 'login' | 'register' | 'reset'
 
 function mapAuthError(err: unknown): string {
   const code = (err as { code?: string })?.code ?? ''
@@ -29,7 +32,7 @@ function mapAuthError(err: unknown): string {
 }
 
 export default function AdminGate({ children }: { children: ReactNode }) {
-  const { user, isAdmin, loginAdmin, registerAdmin, resendVerification, logout } = useAuth()
+  const { user, isAdmin, loginAdmin, registerAdmin, requestPasswordReset, resendVerification, logout } = useAuth()
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -62,6 +65,21 @@ export default function AdminGate({ children }: { children: ReactNode }) {
     setShowPassword(false)
   }
 
+  const abrirReset = () => {
+    setMode('reset')
+    setError(null)
+    setInfo(null)
+    setPassword('')
+    setConfirmPassword('')
+    setShowPassword(false)
+  }
+
+  const volverAlLogin = () => {
+    setMode('login')
+    setError(null)
+    setInfo(null)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (busy) return
@@ -84,6 +102,22 @@ export default function AdminGate({ children }: { children: ReactNode }) {
       } else {
         await registerAdmin(email, password)
       }
+    } catch (err) {
+      setError(mapAuthError(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleReset = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (busy) return
+    setBusy(true)
+    setError(null)
+    setInfo(null)
+    try {
+      await requestPasswordReset(email)
+      setInfo(RESET_SUCCESS)
     } catch (err) {
       setError(mapAuthError(err))
     } finally {
@@ -163,6 +197,45 @@ export default function AdminGate({ children }: { children: ReactNode }) {
             Usar otra cuenta
           </button>
         </div>
+      </div>
+    )
+  }
+
+  if (mode === 'reset') {
+    return (
+      <div className="admin-gate">
+        <form className="admin-gate-card" onSubmit={handleReset}>
+          <div className="admin-gate-icon">
+            <ShieldCheck size={28} />
+          </div>
+          <h1>Restablecer contraseña</h1>
+          <p>Ingresá el correo de tu cuenta @{ADMIN_EMAIL_DOMAIN}.</p>
+
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <input
+              type="email"
+              className="form-input"
+              autoComplete="username"
+              placeholder={`nombre@${ADMIN_EMAIL_DOMAIN}`}
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              disabled={busy}
+              required
+            />
+          </div>
+
+          {info && <p className="admin-gate-info">{info}</p>}
+          {error && <p className="admin-gate-error">{error}</p>}
+
+          <button type="submit" className="btn btn-primary" disabled={busy || !email.trim()}>
+            <Mail size={16} /> {busy ? 'Enviando…' : 'Enviar enlace'}
+          </button>
+
+          <button type="button" className="admin-gate-link" onClick={volverAlLogin} disabled={busy}>
+            Volver al inicio de sesión
+          </button>
+        </form>
       </div>
     )
   }
@@ -260,6 +333,12 @@ export default function AdminGate({ children }: { children: ReactNode }) {
               ? 'Crear cuenta'
               : 'Ingresar'}
         </button>
+
+        {!esRegistro && (
+          <button type="button" className="admin-gate-link" onClick={abrirReset} disabled={busy}>
+            ¿Olvidaste tu contraseña?
+          </button>
+        )}
 
         <button type="button" className="admin-gate-link" onClick={toggleMode} disabled={busy}>
           {esRegistro

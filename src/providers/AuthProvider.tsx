@@ -6,17 +6,14 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  sendPasswordResetEmail,
   signOut,
   type User,
 } from 'firebase/auth'
 import { auth } from '../firebase'
+import { ADMIN_EMAIL_DOMAIN, ADMIN_EMAIL_DOMAIN_ERROR, isAdminEmail, requireAdminEmail } from './adminEmail'
 
-/** Dominio de correo autorizado para administradores del escritorio. */
-export const ADMIN_EMAIL_DOMAIN = 'salentein.com'
-
-export function isAdminEmail(email: string | null | undefined): boolean {
-  return typeof email === 'string' && email.trim().toLowerCase().endsWith(`@${ADMIN_EMAIL_DOMAIN}`)
-}
+export { ADMIN_EMAIL_DOMAIN, isAdminEmail }
 
 /** Un usuario es admin si tiene sesión con contraseña, dominio autorizado y email verificado. */
 export function isAdminUser(user: User | null): boolean {
@@ -46,6 +43,7 @@ interface AuthContextValue {
   isAdmin: boolean
   loginAdmin: (email: string, password: string) => Promise<void>
   registerAdmin: (email: string, password: string) => Promise<void>
+  requestPasswordReset: (email: string) => Promise<void>
   resendVerification: () => Promise<void>
   logout: () => Promise<void>
 }
@@ -57,6 +55,7 @@ const AuthContext = createContext<AuthContextValue>({
   isAdmin: false,
   loginAdmin: async () => {},
   registerAdmin: async () => {},
+  requestPasswordReset: async () => {},
   resendVerification: async () => {},
   logout: async () => {},
 })
@@ -129,29 +128,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const loginAdmin = useCallback(async (email: string, password: string) => {
-    const normalized = email.trim().toLowerCase()
-    if (!isAdminEmail(normalized)) {
-      throw new Error(`Solo se permiten cuentas @${ADMIN_EMAIL_DOMAIN}.`)
-    }
+    const normalized = requireAdminEmail(email)
     const credential = await signInWithEmailAndPassword(auth, normalized, password)
     // Defensa extra: si por algún motivo el dominio no coincide, cerrar sesión.
     if (!isAdminEmail(credential.user.email)) {
       await signOut(auth)
-      throw new Error(`Solo se permiten cuentas @${ADMIN_EMAIL_DOMAIN}.`)
+      throw new Error(ADMIN_EMAIL_DOMAIN_ERROR)
     }
   }, [])
 
   const registerAdmin = useCallback(async (email: string, password: string) => {
-    const normalized = email.trim().toLowerCase()
-    if (!isAdminEmail(normalized)) {
-      throw new Error(`Solo se permiten cuentas @${ADMIN_EMAIL_DOMAIN}.`)
-    }
+    const normalized = requireAdminEmail(email)
     const credential = await createUserWithEmailAndPassword(auth, normalized, password)
     if (!isAdminEmail(credential.user.email)) {
       await signOut(auth)
-      throw new Error(`Solo se permiten cuentas @${ADMIN_EMAIL_DOMAIN}.`)
+      throw new Error(ADMIN_EMAIL_DOMAIN_ERROR)
     }
     await sendEmailVerification(credential.user)
+  }, [])
+
+  const requestPasswordReset = useCallback(async (email: string) => {
+    const normalized = requireAdminEmail(email)
+    await sendPasswordResetEmail(auth, normalized)
   }, [])
 
   const resendVerification = useCallback(async () => {
@@ -172,10 +170,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin: isAdminUser(state.user),
       loginAdmin,
       registerAdmin,
+      requestPasswordReset,
       resendVerification,
       logout,
     }),
-    [state.user, state.ready, state.error, loginAdmin, registerAdmin, resendVerification, logout],
+    [state.user, state.ready, state.error, loginAdmin, registerAdmin, requestPasswordReset, resendVerification, logout],
   )
 
   if (!state.ready) {
