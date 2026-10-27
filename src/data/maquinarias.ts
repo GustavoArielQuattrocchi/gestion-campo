@@ -35,6 +35,9 @@ const MAQUINARIAS: Record<string, MaquinariaCatalogo[]> = {
     { id: 'FLP-8', nombre: 'MT47', modelo: 'JOHN DEERE 5076EFD' },
     { id: 'FLP-9', nombre: 'MT50', modelo: 'NEW HOLLAND T4.65V' },
     { id: 'FLP-10', nombre: 'MT54', modelo: 'NEW HOLLAND T4.65V' },
+    { id: 'FLP-11', nombre: 'MT52', modelo: 'NEW HOLLAND 9090' },
+    { id: 'FLP-12', nombre: 'MT48', modelo: 'NEW HOLLAND 9090' },
+
   ],
   FSP: [
     { id: 'FSP-1', nombre: 'MT21', modelo: 'MASSEY FERGUSON 275/2' },
