@@ -21,6 +21,8 @@ const MAQUINARIAS: Record<string, MaquinariaCatalogo[]> = {
     { id: 'FOA-12', nombre: 'MT53', modelo: 'NEW HOLLAND T4.65V' },
     { id: 'FOA-13', nombre: 'MT55', modelo: 'NEW HOLLAND T4.65V' },
     { id: 'FOA-14', nombre: 'MT10', modelo: 'CUATRICICLO HONDA' },
+    { id: 'FOA-16', nombre: 'MT52', modelo: 'NEW HOLLAND 9090' },
+    { id: 'FOA-17', nombre: 'MT48', modelo: 'NEW HOLLAND 9090' },
   ],
   FLP: [
     { id: 'FLP-1', nombre: 'MT19', modelo: 'NEW HOLLAND TN-75-V' },
