@@ -59,6 +59,7 @@ export interface ItemRow {
   dosis_ha: string
   superficie: string
   dosis_aplicacion: string
+  obs: string
 }
 
 export type ItemField = Exclude<keyof ItemRow, 'localId' | 'dosis_aplicacion'>
@@ -101,6 +102,7 @@ function emptyRow(): ItemRow {
     dosis_ha: '',
     superficie: '',
     dosis_aplicacion: '',
+    obs: '',
   }
 }
 
@@ -289,6 +291,7 @@ export function useOrdenFertilizacionEditor() {
         dosis_ha: row.dosis_ha,
         superficie: row.superficie,
         dosis_aplicacion: computeDosisAplicacion(row.dosis_ha, row.superficie),
+        obs: row.obs,
       }))
     return { orden, items: exportItems }
   }, [form, items])
@@ -332,6 +335,7 @@ export function useOrdenFertilizacionEditor() {
           dosis_ha: row.dosis_ha.trim(),
           superficie: row.superficie.trim(),
           dosis_aplicacion: computeDosisAplicacion(row.dosis_ha, row.superficie),
+          obs: row.obs.trim(),
         }))
 
       const nuevos = items.filter(row => {
@@ -567,5 +571,6 @@ function itemToRow(
     dosis_ha: dosisHa,
     superficie: item.superficie,
     dosis_aplicacion: computeDosisAplicacion(dosisHa, item.superficie),
+    obs: item.obs,
   }
 }

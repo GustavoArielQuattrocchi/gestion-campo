@@ -10,6 +10,7 @@ export interface OrdenFertilizacionItem {
   dosis_ha: string
   superficie: string
   dosis_aplicacion: string
+  obs: string
 }
 
 /** Documento principal (`/ordenesFertilizacion/{ordenId}`). */

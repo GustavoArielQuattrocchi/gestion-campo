@@ -22,6 +22,7 @@ export interface ItemExport {
   dosis_ha: string
   superficie: string
   dosis_aplicacion: string
+  obs: string
 }
 
 const BRAND = {
@@ -47,13 +48,14 @@ async function loadJsPdf() {
 }
 
 const TABLE_COLS = [
-  { key: 'producto', label: 'Producto', w: 36 },
-  { key: 'grupo', label: 'Grupo', w: 24 },
-  { key: 'ia', label: 'Ing. activo', w: 30 },
-  { key: 'presentacion', label: 'Pres.', w: 16 },
-  { key: 'dosis_ha', label: 'Dosis/ha', w: 22 },
-  { key: 'superficie', label: 'Superficie', w: 24 },
-  { key: 'dosis_aplicacion', label: 'Dosis/aplic.', w: 30 },
+  { key: 'producto', label: 'Producto', w: 30 },
+  { key: 'grupo', label: 'Grupo', w: 16 },
+  { key: 'ia', label: 'Ing. activo', w: 24 },
+  { key: 'presentacion', label: 'Pres.', w: 14 },
+  { key: 'dosis_ha', label: 'Dosis/ha', w: 18 },
+  { key: 'superficie', label: 'Superficie', w: 22 },
+  { key: 'dosis_aplicacion', label: 'Dosis/aplic.', w: 24 },
+  { key: 'obs', label: 'Observaciones', w: 34 },
 ] as const
 
 function safeName(of: string): string {
@@ -376,6 +378,7 @@ export function ordenGuardadaToExport(orden: OrdenFertilizacionWithItems): {
       dosis_ha: item.dosis_ha,
       superficie: item.superficie,
       dosis_aplicacion: computeDosisAplicacion(item.dosis_ha, item.superficie),
+      obs: item.obs,
     })),
   }
 }
@@ -397,7 +400,7 @@ export function exportOrdenCsv(orden: OrdenExport, items: ItemExport[]): void {
     ['Responsable', orden.responsable],
     ['Cuartel/Lote', orden.cuartel],
     [],
-    ['Producto', 'Grupo', 'Ing. Activo', 'Pres.', 'Dosis/ha', 'Superficie (ha)', 'Dosis/aplicación'],
+    ['Producto', 'Grupo', 'Ing. Activo', 'Pres.', 'Dosis/ha', 'Superficie (ha)', 'Dosis/aplicación', 'Observaciones'],
     ...items.map(item => [
       item.producto,
       item.grupo,
@@ -406,6 +409,7 @@ export function exportOrdenCsv(orden: OrdenExport, items: ItemExport[]): void {
       item.dosis_ha,
       item.superficie,
       item.dosis_aplicacion,
+      item.obs,
     ]),
     [],
     ['Indicaciones', orden.indicaciones],

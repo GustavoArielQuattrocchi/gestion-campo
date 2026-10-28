@@ -63,6 +63,7 @@ function mapItem(id: string, data: DocumentData): OrdenFertilizacionItem {
     dosis_ha: toStr(data.dosis_ha),
     superficie: toStr(data.superficie),
     dosis_aplicacion: toStr(data.dosis_aplicacion),
+    obs: toStr(data.obs),
   }
 }
 
@@ -75,6 +76,7 @@ function itemToData(item: Omit<OrdenFertilizacionItem, 'id'>): DocumentData {
     dosis_ha: item.dosis_ha,
     superficie: item.superficie,
     dosis_aplicacion: item.dosis_aplicacion,
+    obs: item.obs,
   }
 }
 

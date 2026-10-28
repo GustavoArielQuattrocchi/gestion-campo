@@ -193,6 +193,7 @@ export default function OrdenFertilizacionForm({
                   <th style={{ minWidth: 80 }}>Dosis/ha</th>
                   <th style={{ minWidth: 110 }}>Superficie (ha)</th>
                   <th style={{ minWidth: 120 }}>Dosis/aplicación</th>
+                  <th style={{ minWidth: 160 }}>Observaciones</th>
                   <th style={{ width: 50 }} aria-label="Acciones" />
                 </tr>
               </thead>
@@ -258,6 +259,14 @@ export default function OrdenFertilizacionForm({
                           value={row.dosis_aplicacion}
                           readOnly
                           aria-label="Dosis por aplicación"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          className="oc-input"
+                          value={row.obs}
+                          aria-label="Observaciones"
+                          onChange={e => onItemChange(row.localId, 'obs', e.target.value)}
                         />
                       </td>
                       <td>
