@@ -14,6 +14,7 @@ interface Props {
   onAlta: (input: ProductoCatalogoAlta) => Promise<void>
   onEliminar: (productoId: string) => void
   onClose: () => void
+  closeLabel?: string
 }
 
 const emptyAlta = (): ProductoCatalogoAlta => ({
@@ -26,7 +27,13 @@ const emptyAlta = (): ProductoCatalogoAlta => ({
   management: 'Convencional',
 })
 
-export default function CatalogoModal({ catalogo, onAlta, onEliminar, onClose }: Props) {
+export default function CatalogoModal({
+  catalogo,
+  onAlta,
+  onEliminar,
+  onClose,
+  closeLabel = 'Volver a la OC',
+}: Props) {
   const [q, setQ] = useState('')
   const [alta, setAlta] = useState<ProductoCatalogoAlta>(emptyAlta)
   const [saving, setSaving] = useState(false)
@@ -85,7 +92,7 @@ export default function CatalogoModal({ catalogo, onAlta, onEliminar, onClose }:
           <h3>Catálogo de productos</h3>
           <button type="button" className="oc-btn oc-btn--slate" onClick={onClose}>
             <X size={16} />
-            Volver a la OC
+            {closeLabel}
           </button>
         </div>
         <div className="oc-sheet-body">
@@ -220,7 +227,7 @@ export default function CatalogoModal({ catalogo, onAlta, onEliminar, onClose }:
         <div className="oc-sheet-foot">
           <button type="button" className="oc-btn oc-btn--slate" onClick={onClose}>
             <X size={16} />
-            Volver a la OC
+            {closeLabel}
           </button>
         </div>
       </div>

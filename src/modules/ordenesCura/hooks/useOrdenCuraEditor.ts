@@ -18,8 +18,9 @@ import {
 } from '../services/catalogoService'
 import { findProductoCatalogo, catalogoDesdeArchivo } from '../../../data/agroQuimicos'
 import { canonicalizarProducto, formatDosisHaCanon } from '../../../data/productoCatalogoAlias'
+import { getOrdenes as getOrdenesFertilizacion } from '../../ordenesFertilizacion/services/ordenesFertilizacionService'
 import type { OrdenCura, OrdenCuraCreate, OrderItem } from '../types'
-import { generateOcNumber } from '../utils/ocNumber'
+import { generateOrdenNumber, type OrdenNumeroRef } from '../utils/ocNumber'
 import { computeDosisMaquinada, computeFactor, parseLeadingNumber } from '../utils/factor'
 import { createOrdenPdfBlob, downloadPdfBlob, exportOrdenCsv, ordenGuardadaToExport, type ItemExport, type OrdenExport } from '../utils/export'
 
@@ -120,6 +121,7 @@ export function useOrdenCuraEditor() {
   const [form, setForm] = useState<OrdenFormState>(emptyForm)
   const [items, setItems] = useState<ItemRow[]>(() => [emptyRow()])
   const [ordenes, setOrdenes] = useState<OrdenCura[]>([])
+  const [codigosFertilizacion, setCodigosFertilizacion] = useState<OrdenNumeroRef[]>([])
   const [catalogo, setCatalogo] = useState<ProductoCatalogo[]>(() => catalogoDesdeArchivo())
   const [listadoOpen, setListadoOpen] = useState(false)
   const [catalogoOpen, setCatalogoOpen] = useState(false)
@@ -129,6 +131,14 @@ export function useOrdenCuraEditor() {
   const [readOnly, setReadOnly] = useState(false)
   const [busyPdfId, setBusyPdfId] = useState<string | null>(null)
   const [banner, setBanner] = useState<Banner>(null)
+
+  const codigosNumero = useMemo(
+    () => [
+      ...ordenes.map(orden => ({ codigo: orden.oc, finca: orden.finca })),
+      ...codigosFertilizacion,
+    ],
+    [ordenes, codigosFertilizacion],
+  )
 
   const factor = useMemo(
     () => computeFactor(Number(form.vol_maquinaria), Number(form.vol_aplicacion)),
@@ -141,6 +151,15 @@ export function useOrdenCuraEditor() {
     setOrdenes(data)
     return data
   }, [userId])
+
+  const refreshCodigosFertilizacion = useCallback(async () => {
+    try {
+      const data = await getOrdenesFertilizacion()
+      setCodigosFertilizacion(data.map(orden => ({ codigo: orden.of, finca: orden.finca })))
+    } catch (err) {
+      console.error('[OrdenesCura] No se pudieron leer las fertilizaciones para el número:', err)
+    }
+  }, [])
 
   const refreshCatalogo = useCallback(async () => {
     const data = await getCatalogo()
@@ -164,7 +183,8 @@ export function useOrdenCuraEditor() {
         text: 'No se pudo cargar el catálogo de productos. Verificá las reglas de Firestore.',
       })
     })
-  }, [ready, userId, refreshOrdenes, refreshCatalogo])
+    void refreshCodigosFertilizacion()
+  }, [ready, userId, refreshOrdenes, refreshCatalogo, refreshCodigosFertilizacion])
 
   // Recalcula dosis maquinada de cada fila cuando cambia el factor (no en solo lectura).
   useEffect(() => {
@@ -182,12 +202,12 @@ export function useOrdenCuraEditor() {
       setForm(prev => {
         const next = { ...prev, [field]: value }
         if (field === 'finca' && !prev.id) {
-          next.oc = value.trim() ? generateOcNumber(ordenes, value.trim()) : ''
+          next.oc = value.trim() ? generateOrdenNumber(codigosNumero, value.trim(), 'OC') : ''
         }
         return next
       })
     },
-    [ordenes],
+    [codigosNumero],
   )
 
   const updateItem = useCallback(
@@ -256,10 +276,10 @@ export function useOrdenCuraEditor() {
   useEffect(() => {
     setForm(prev => {
       if (prev.id || !prev.finca.trim()) return prev
-      const nextOc = generateOcNumber(ordenes, prev.finca)
+      const nextOc = generateOrdenNumber(codigosNumero, prev.finca, 'OC')
       return prev.oc === nextOc ? prev : { ...prev, oc: nextOc }
     })
-  }, [ordenes])
+  }, [codigosNumero])
 
   const buildExport = useCallback((): { orden: OrdenExport; items: ItemExport[] } => {
     const orden: OrdenExport = {
@@ -367,7 +387,7 @@ export function useOrdenCuraEditor() {
         catalogo,
       )
 
-      await Promise.all([refreshOrdenes(), refreshCatalogo()])
+      await Promise.all([refreshOrdenes(), refreshCatalogo(), refreshCodigosFertilizacion()])
       setBanner({ type: 'success', text: `Orden ${form.oc} guardada.` })
     } catch (err) {
       console.error('[OrdenesCura] Error al guardar:', err)
@@ -376,7 +396,7 @@ export function useOrdenCuraEditor() {
       savingRef.current = false
       setSaving(false)
     }
-  }, [readOnly, userId, user?.email, form, items, catalogo, refreshOrdenes, refreshCatalogo])
+  }, [readOnly, userId, user?.email, form, items, catalogo, refreshOrdenes, refreshCatalogo, refreshCodigosFertilizacion])
 
   const abrirOrden = useCallback(async (ordenId: string) => {
     try {
@@ -423,7 +443,7 @@ export function useOrdenCuraEditor() {
       if (!ok) return
       try {
         await deleteOrden(ordenId)
-        await refreshOrdenes()
+        await Promise.all([refreshOrdenes(), refreshCodigosFertilizacion()])
         if (form.id === ordenId) {
           setReadOnly(false)
           setForm(emptyForm())
@@ -435,7 +455,7 @@ export function useOrdenCuraEditor() {
         setBanner({ type: 'error', text: 'No se pudo eliminar la orden.' })
       }
     },
-    [refreshOrdenes, form.id, ordenes],
+    [refreshOrdenes, refreshCodigosFertilizacion, form.id, ordenes],
   )
 
   const eliminarProducto = useCallback(

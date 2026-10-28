@@ -1,4 +1,4 @@
-import { Sprout, Smartphone, FileText, Droplets, LogOut, Package } from 'lucide-react'
+import { Sprout, Smartphone, FileText, Leaf, Droplets, LogOut, Package } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import AsesorIaPanel from '../../features/asesorIA/AsesorIaPanel'
 import { useAuth } from '../../providers/AuthProvider'
@@ -47,6 +47,16 @@ export default function DashboardSidebarHeader() {
           >
             <FileText size={14} />
             Órdenes de Cura
+          </button>
+        </Link>
+        <Link to="/ordenes-de-fertilizacion" style={{ textDecoration: 'none', flex: 1 }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            style={{ width: '100%', padding: '8px 12px', fontSize: 13 }}
+          >
+            <Leaf size={14} />
+            Órdenes de Fertilización
           </button>
         </Link>
         <Link to="/aplicaciones-fitosanitarias" style={{ textDecoration: 'none', flex: 1 }}>

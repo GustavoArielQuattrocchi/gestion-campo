@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <script>
       (function () {
-        var admin = /^\/(escritorio|ordenes-de-cura|aplicaciones-fitosanitarias|stock-admin)(\/|$)/.test(location.pathname)
+        var admin = /^\/(escritorio|ordenes-de-cura|ordenes-de-fertilizacion|aplicaciones-fitosanitarias|stock-admin)(\/|$)/.test(location.pathname)
         var stock = /^\/stock(\/|$)/.test(location.pathname)
         if (admin) {
           document.write('<link rel="icon" type="image/svg+xml" href="/favicon-escritorio.svg" />')

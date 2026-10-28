@@ -7,6 +7,10 @@ import { lazyWithRetry } from './utils/lazyWithRetry'
 const MobileApp = lazyWithRetry(() => import('./pages/MobileApp'), 'mobile')
 const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'), 'dashboard')
 const OrdenesCuraPage = lazyWithRetry(() => import('./modules/ordenesCura/OrdenesCuraPage'), 'ordenes-cura')
+const OrdenesFertilizacionPage = lazyWithRetry(
+  () => import('./modules/ordenesFertilizacion/OrdenesFertilizacionPage'),
+  'ordenes-fertilizacion',
+)
 const AplicacionesFitosanitariasPage = lazyWithRetry(
   () => import('./modules/aplicacionesFitosanitarias/AplicacionesFitosanitariasPage'),
   'aplicaciones-fitosanitarias',
@@ -53,6 +57,14 @@ export default function App() {
             element={
               <AdminGate>
                 <OrdenesCuraPage />
+              </AdminGate>
+            }
+          />
+          <Route
+            path="/ordenes-de-fertilizacion"
+            element={
+              <AdminGate>
+                <OrdenesFertilizacionPage />
               </AdminGate>
             }
           />

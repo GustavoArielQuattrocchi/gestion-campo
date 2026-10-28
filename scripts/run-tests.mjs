@@ -27,6 +27,7 @@ const testFiles = [
   'src/utils/parteEstado.test.ts',
   'src/utils/partesLaboresSync.test.ts',
   'src/modules/ordenesCura/utils/ocNumber.test.ts',
+  'src/modules/ordenesFertilizacion/utils/dosis.test.ts',
   'src/modules/ordenesCura/utils/factor.test.ts',
   'src/modules/ordenesCura/utils/ownerLabel.test.ts',
   'src/providers/adminEmail.test.ts',
